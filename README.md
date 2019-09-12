@@ -1,4 +1,6 @@
-# Remodel
+<img src="builderman.png" alt="Remodel Logo" width="327" height="277" align="right" />
+<h1 align="left">Remodel</h1>
+
 Remodel is a command line tool to manipulate Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
 
 **Remodel is still in early development. Its API will change as it reaches stability.**
@@ -74,3 +76,5 @@ Remodel is similar to [rbxmk](https://github.com/Anaminus/rbxmk):
 
 ## License
 Remodel is available under the terms of the MIT license. See [LICENSE.txt](LICENSE.txt) for details.
+
+[Logo source](https://pixabay.com/illustrations/factory-worker-industry-2318026/).
