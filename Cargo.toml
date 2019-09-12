@@ -4,6 +4,10 @@ version = "0.1.0"
 description = "A tool to read, modify, and write Roblox objects."
 authors = ["Lucien Greathouse <me@lpghatguy.com>"]
 edition = "2018"
+license = "MIT"
+homepage = "https://github.com/rojo-rbx/remodel"
+documentation = "https://github.com/rojo-rbx/remodel"
+repository = "https://github.com/rojo-rbx/remodel"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

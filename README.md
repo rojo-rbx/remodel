@@ -1,12 +1,26 @@
 <img src="builderman.png" alt="Remodel Logo" width="327" height="277" align="right" />
 <h1 align="left">Remodel</h1>
 
+![Remodel on crates.io](https://img.shields.io/crates/v/remodel.svg?label=version)
+
 Remodel is a command line tool to manipulate Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
 
 **Remodel is still in early development. Its API will change as it reaches stability.**
 
 ## Installation
-Until a release is published for Remodel, you'll need Rust 1.37 or newer.
+
+### From GitHub Releases (Windows only!)
+You can download pre-built Windows binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
+
+### From crates.io
+You'll need Rust 1.37+
+
+```bash
+cargo install remodel
+```
+
+### Latest development changes (unstable!!)
+You'll need Rust 1.37+.
 
 ```bash
 cargo install --git https://github.com/rojo-rbx/remodel
