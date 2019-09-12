@@ -1,0 +1,25 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Folder" referent="RBX451A3843EF034E7AAE44F34A7CBBC4B5">
+		<Properties>
+			<string name="Name">Root</string>
+			<BinaryString name="Tags"></BinaryString>
+		</Properties>
+		<Item class="StringValue" referent="RBXCA9E560E949F4C6F8F020B4734C7730A">
+			<Properties>
+				<string name="Name">String</string>
+				<BinaryString name="Tags"></BinaryString>
+				<string name="Value">Hello</string>
+			</Properties>
+		</Item>
+		<Item class="NumberValue" referent="RBX77D1AB4C7E4046B698027BBF350F2A2E">
+			<Properties>
+				<string name="Name">Number</string>
+				<BinaryString name="Tags"></BinaryString>
+				<double name="Value">42</double>
+			</Properties>
+		</Item>
+	</Item>
+</roblox>

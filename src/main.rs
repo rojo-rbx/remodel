@@ -13,7 +13,7 @@ struct Options {
     script: PathBuf,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn start() -> Result<(), Box<dyn Error>> {
     let opt = Options::from_args();
     let contents = fs::read_to_string(&opt.script)?;
     let lua = Lua::new();
@@ -26,4 +26,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     })?;
 
     Ok(())
+}
+
+fn main() {
+    match start() {
+        Ok(_) => {}
+        Err(e) => {
+            eprintln!("{}", e);
+            std::process::exit(1);
+        }
+    }
 }
