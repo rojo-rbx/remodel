@@ -1,6 +1,8 @@
 # Remodel
 Remodel is a command line tool to manipulate Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
 
+**Remodel is still in early development. Its API will change as it reaches stability.**
+
 ## Installation
 Until a release is published for Remodel, you'll need Rust 1.37 or newer.
 
