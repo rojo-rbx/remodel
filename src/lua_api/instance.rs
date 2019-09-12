@@ -1,15 +1,15 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use rbx_dom_weak::{RbxId, RbxTree};
 use rlua::{MetaMethod, ToLua, UserData, UserDataMethods};
 
 pub struct LuaInstance {
-    tree: Arc<RbxTree>,
+    tree: Arc<Mutex<RbxTree>>,
     id: RbxId,
 }
 
 impl LuaInstance {
-    pub fn new(tree: Arc<RbxTree>, id: RbxId) -> Self {
+    pub fn new(tree: Arc<Mutex<RbxTree>>, id: RbxId) -> Self {
         LuaInstance { tree, id }
     }
 }
@@ -23,8 +23,9 @@ impl UserData for LuaInstance {
         });
 
         methods.add_method("GetChildren", |_context, this, _args: ()| {
-            let instance = this
-                .tree
+            let tree = this.tree.lock().unwrap();
+
+            let instance = tree
                 .get_instance(this.id)
                 .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
 
@@ -38,8 +39,9 @@ impl UserData for LuaInstance {
         });
 
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
-            let instance = this
-                .tree
+            let tree = this.tree.lock().unwrap();
+
+            let instance = tree
                 .get_instance(this.id)
                 .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
 
@@ -47,8 +49,9 @@ impl UserData for LuaInstance {
         });
 
         methods.add_meta_method(MetaMethod::Index, |context, this, arg: String| {
-            let instance = this
-                .tree
+            let tree = this.tree.lock().unwrap();
+
+            let instance = tree
                 .get_instance(this.id)
                 .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
 
