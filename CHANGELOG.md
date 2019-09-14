@@ -2,6 +2,13 @@
 
 ## Unreleased Changes
 * Added support for extra arguments. They're passed into the script as `...`.
+* Split `remodel.load` into `remodel.readPlaceFile` and `remodel.readModelFile`.
+	* `readPlaceFile` can only read `rbxlx` files, and returns a `DataModel` instance.
+	* `readModelFile` can only read `rbxmx` files, and returns a list of instances.
+* Split `remodel.save` into `remodel.writePlaceFile` and `remodel.writeModelFile`.
+	* `writePlaceFile` can only write `rbxlx` files.
+	* `writeModelFile` can only write `rbxmx` files.
+	* This split helps Remodel avoid funny tricks to detect what encoding scheme to use.
 
 ## 0.1.0 (2019-09-12)
 Initial release!

@@ -27,7 +27,9 @@ impl UserData for Remodel {
 
                     Ok(LuaInstance::new(tree, root_id))
                 }
-                Some("rbxl") => Err(rlua::Error::external("rbxl files are not supported yet")),
+                Some("rbxl") => Err(rlua::Error::external(
+                    "Reading rbxl place files is not supported yet.",
+                )),
                 _ => Err(rlua::Error::external(format!(
                     "Invalid place file path {}",
                     lua_path
@@ -61,7 +63,9 @@ impl UserData for Remodel {
 
                     Ok(instances)
                 }
-                Some("rbxm") => Err(rlua::Error::external("rbxm files are not supported yet")),
+                Some("rbxm") => Err(rlua::Error::external(
+                    "Reading rbxm models files is not supported yet.",
+                )),
                 _ => Err(rlua::Error::external(format!(
                     "Invalid model file path {}",
                     lua_path
@@ -70,22 +74,59 @@ impl UserData for Remodel {
         });
 
         methods.add_function(
-            "save",
-            |_context, (lua_instance, path): (LuaInstance, String)| {
-                let file = BufWriter::new(File::create(&path).map_err(rlua::Error::external)?);
+            "writePlaceFile",
+            |_context, (lua_instance, lua_path): (LuaInstance, String)| {
+                let path = Path::new(&lua_path);
 
-                let tree = lua_instance.tree.lock().unwrap();
-                let instance = tree
-                    .get_instance(lua_instance.id)
-                    .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+                match path.extension().and_then(OsStr::to_str) {
+                    Some("rbxlx") => {
+                        let file =
+                            BufWriter::new(File::create(&path).map_err(rlua::Error::external)?);
 
-                let result = if instance.class_name == "DataModel" {
-                    rbx_xml::to_writer_default(file, &tree, instance.get_children_ids())
-                } else {
-                    rbx_xml::to_writer_default(file, &tree, &[lua_instance.id])
-                };
+                        let tree = lua_instance.tree.lock().unwrap();
+                        let instance = tree
+                            .get_instance(lua_instance.id)
+                            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
 
-                result.map_err(rlua::Error::external)
+                        rbx_xml::to_writer_default(file, &tree, instance.get_children_ids())
+                            .map_err(rlua::Error::external)?;
+
+                        Ok(())
+                    }
+                    Some("rbxl") => Err(rlua::Error::external(
+                        "Writing rbxl place files is not supported yet.",
+                    )),
+                    _ => Err(rlua::Error::external(format!(
+                        "Invalid place file path {}",
+                        lua_path
+                    ))),
+                }
+            },
+        );
+
+        methods.add_function(
+            "writeModelFile",
+            |_context, (lua_instance, lua_path): (LuaInstance, String)| {
+                let path = Path::new(&lua_path);
+
+                match path.extension().and_then(OsStr::to_str) {
+                    Some("rbxmx") => {
+                        let file =
+                            BufWriter::new(File::create(&path).map_err(rlua::Error::external)?);
+
+                        let tree = lua_instance.tree.lock().unwrap();
+
+                        rbx_xml::to_writer_default(file, &tree, &[lua_instance.id])
+                            .map_err(rlua::Error::external)
+                    }
+                    Some("rbxm") => Err(rlua::Error::external(
+                        "Writing rbxm model files is not supported yet.",
+                    )),
+                    _ => Err(rlua::Error::external(format!(
+                        "Invalid model file path {}",
+                        lua_path
+                    ))),
+                }
             },
         );
 
