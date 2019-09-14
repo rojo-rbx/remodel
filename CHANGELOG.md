@@ -1,7 +1,10 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Improved CLI documentation. Try `remodel help`!
 * Added support for extra arguments. They're passed into the script as `...`.
+* Added support for reading from stdin. Use `-` as the input file!
+	* `echo "print('Hi')" | remodel -`
 * Split `remodel.load` into `remodel.readPlaceFile` and `remodel.readModelFile`.
 	* `readPlaceFile` can only read `rbxlx` files, and returns a `DataModel` instance.
 	* `readModelFile` can only read `rbxmx` files, and returns a list of instances.

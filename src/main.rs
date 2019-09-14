@@ -1,4 +1,9 @@
-use std::{error::Error, fs, path::PathBuf};
+use std::{
+    error::Error,
+    fs,
+    io::{self, Read},
+    path::PathBuf,
+};
 
 use rlua::{Lua, MultiValue, ToLua};
 use structopt::StructOpt;
@@ -8,16 +13,31 @@ mod lua_api;
 use lua_api::Remodel;
 
 #[derive(Debug, StructOpt)]
+#[structopt(
+    about = env!("CARGO_PKG_DESCRIPTION"),
+    author = env!("CARGO_PKG_AUTHORS"),
+)]
 struct Options {
+    /// The input script to run. Should be valid Lua 5.3. Pass `-` to read from
+    /// stdin.
     #[structopt(parse(from_os_str))]
     script: PathBuf,
 
+    /// Arguments to pass to the script as a list of strings.
     script_arguments: Vec<String>,
 }
 
 fn start() -> Result<(), Box<dyn Error>> {
     let opt = Options::from_args();
-    let contents = fs::read_to_string(&opt.script)?;
+
+    let contents = if opt.script.as_os_str() == "-" {
+        let mut contents = String::new();
+        io::stdin().read_to_string(&mut contents)?;
+        contents
+    } else {
+        fs::read_to_string(&opt.script)?
+    };
+
     let lua = Lua::new();
 
     lua.context(move |context| {

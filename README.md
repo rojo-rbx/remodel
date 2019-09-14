@@ -34,7 +34,7 @@ One use for Remodel is to break a place file apart into multiple model files. Im
 We want to take those models and save them to individual files in a folder named `models`.
 
 ```lua
-local game = remodel.load("my-place.rbxlx")
+local game = remodel.readPlaceFile("my-place.rbxlx")
 
 -- If the directory does not exist yet, we'll create it.
 remodel.createDirAll("models")
@@ -43,7 +43,7 @@ local Models = game.ReplicatedStorage.Models
 
 for _, model in ipairs(Models:GetChildren()) do
 	-- Save out each child as an rbxmx model
-	remodel.save(model, "models/" .. model.Name .. ".rbxmx")
+	remodel.writeModelFile(model, "models/" .. model.Name .. ".rbxmx")
 end
 ```
 
@@ -51,23 +51,47 @@ For more examples, see the [`examples`](examples) folder.
 
 ## API
 
-### `remodel.load`
+### `remodel.readPlaceFile`
 ```
-remodel.load(path: string): Instance
+remodel.readPlaceFile(path: string): Instance
 ```
 
-Load an rbxmx or rbxlx file from the filesystem.
+Load an rbxlx file from the filesystem.
 
-Always returns a `DataModel` instance containing the file's content, since models and places can contain more than one top-level instance.
+Returns a `DataModel` instance, equivalent to `game` from within Roblox.
 
 Throws on error.
 
-### `remodel.save`
+### `remodel.readModelFile`
 ```
-remodel.save(instance: Instance, path: string)
+remodel.readModelFile(path: string): List<Instance>
 ```
 
-Saves an rbxmx or rbxlx file from the given instance.
+Load an rbxmx file from the filesystem.
+
+Note that this function returns a **list of instances** instead of a single instance! This is because models can contain mutliple top-level instances.
+
+Throws on error.
+
+### `remodel.writePlaceFile`
+```
+remodel.writePlaceFile(instance: DataModel, path: string)
+```
+
+Saves an rbxlx file out of the given `DataModel` instance.
+
+If the instance is not a `DataModel`, this method will throw. Models should be saved with `writeModelFile` instead.
+
+Throws on error.
+
+### `remodel.writeModelFile`
+```
+remodel.writeModelFile(instance: Instance, path: string)
+```
+
+Saves an rbxmx file out of the given `Instance`.
+
+If the instance is a `DataModel`, this method will throw. Places should be saved with `writePlaceFile` instead.
 
 Throws on error.
 

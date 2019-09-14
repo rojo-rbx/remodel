@@ -88,6 +88,12 @@ impl UserData for Remodel {
                             .get_instance(lua_instance.id)
                             .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
 
+                        if instance.class_name != "DataModel" {
+                            return Err(rlua::Error::external(
+                                "Only DataModel instances can be saved as place files.",
+                            ));
+                        }
+
                         rbx_xml::to_writer_default(file, &tree, instance.get_children_ids())
                             .map_err(rlua::Error::external)?;
 
@@ -115,6 +121,15 @@ impl UserData for Remodel {
                             BufWriter::new(File::create(&path).map_err(rlua::Error::external)?);
 
                         let tree = lua_instance.tree.lock().unwrap();
+                        let instance = tree
+                            .get_instance(lua_instance.id)
+                            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+                        if instance.class_name == "DataModel" {
+                            return Err(rlua::Error::external(
+                                "DataModel instances must be saved as place files, not model files.",
+                            ));
+                        }
 
                         rbx_xml::to_writer_default(file, &tree, &[lua_instance.id])
                             .map_err(rlua::Error::external)
