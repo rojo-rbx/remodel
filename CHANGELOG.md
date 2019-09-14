@@ -3,7 +3,7 @@
 ## Unreleased Changes
 
 ## 0.2.0 (2019-09-14)
-* Improved CLI documentation. Try `remodel help`!
+* Improved CLI documentation. Try `remodel --help`!
 * Added support for extra arguments. They're passed into the script as `...`.
 * Added support for reading from stdin. Use `-` as the input file!
 	* `echo "print('Hi')" | remodel -`
