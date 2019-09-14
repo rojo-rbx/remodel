@@ -1,9 +1,5 @@
-local game = remodel.load("test-models/folder-and-value.rbxmx")
+local folder = remodel.readModelFile("test-models/folder-and-value.rbxmx")[1]
 
-local children = game:GetChildren()
-assert(#children == 1)
-
-local folder = children[1]
 assert(folder.Name == "Root")
 
 local values = folder:GetChildren()

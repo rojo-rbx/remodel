@@ -1,7 +1,7 @@
-local game = remodel.load("test-models/folder-and-value.rbxmx")
+local model = remodel.readModelFile("test-models/folder-and-value.rbxmx")[1]
 
 local ok, err = pcall(function()
-	game.ClassName = "Nah"
+	model.ClassName = "Nah"
 end)
 
 assert(not ok)

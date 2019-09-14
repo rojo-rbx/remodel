@@ -1,7 +1,7 @@
-local game = remodel.load("test-models/folder-and-value.rbxmx")
+local model = remodel.readModelFile("test-models/folder-and-value.rbxmx")[1]
 
-assert(game.Name == "DataModel")
+assert(model.Name == "Root")
 
-game.Name = "Foo"
+model.Name = "Foo"
 
-assert(game.Name == "Foo")
+assert(model.Name == "Foo")

@@ -1,6 +1,5 @@
-local game = remodel.load("test-models/folder-and-value.rbxmx")
+local root = remodel.readModelFile("test-models/folder-and-value.rbxmx")[1]
 
-local root = game:FindFirstChild("Root")
 assert(root ~= nil)
 assert(root.Name == "Root")
 
