@@ -1,5 +1,8 @@
 # Remodel Changelog
 
+## Unreleased Changes
+* Added support for extra arguments. They're passed into the script as `...`.
+
 ## 0.1.0 (2019-09-12)
 Initial release!
 
