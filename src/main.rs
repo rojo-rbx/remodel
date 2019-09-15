@@ -30,12 +30,21 @@ struct Options {
 fn start() -> Result<(), Box<dyn Error>> {
     let opt = Options::from_args();
 
-    let contents = if opt.script.as_os_str() == "-" {
+    let (contents, chunk_name) = if opt.script.as_os_str() == "-" {
         let mut contents = String::new();
         io::stdin().read_to_string(&mut contents)?;
-        contents
+
+        (contents, "stdin".to_owned())
     } else {
-        fs::read_to_string(&opt.script)?
+        let contents = fs::read_to_string(&opt.script)?;
+        let file_name = opt
+            .script
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .into_owned();
+
+        (contents, file_name)
     };
 
     let lua = Lua::new();
@@ -49,7 +58,7 @@ fn start() -> Result<(), Box<dyn Error>> {
 
         context.globals().set("remodel", Remodel)?;
 
-        let chunk = context.load(&contents);
+        let chunk = context.load(&contents).set_name(&chunk_name)?;
         chunk.call(MultiValue::from_vec(lua_args))
     })?;
 

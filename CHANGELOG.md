@@ -5,6 +5,7 @@
 * Added support for reading `Parent` from instances.
 * Added support for `==` on instances.
 * Added (limited) support for writing `Parent` on instances.
+* Added script file name in error stack traces.
 
 ## 0.2.0 (2019-09-14)
 * Improved CLI documentation. Try `remodel --help`!
