@@ -1,6 +1,7 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added `remodel.writeFile` and `remodel.readFile` for handling regular files.
 
 ## 0.2.0 (2019-09-14)
 * Improved CLI documentation. Try `remodel --help`!

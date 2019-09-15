@@ -1,6 +1,6 @@
 use std::{
     ffi::OsStr,
-    fs::{create_dir_all, File},
+    fs::{self, File},
     io::{BufReader, BufWriter},
     path::Path,
     sync::{Arc, Mutex},
@@ -145,8 +145,19 @@ impl UserData for Remodel {
             },
         );
 
+        methods.add_function("readFile", |_context, path: String| {
+            fs::read_to_string(path).map_err(rlua::Error::external)
+        });
+
+        methods.add_function(
+            "writeFile",
+            |_context, (path, contents): (String, rlua::String)| {
+                fs::write(path, contents.as_bytes()).map_err(rlua::Error::external)
+            },
+        );
+
         methods.add_function("createDirAll", |_context, path: String| {
-            create_dir_all(path).map_err(rlua::Error::external)
+            fs::create_dir_all(path).map_err(rlua::Error::external)
         });
     }
 }
