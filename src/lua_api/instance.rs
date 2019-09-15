@@ -129,5 +129,10 @@ impl UserData for LuaInstance {
                 }
             },
         );
+
+        methods.add_meta_function(
+            MetaMethod::Eq,
+            |_context, (a, b): (LuaInstance, LuaInstance)| Ok(a.id == b.id),
+        );
     }
 }
