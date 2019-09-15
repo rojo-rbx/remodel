@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 * Added `remodel.writeFile` and `remodel.readFile` for handling regular files.
+* Added support for reading `Parent` from instances.
 
 ## 0.2.0 (2019-09-14)
 * Improved CLI documentation. Try `remodel --help`!

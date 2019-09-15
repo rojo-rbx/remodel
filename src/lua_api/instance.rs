@@ -76,6 +76,12 @@ impl UserData for LuaInstance {
             match key.as_str() {
                 "Name" => instance.name.as_str().to_lua(context),
                 "ClassName" => instance.class_name.as_str().to_lua(context),
+                "Parent" => match instance.get_parent_id() {
+                    Some(parent_id) => {
+                        LuaInstance::new(Arc::clone(&this.tree), parent_id).to_lua(context)
+                    }
+                    None => Ok(rlua::Value::Nil),
+                },
                 _ => instance
                     .get_children_ids()
                     .into_iter()
