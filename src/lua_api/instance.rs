@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use rbx_dom_weak::{RbxId, RbxTree};
-use rlua::{MetaMethod, ToLua, UserData, UserDataMethods};
+use rlua::{FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
 
 #[derive(Clone)]
 pub struct LuaInstance {
@@ -106,7 +106,7 @@ impl UserData for LuaInstance {
 
         methods.add_meta_method(
             MetaMethod::NewIndex,
-            |_context, this, (key, value): (String, rlua::Value)| {
+            |context, this, (key, value): (String, rlua::Value)| {
                 let mut tree = this.tree.lock().unwrap();
 
                 let instance = tree
@@ -122,6 +122,11 @@ impl UserData for LuaInstance {
                         _ => Err(rlua::Error::external(format!("'Name' must be a string."))),
                     },
                     "ClassName" => Err(rlua::Error::external("'ClassName' is read-only.")),
+                    "Parent" => {
+                        let new_parent = LuaInstance::from_lua(value, context)?;
+                        tree.set_parent(this.id, new_parent.id);
+                        Ok(())
+                    }
                     _ => Err(rlua::Error::external(format!(
                         "'{}' is not a valid member of Instance",
                         key
