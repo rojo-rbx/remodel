@@ -78,7 +78,11 @@ impl UserData for LuaInstance {
                 "ClassName" => instance.class_name.as_str().to_lua(context),
                 "Parent" => match instance.get_parent_id() {
                     Some(parent_id) => {
-                        LuaInstance::new(Arc::clone(&this.tree), parent_id).to_lua(context)
+                        if parent_id == tree.get_root_id() {
+                            Ok(rlua::Value::Nil)
+                        } else {
+                            LuaInstance::new(Arc::clone(&this.tree), parent_id).to_lua(context)
+                        }
                     }
                     None => Ok(rlua::Value::Nil),
                 },
@@ -123,8 +127,16 @@ impl UserData for LuaInstance {
                     },
                     "ClassName" => Err(rlua::Error::external("'ClassName' is read-only.")),
                     "Parent" => {
-                        let new_parent = LuaInstance::from_lua(value, context)?;
-                        tree.set_parent(this.id, new_parent.id);
+                        match Option::<LuaInstance>::from_lua(value, context)? {
+                            Some(new_parent) => {
+                                tree.set_parent(this.id, new_parent.id);
+                            }
+                            None => {
+                                let root_id = tree.get_root_id();
+                                tree.set_parent(this.id, root_id);
+                            }
+                        }
+
                         Ok(())
                     }
                     _ => Err(rlua::Error::external(format!(

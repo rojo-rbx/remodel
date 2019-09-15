@@ -2,9 +2,8 @@
 
 ## Unreleased Changes
 * Added `remodel.writeFile` and `remodel.readFile` for handling regular files.
-* Added support for reading `Parent` from instances.
 * Added support for `==` on instances.
-* Added (limited) support for writing `Parent` on instances.
+* Added support for reading and writing `Parent` on instances.
 * Added script file name in error stack traces.
 
 ## 0.2.0 (2019-09-14)
