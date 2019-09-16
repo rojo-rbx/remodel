@@ -9,6 +9,7 @@ use rlua::{Lua, MultiValue, ToLua};
 use structopt::StructOpt;
 
 mod lua_api;
+mod roblox_api;
 
 use lua_api::Remodel;
 
@@ -57,6 +58,8 @@ fn start() -> Result<(), Box<dyn Error>> {
             .collect::<Result<Vec<_>, _>>()?;
 
         context.globals().set("remodel", Remodel)?;
+
+        roblox_api::inject(context);
 
         let chunk = context.load(&contents).set_name(&chunk_name)?;
         chunk.call(MultiValue::from_vec(lua_args))
