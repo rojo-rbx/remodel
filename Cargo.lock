@@ -240,8 +240,8 @@ dependencies = [
 
 [[package]]
 name = "rbx_dom_weak"
-version = "1.9.0"
-source = "git+https://github.com/rojo-rbx/rbx-dom#54fcbc8165c02652ca439b0a08d61ca651f6afc5"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "base64 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -255,23 +255,23 @@ dependencies = [
 [[package]]
 name = "rbx_reflection"
 version = "3.2.399"
-source = "git+https://github.com/rojo-rbx/rbx-dom#54fcbc8165c02652ca439b0a08d61ca651f6afc5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "rbx_dom_weak 1.9.0 (git+https://github.com/rojo-rbx/rbx-dom)",
+ "rbx_dom_weak 1.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.100 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "rbx_xml"
 version = "0.11.2"
-source = "git+https://github.com/rojo-rbx/rbx-dom#54fcbc8165c02652ca439b0a08d61ca651f6afc5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "base64 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "rbx_dom_weak 1.9.0 (git+https://github.com/rojo-rbx/rbx-dom)",
- "rbx_reflection 3.2.399 (git+https://github.com/rojo-rbx/rbx-dom)",
+ "rbx_dom_weak 1.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rbx_reflection 3.2.399 (registry+https://github.com/rust-lang/crates.io-index)",
  "xml-rs 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -287,8 +287,8 @@ dependencies = [
 name = "remodel"
 version = "0.2.0"
 dependencies = [
- "rbx_dom_weak 1.9.0 (git+https://github.com/rojo-rbx/rbx-dom)",
- "rbx_xml 0.11.2 (git+https://github.com/rojo-rbx/rbx-dom)",
+ "rbx_dom_weak 1.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rbx_xml 0.11.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlua 0.16.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "structopt 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -460,9 +460,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rand_os 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "7b75f676a1e053fc562eafbb47838d67c84801e38fc1ba459e8f180deabd5071"
 "checksum rand_pcg 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "abf9b09b01790cfe0364f52bf32995ea3c39f4d2dd011eac241d2914146d0b44"
 "checksum rand_xorshift 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "cbf7e9e623549b0e21f6e97cf8ecf247c1a8fd2e8a992ae265314300b2455d5c"
-"checksum rbx_dom_weak 1.9.0 (git+https://github.com/rojo-rbx/rbx-dom)" = "<none>"
-"checksum rbx_reflection 3.2.399 (git+https://github.com/rojo-rbx/rbx-dom)" = "<none>"
-"checksum rbx_xml 0.11.2 (git+https://github.com/rojo-rbx/rbx-dom)" = "<none>"
+"checksum rbx_dom_weak 1.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c6b7c983d7bfcf0811a164e33e99e2da456f38babb33c75e365b17aa1ee5fd2d"
+"checksum rbx_reflection 3.2.399 (registry+https://github.com/rust-lang/crates.io-index)" = "13df0adaeaad56d905fecfef8a4c4d6ec31a7e2afaa6e900fef7a5b5ec337813"
+"checksum rbx_xml 0.11.2 (registry+https://github.com/rust-lang/crates.io-index)" = "b0236363b0af0c78f3e972ac7f46a1f355f663518e276253136d0180f3c8742c"
 "checksum rdrand 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "678054eb77286b51581ba43620cc911abf02758c91f93f479767aed0f90458b2"
 "checksum rlua 0.16.3 (registry+https://github.com/rust-lang/crates.io-index)" = "62fc0e980c94fe9ef795b1bb3874649c8c6e9bb67d3b90d48380ba24c69c23ea"
 "checksum serde 1.0.100 (registry+https://github.com/rust-lang/crates.io-index)" = "f4473e8506b213730ff2061073b48fa51dcc66349219e2e7c5608f0296a1d95a"
