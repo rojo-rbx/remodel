@@ -1,33 +1,26 @@
 use std::{
-    collections::HashMap,
     ffi::OsStr,
     fs::{self, File},
     io::{BufReader, BufWriter},
     ops::Deref,
     path::Path,
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 
-use rbx_dom_weak::{RbxInstanceProperties, RbxTree};
 use rlua::{UserData, UserDataMethods};
 
 use super::LuaInstance;
+use crate::remodel_context::RemodelContext;
 
 pub struct Remodel;
 
 impl UserData for Remodel {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
-        let master_tree_original = Arc::new(Mutex::new(RbxTree::new(RbxInstanceProperties {
-            name: "REMODEL ROOT".to_owned(),
-            class_name: "REMODEL ROOT".to_owned(),
-            properties: HashMap::new(),
-        })));
-
-        let master_tree = master_tree_original.clone();
-        methods.add_function("readPlaceFile", move |_context, lua_path: String| {
-            let path = Path::new(&lua_path);
-
+        methods.add_function("readPlaceFile", move |context, lua_path: String| {
+            let master_tree = RemodelContext::get(context)?.master_tree;
             let mut master_handle = master_tree.lock().unwrap();
+
+            let path = Path::new(&lua_path);
 
             match path.extension().and_then(OsStr::to_str) {
                 Some("rbxlx") => {
@@ -60,11 +53,11 @@ impl UserData for Remodel {
             }
         });
 
-        let master_tree = master_tree_original.clone();
-        methods.add_function("readModelFile", move |_context, lua_path: String| {
-            let path = Path::new(&lua_path);
-
+        methods.add_function("readModelFile", move |context, lua_path: String| {
+            let master_tree = RemodelContext::get(context)?.master_tree;
             let mut master_handle = master_tree.lock().unwrap();
+
+            let path = Path::new(&lua_path);
 
             match path.extension().and_then(OsStr::to_str) {
                 Some("rbxmx") => {

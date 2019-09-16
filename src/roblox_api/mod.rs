@@ -1,3 +1,9 @@
 use rlua::Context;
 
-pub fn inject<'lua>(_context: Context<'lua>) {}
+pub struct RobloxApi;
+
+impl RobloxApi {
+    pub fn inject<'lua>(_context: Context<'lua>) -> rlua::Result<()> {
+        Ok(())
+    }
+}

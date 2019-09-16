@@ -1,3 +1,7 @@
+mod remodel_api;
+mod remodel_context;
+mod roblox_api;
+
 use std::{
     error::Error,
     fs,
@@ -8,10 +12,7 @@ use std::{
 use rlua::{Lua, MultiValue, ToLua};
 use structopt::StructOpt;
 
-mod lua_api;
-mod roblox_api;
-
-use lua_api::Remodel;
+use crate::{remodel_api::RemodelApi, remodel_context::RemodelContext, roblox_api::RobloxApi};
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -57,9 +58,10 @@ fn start() -> Result<(), Box<dyn Error>> {
             .map(|value| value.to_lua(context))
             .collect::<Result<Vec<_>, _>>()?;
 
-        context.globals().set("remodel", Remodel)?;
+        RemodelContext::inject(context)?;
 
-        roblox_api::inject(context);
+        RemodelApi::inject(context)?;
+        RobloxApi::inject(context)?;
 
         let chunk = context.load(&contents).set_name(&chunk_name)?;
         chunk.call(MultiValue::from_vec(lua_args))
