@@ -53,6 +53,85 @@ impl LuaInstance {
         Ok(children)
     }
 
+    fn get_class_name<'lua>(
+        &self,
+        context: rlua::Context<'lua>,
+    ) -> rlua::Result<rlua::Value<'lua>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree
+            .get_instance(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        instance.class_name.as_str().to_lua(context)
+    }
+
+    fn get_name<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree
+            .get_instance(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        instance.name.as_str().to_lua(context)
+    }
+
+    fn set_name(&self, value: rlua::Value<'_>) -> rlua::Result<()> {
+        let mut tree = self.tree.lock().unwrap();
+
+        let instance = tree
+            .get_instance_mut(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        match value {
+            rlua::Value::String(lua_str) => {
+                instance.name = lua_str.to_str()?.to_string();
+
+                Ok(())
+            }
+            _ => Err(rlua::Error::external(format!("'Name' must be a string."))),
+        }
+    }
+
+    fn get_parent<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree
+            .get_instance(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        match instance.get_parent_id() {
+            Some(parent_id) => {
+                if parent_id == tree.get_root_id() {
+                    Ok(rlua::Value::Nil)
+                } else {
+                    LuaInstance::new(Arc::clone(&self.tree), parent_id).to_lua(context)
+                }
+            }
+            None => Ok(rlua::Value::Nil),
+        }
+    }
+
+    fn set_parent<'lua>(
+        &self,
+        context: Context<'lua>,
+        value: rlua::Value<'lua>,
+    ) -> rlua::Result<()> {
+        let mut tree = self.tree.lock().unwrap();
+
+        match Option::<LuaInstance>::from_lua(value, context)? {
+            Some(new_parent) => {
+                tree.set_parent(self.id, new_parent.id);
+            }
+            None => {
+                let root_id = tree.get_root_id();
+                tree.set_parent(self.id, root_id);
+            }
+        }
+
+        Ok(())
+    }
+
     fn meta_to_string<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
@@ -68,37 +147,14 @@ impl LuaInstance {
         context: Context<'lua>,
         key: &str,
     ) -> rlua::Result<rlua::Value<'lua>> {
-        let tree = self.tree.lock().unwrap();
-
-        let instance = tree
-            .get_instance(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
-
         match key {
-            "Name" => instance.name.as_str().to_lua(context),
-            "ClassName" => instance.class_name.as_str().to_lua(context),
-            "Parent" => match instance.get_parent_id() {
-                Some(parent_id) => {
-                    if parent_id == tree.get_root_id() {
-                        Ok(rlua::Value::Nil)
-                    } else {
-                        LuaInstance::new(Arc::clone(&self.tree), parent_id).to_lua(context)
-                    }
-                }
-                None => Ok(rlua::Value::Nil),
-            },
-            _ => instance
-                .get_children_ids()
-                .into_iter()
-                .copied()
-                .find(|id| {
-                    if let Some(child_instance) = tree.get_instance(*id) {
-                        return child_instance.name == key;
-                    }
+            "Name" => self.get_name(context),
+            "ClassName" => self.get_class_name(context),
+            "Parent" => self.get_parent(context),
 
-                    return false;
-                })
-                .map(|id| LuaInstance::new(Arc::clone(&self.tree), id))
+            // Getting an unknown key falls back to finding children.
+            _ => self
+                .find_first_child(key)?
                 .ok_or_else(|| {
                     rlua::Error::external(format!("'{}' is not a valid member of Instance", key))
                 })?
@@ -112,34 +168,12 @@ impl LuaInstance {
         key: &str,
         value: rlua::Value<'lua>,
     ) -> rlua::Result<()> {
-        let mut tree = self.tree.lock().unwrap();
-
-        let instance = tree
-            .get_instance_mut(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
-
         match key {
-            "Name" => match value {
-                rlua::Value::String(lua_str) => {
-                    instance.name = lua_str.to_str()?.to_string();
-                    Ok(())
-                }
-                _ => Err(rlua::Error::external(format!("'Name' must be a string."))),
-            },
+            "Name" => self.set_name(value),
             "ClassName" => Err(rlua::Error::external("'ClassName' is read-only.")),
-            "Parent" => {
-                match Option::<LuaInstance>::from_lua(value, context)? {
-                    Some(new_parent) => {
-                        tree.set_parent(self.id, new_parent.id);
-                    }
-                    None => {
-                        let root_id = tree.get_root_id();
-                        tree.set_parent(self.id, root_id);
-                    }
-                }
+            "Parent" => self.set_parent(context, value),
 
-                Ok(())
-            }
+            // Setting unknown keys is an error.
             _ => Err(rlua::Error::external(format!(
                 "'{}' is not a valid member of Instance",
                 key
