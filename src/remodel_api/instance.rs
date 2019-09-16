@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use rbx_dom_weak::{RbxId, RbxTree};
-use rlua::{FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
+use rlua::{Context, FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
 
 #[derive(Clone)]
 pub struct LuaInstance {
@@ -13,137 +13,163 @@ impl LuaInstance {
     pub fn new(tree: Arc<Mutex<RbxTree>>, id: RbxId) -> Self {
         LuaInstance { tree, id }
     }
-}
 
-impl UserData for LuaInstance {
-    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_method("FindFirstChild", |_context, this, arg: String| {
-            let tree = this.tree.lock().unwrap();
+    fn find_first_child(&self, name: &str) -> rlua::Result<Option<LuaInstance>> {
+        let tree = self.tree.lock().unwrap();
 
-            let instance = tree
-                .get_instance(this.id)
-                .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+        let instance = tree
+            .get_instance(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
 
-            let child = instance
+        let child = instance
+            .get_children_ids()
+            .into_iter()
+            .copied()
+            .find(|id| {
+                if let Some(child_instance) = tree.get_instance(*id) {
+                    return child_instance.name == name;
+                }
+
+                return false;
+            })
+            .map(|id| LuaInstance::new(Arc::clone(&self.tree), id));
+
+        Ok(child)
+    }
+
+    fn get_children(&self) -> rlua::Result<Vec<LuaInstance>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree
+            .get_instance(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        let children: Vec<LuaInstance> = instance
+            .get_children_ids()
+            .into_iter()
+            .map(|id| LuaInstance::new(Arc::clone(&self.tree), *id))
+            .collect();
+
+        Ok(children)
+    }
+
+    fn meta_to_string<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree
+            .get_instance(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        instance.name.as_str().to_lua(context)
+    }
+
+    fn meta_index<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+    ) -> rlua::Result<rlua::Value<'lua>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree
+            .get_instance(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        match key {
+            "Name" => instance.name.as_str().to_lua(context),
+            "ClassName" => instance.class_name.as_str().to_lua(context),
+            "Parent" => match instance.get_parent_id() {
+                Some(parent_id) => {
+                    if parent_id == tree.get_root_id() {
+                        Ok(rlua::Value::Nil)
+                    } else {
+                        LuaInstance::new(Arc::clone(&self.tree), parent_id).to_lua(context)
+                    }
+                }
+                None => Ok(rlua::Value::Nil),
+            },
+            _ => instance
                 .get_children_ids()
                 .into_iter()
                 .copied()
                 .find(|id| {
                     if let Some(child_instance) = tree.get_instance(*id) {
-                        return child_instance.name == arg;
+                        return child_instance.name == key;
                     }
 
                     return false;
                 })
-                .map(|id| LuaInstance::new(Arc::clone(&this.tree), id));
+                .map(|id| LuaInstance::new(Arc::clone(&self.tree), id))
+                .ok_or_else(|| {
+                    rlua::Error::external(format!("'{}' is not a valid member of Instance", key))
+                })?
+                .to_lua(context),
+        }
+    }
 
-            Ok(child)
+    fn meta_new_index<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+        value: rlua::Value<'lua>,
+    ) -> rlua::Result<()> {
+        let mut tree = self.tree.lock().unwrap();
+
+        let instance = tree
+            .get_instance_mut(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        match key {
+            "Name" => match value {
+                rlua::Value::String(lua_str) => {
+                    instance.name = lua_str.to_str()?.to_string();
+                    Ok(())
+                }
+                _ => Err(rlua::Error::external(format!("'Name' must be a string."))),
+            },
+            "ClassName" => Err(rlua::Error::external("'ClassName' is read-only.")),
+            "Parent" => {
+                match Option::<LuaInstance>::from_lua(value, context)? {
+                    Some(new_parent) => {
+                        tree.set_parent(self.id, new_parent.id);
+                    }
+                    None => {
+                        let root_id = tree.get_root_id();
+                        tree.set_parent(self.id, root_id);
+                    }
+                }
+
+                Ok(())
+            }
+            _ => Err(rlua::Error::external(format!(
+                "'{}' is not a valid member of Instance",
+                key
+            ))),
+        }
+    }
+}
+
+impl UserData for LuaInstance {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_method("FindFirstChild", |_context, this, name: String| {
+            this.find_first_child(&name)
         });
 
         methods.add_method("GetChildren", |_context, this, _args: ()| {
-            let tree = this.tree.lock().unwrap();
-
-            let instance = tree
-                .get_instance(this.id)
-                .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
-
-            let children: Vec<LuaInstance> = instance
-                .get_children_ids()
-                .into_iter()
-                .map(|id| LuaInstance::new(Arc::clone(&this.tree), *id))
-                .collect();
-
-            Ok(children)
+            this.get_children()
         });
 
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
-            let tree = this.tree.lock().unwrap();
-
-            let instance = tree
-                .get_instance(this.id)
-                .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
-
-            Ok(instance.name.as_str().to_lua(context))
+            this.meta_to_string(context)
         });
 
         methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
-            let tree = this.tree.lock().unwrap();
-
-            let instance = tree
-                .get_instance(this.id)
-                .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
-
-            match key.as_str() {
-                "Name" => instance.name.as_str().to_lua(context),
-                "ClassName" => instance.class_name.as_str().to_lua(context),
-                "Parent" => match instance.get_parent_id() {
-                    Some(parent_id) => {
-                        if parent_id == tree.get_root_id() {
-                            Ok(rlua::Value::Nil)
-                        } else {
-                            LuaInstance::new(Arc::clone(&this.tree), parent_id).to_lua(context)
-                        }
-                    }
-                    None => Ok(rlua::Value::Nil),
-                },
-                _ => instance
-                    .get_children_ids()
-                    .into_iter()
-                    .copied()
-                    .find(|id| {
-                        if let Some(child_instance) = tree.get_instance(*id) {
-                            return child_instance.name == key;
-                        }
-
-                        return false;
-                    })
-                    .map(|id| LuaInstance::new(Arc::clone(&this.tree), id))
-                    .ok_or_else(|| {
-                        rlua::Error::external(format!(
-                            "'{}' is not a valid member of Instance",
-                            key
-                        ))
-                    })?
-                    .to_lua(context),
-            }
+            this.meta_index(context, &key)
         });
 
         methods.add_meta_method(
             MetaMethod::NewIndex,
             |context, this, (key, value): (String, rlua::Value)| {
-                let mut tree = this.tree.lock().unwrap();
-
-                let instance = tree
-                    .get_instance_mut(this.id)
-                    .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
-
-                match key.as_str() {
-                    "Name" => match value {
-                        rlua::Value::String(lua_str) => {
-                            instance.name = lua_str.to_str()?.to_string();
-                            Ok(())
-                        }
-                        _ => Err(rlua::Error::external(format!("'Name' must be a string."))),
-                    },
-                    "ClassName" => Err(rlua::Error::external("'ClassName' is read-only.")),
-                    "Parent" => {
-                        match Option::<LuaInstance>::from_lua(value, context)? {
-                            Some(new_parent) => {
-                                tree.set_parent(this.id, new_parent.id);
-                            }
-                            None => {
-                                let root_id = tree.get_root_id();
-                                tree.set_parent(this.id, root_id);
-                            }
-                        }
-
-                        Ok(())
-                    }
-                    _ => Err(rlua::Error::external(format!(
-                        "'{}' is not a valid member of Instance",
-                        key
-                    ))),
-                }
+                this.meta_new_index(context, &key, value)
             },
         );
 
