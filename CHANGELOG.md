@@ -1,6 +1,8 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+
+## 0.3.0 (2019-09-15)
 * Added `remodel.writeFile` and `remodel.readFile` for handling regular files.
 * Added support for `==` on instances.
 * Added support for reading and writing `Parent` on instances.
