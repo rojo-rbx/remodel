@@ -31,7 +31,9 @@ jobs:
 
     - name: Build release binary
       run: |
+        echo "Adding Rust to PATH"
         source $HOME/.cargo/env
+        echo "Added Rust to PATH, running build..."
         cargo build --verbose --locked --release
 
     - name: Upload artifacts
