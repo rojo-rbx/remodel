@@ -1,6 +1,6 @@
 name: CI
 
-true: [push]
+on: [push]
 
 jobs:
   build:
