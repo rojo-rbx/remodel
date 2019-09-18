@@ -1,0 +1,36 @@
+name: Rust
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Build release binary
+      run: cargo build --verbose --locked --release
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: remodel-win64.exe
+        path: target/release/remodel.exe
+
+  macos:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Build release binary
+      run: cargo build --verbose --locked --release
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: remodel-macos
+        path: target/release/remodel
