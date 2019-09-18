@@ -1,4 +1,4 @@
-name: Rust
+name: Release
 
 on:
   release:
@@ -17,7 +17,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: remodel-win64.exe
+        name: remodel-win64
         path: target/release/remodel.exe
 
   macos:
@@ -25,6 +25,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+
+    - name: Install Rust
+      run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
     - name: Build release binary
       run: cargo build --verbose --locked --release
