@@ -5,15 +5,15 @@
 
 Remodel is a command line tool to manipulate Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
 
-**Remodel is still in early development. Its API will change as it reaches stability.**
+Remodel is still in early development, but much of its API is already fairly stable. Feedback is welcome!
 
 ## Installation
 
-### From GitHub Releases (Windows only!)
-You can download pre-built Windows binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
+### From GitHub Releases
+You can download pre-built Windows and macOS binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
 
 ### From crates.io
-You'll need Rust 1.37+
+You'll need Rust 1.37+.
 
 ```bash
 cargo install remodel
@@ -67,9 +67,7 @@ Throws on error.
 remodel.readModelFile(path: string): List<Instance>
 ```
 
-Load an `rbxmx` file from the filesystem.
-
-As of **0.4.0 (unreleased)**, this function can read `rbxm` files as well.
+Load an `rbxmx` or `rbxm` (0.4.0+) file from the filesystem.
 
 Note that this function returns a **list of instances** instead of a single instance! This is because models can contain mutliple top-level instances.
 
@@ -91,9 +89,7 @@ Throws on error.
 remodel.writeModelFile(instance: Instance, path: string)
 ```
 
-Saves an `rbxmx` file out of the given `Instance`.
-
-As of **0.4.0 (unreleased)**, this function can write `rbxm` files as well.
+Saves an `rbxmx` or `rbxm` (0.4.0+) file out of the given `Instance`.
 
 If the instance is a `DataModel`, this method will throw. Places should be saved with `writePlaceFile` instead.
 
@@ -108,7 +104,7 @@ Reads the file at the given path.
 
 Throws on error, like if the file did not exist.
 
-### `remodel.readDir` (0.4.0+, unreleased)
+### `remodel.readDir` (0.4.0+)
 ```
 remodel.readDir(path: string): List<string>
 ```
