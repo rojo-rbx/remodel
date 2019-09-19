@@ -30,6 +30,8 @@ struct Options {
 }
 
 fn start() -> Result<(), Box<dyn Error>> {
+    env_logger::from_env(env_logger::Env::default().default_filter_or("warn")).init();
+
     let opt = Options::from_args();
 
     let (contents, chunk_name) = if opt.script.as_os_str() == "-" {
