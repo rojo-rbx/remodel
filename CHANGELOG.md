@@ -1,6 +1,7 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added `remodel.readDir` for enumerating directories.
 * Added early support for `rbxm` models in `remodel.readModelFile` and `remodel.writeModelFile`.
 
 ## 0.3.0 (2019-09-15)

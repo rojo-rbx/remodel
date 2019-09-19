@@ -226,6 +226,29 @@ impl UserData for Remodel {
             fs::read_to_string(path).map_err(rlua::Error::external)
         });
 
+        methods.add_function("readDir", |_context, path: String| {
+            fs::read_dir(path)
+                .map_err(rlua::Error::external)?
+                .filter_map(|entry| {
+                    let entry = match entry {
+                        Ok(entry) => entry,
+                        Err(err) => return Some(Err(rlua::Error::external(err))),
+                    };
+
+                    match entry.file_name().into_string() {
+                        Ok(name) => Some(Ok(name)),
+                        Err(bad_name) => {
+                            log::warn!(
+                                "Encountered invalid Unicode file name {:?}, skipping.",
+                                bad_name
+                            );
+                            None
+                        }
+                    }
+                })
+                .collect::<Result<Vec<String>, _>>()
+        });
+
         methods.add_function(
             "writeFile",
             |_context, (path, contents): (String, rlua::String)| {

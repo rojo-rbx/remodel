@@ -99,6 +99,33 @@ If the instance is a `DataModel`, this method will throw. Places should be saved
 
 Throws on error.
 
+### `remodel.readFile` (0.3.0+)
+```
+remodel.readFile(path: string): string
+```
+
+Reads the file at the given path.
+
+Throws on error, like if the file did not exist.
+
+### `remodel.readDir` (0.4.0+, unreleased)
+```
+remodel.readDir(path: string): List<string>
+```
+
+Returns a list of all of the file names of the children in a directory.
+
+Throws on error, like if the directory did not exist.
+
+### `remodel.writeFile` (0.3.0+)
+```
+remodel.writeFile(path: string, contents: string)
+```
+
+Writes the file at the given path.
+
+Throws on error.
+
 ### `remodel.createDirAll`
 ```
 remodel.createDirAll(path: string)
@@ -107,24 +134,6 @@ remodel.createDirAll(path: string)
 Makes a directory at the given path, as well as all parent directories that do not yet exist.
 
 This is a thin wrapper around Rust's [`fs::create_dir_all`](https://doc.rust-lang.org/std/fs/fn.create_dir_all.html) function. Similar to `mkdir -p` from Unix.
-
-Throws on error.
-
-### `remodel.readFile` (0.3.0+)
-```
-remodel.readFile(path: string)
-```
-
-Reads the file at the given path.
-
-Throws on error.
-
-### `remodel.writeFile` (0.3.0+)
-```
-remodel.writeFile(path: string, contents: string)
-```
-
-Writes the file at the given path.
 
 Throws on error.
 
