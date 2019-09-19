@@ -56,7 +56,7 @@ For more examples, see the [`examples`](examples) folder.
 remodel.readPlaceFile(path: string): Instance
 ```
 
-Load an rbxlx file from the filesystem.
+Load an `rbxlx` file from the filesystem.
 
 Returns a `DataModel` instance, equivalent to `game` from within Roblox.
 
@@ -67,7 +67,9 @@ Throws on error.
 remodel.readModelFile(path: string): List<Instance>
 ```
 
-Load an rbxmx file from the filesystem.
+Load an `rbxmx` file from the filesystem.
+
+As of **0.4.0 (unreleased)**, this function can read `rbxm` files as well.
 
 Note that this function returns a **list of instances** instead of a single instance! This is because models can contain mutliple top-level instances.
 
@@ -78,7 +80,7 @@ Throws on error.
 remodel.writePlaceFile(instance: DataModel, path: string)
 ```
 
-Saves an rbxlx file out of the given `DataModel` instance.
+Saves an `rbxlx` file out of the given `DataModel` instance.
 
 If the instance is not a `DataModel`, this method will throw. Models should be saved with `writeModelFile` instead.
 
@@ -89,7 +91,9 @@ Throws on error.
 remodel.writeModelFile(instance: Instance, path: string)
 ```
 
-Saves an rbxmx file out of the given `Instance`.
+Saves an `rbxmx` file out of the given `Instance`.
+
+As of **0.4.0 (unreleased)**, this function can write `rbxm` files as well.
 
 If the instance is a `DataModel`, this method will throw. Places should be saved with `writePlaceFile` instead.
 

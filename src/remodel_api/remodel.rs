@@ -7,6 +7,7 @@ use std::{
     sync::Arc,
 };
 
+use rbx_dom_weak::{RbxInstanceProperties, RbxTree};
 use rlua::{Context, UserData, UserDataMethods};
 
 use super::LuaInstance;
@@ -42,11 +43,37 @@ impl Remodel {
         context: Context<'lua>,
         path: &Path,
     ) -> rlua::Result<Vec<LuaInstance>> {
-        let master_tree = RemodelContext::get(context)?.master_tree;
-        let mut master_handle = master_tree.lock().unwrap();
+        let file = BufReader::new(File::open(path).map_err(rlua::Error::external)?);
+        let source_tree = rbx_xml::from_reader_default(file).map_err(rlua::Error::external)?;
+
+        Remodel::import_model_tree(context, source_tree)
+    }
+
+    fn read_binary_model_file<'lua>(
+        context: Context<'lua>,
+        path: &Path,
+    ) -> rlua::Result<Vec<LuaInstance>> {
+        let mut source_tree = RbxTree::new(RbxInstanceProperties {
+            name: "TEMP_RBX_BINARY_ROOT".to_owned(),
+            class_name: "DataModel".to_owned(),
+            properties: Default::default(),
+        });
+        let root_id = source_tree.get_root_id();
 
         let file = BufReader::new(File::open(path).map_err(rlua::Error::external)?);
-        let mut source_tree = rbx_xml::from_reader_default(file).map_err(rlua::Error::external)?;
+
+        rbx_binary::decode(&mut source_tree, root_id, file)
+            .map_err(|err| rlua::Error::external(format!("{:?}", err)))?;
+
+        Remodel::import_model_tree(context, source_tree)
+    }
+
+    fn import_model_tree<'lua>(
+        context: Context<'lua>,
+        mut source_tree: RbxTree,
+    ) -> rlua::Result<Vec<LuaInstance>> {
+        let master_tree = RemodelContext::get(context)?.master_tree;
+        let mut master_handle = master_tree.lock().unwrap();
 
         let source_root_id = source_tree.get_root_id();
         let source_root = source_tree.get_instance(source_root_id).unwrap();
@@ -101,6 +128,24 @@ impl Remodel {
 
         rbx_xml::to_writer_default(file, &tree, &[lua_instance.id]).map_err(rlua::Error::external)
     }
+
+    fn write_binary_model_file(lua_instance: LuaInstance, path: &Path) -> rlua::Result<()> {
+        let file = BufWriter::new(File::create(&path).map_err(rlua::Error::external)?);
+
+        let tree = lua_instance.tree.lock().unwrap();
+        let instance = tree
+            .get_instance(lua_instance.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        if instance.class_name == "DataModel" {
+            return Err(rlua::Error::external(
+                "DataModel instances must be saved as place files, not model files.",
+            ));
+        }
+
+        rbx_binary::encode(&tree, &[lua_instance.id], file)
+            .map_err(|err| rlua::Error::external(format!("{:?}", err)))
+    }
 }
 
 impl UserData for Remodel {
@@ -125,9 +170,13 @@ impl UserData for Remodel {
 
             match path.extension().and_then(OsStr::to_str) {
                 Some("rbxmx") => Remodel::read_xml_model_file(context, path),
-                Some("rbxm") => Err(rlua::Error::external(
-                    "Reading rbxm models files is not supported yet.",
-                )),
+                Some("rbxm") => {
+                    log::warn!(
+                        "rbxm model support in Remodel is limited. rbxmx models are recommended."
+                    );
+
+                    Remodel::read_binary_model_file(context, path)
+                }
                 _ => Err(rlua::Error::external(format!(
                     "Invalid model file path {}",
                     path.display()
@@ -160,9 +209,11 @@ impl UserData for Remodel {
 
                 match path.extension().and_then(OsStr::to_str) {
                     Some("rbxmx") => Remodel::write_xml_model_file(instance, path),
-                    Some("rbxm") => Err(rlua::Error::external(
-                        "Writing rbxm model files is not supported yet.",
-                    )),
+                    Some("rbxm") => {
+                        log::warn!("rbxm model support in Remodel is limited. rbxmx models are recommended.");
+
+                        Remodel::write_binary_model_file(instance, path)
+                    },
                     _ => Err(rlua::Error::external(format!(
                         "Invalid model file path {}",
                         path.display()
