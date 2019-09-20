@@ -14,7 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Setup Rust toolchain
-      run: rustup default ${{ matrix.rust_version }}
+      run: |
+        rustup default ${{ matrix.rust_version }}
+        rustup component add clippy rustfmt
     - name: Build
       run: cargo build --locked --verbose
     - name: Run tests
