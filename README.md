@@ -1,7 +1,7 @@
 <img src="builderman.png" alt="Remodel Logo" width="327" height="277" align="right" />
 <h1 align="left">Remodel</h1>
 
-![Remodel on crates.io](https://img.shields.io/crates/v/remodel.svg?label=version)
+[![Remodel on crates.io](https://img.shields.io/crates/v/remodel.svg?label=crates.io)](https://crates.io/crates/remodel)
 
 Remodel is a command line tool to manipulate Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
 
