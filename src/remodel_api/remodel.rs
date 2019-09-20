@@ -12,7 +12,7 @@ use reqwest::header::{CONTENT_TYPE, COOKIE, USER_AGENT};
 use rlua::{Context, UserData, UserDataMethods};
 
 use super::LuaInstance;
-use crate::{auth_cookie::get_auth_cookie, remodel_context::RemodelContext};
+use crate::remodel_context::RemodelContext;
 
 pub struct Remodel;
 
@@ -155,12 +155,14 @@ impl Remodel {
     }
 
     fn read_model_asset(context: Context<'_>, asset_id: u64) -> rlua::Result<Vec<LuaInstance>> {
+        let re_context = RemodelContext::get(context)?;
+        let auth_cookie = re_context.auth_cookie();
         let url = format!("https://www.roblox.com/asset/?id={}", asset_id);
 
         let client = reqwest::Client::new();
         let mut request = client.get(&url);
 
-        if let Some(auth_cookie) = get_auth_cookie() {
+        if let Some(auth_cookie) = auth_cookie {
             request = request.header(COOKIE, format!(".ROBLOSECURITY={}", auth_cookie));
         } else {
             log::warn!("No auth cookie detected, Remodel may be unable to download this asset.");
@@ -174,12 +176,14 @@ impl Remodel {
     }
 
     fn read_place_asset(context: Context<'_>, asset_id: u64) -> rlua::Result<LuaInstance> {
+        let re_context = RemodelContext::get(context)?;
+        let auth_cookie = re_context.auth_cookie();
         let url = format!("https://www.roblox.com/asset/?id={}", asset_id);
 
         let client = reqwest::Client::new();
         let mut request = client.get(&url);
 
-        if let Some(auth_cookie) = get_auth_cookie() {
+        if let Some(auth_cookie) = auth_cookie {
             request = request.header(COOKIE, format!(".ROBLOSECURITY={}", auth_cookie));
         } else {
             log::warn!("No auth cookie detected, Remodel may be unable to download this asset.");
@@ -192,7 +196,11 @@ impl Remodel {
         Remodel::import_place_tree(context, source_tree)
     }
 
-    fn write_existing_model_asset(lua_instance: LuaInstance, asset_id: u64) -> rlua::Result<()> {
+    fn write_existing_model_asset(
+        context: Context<'_>,
+        lua_instance: LuaInstance,
+        asset_id: u64,
+    ) -> rlua::Result<()> {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
             .get_instance(lua_instance.id)
@@ -208,10 +216,14 @@ impl Remodel {
         rbx_xml::to_writer_default(&mut buffer, &tree, &[lua_instance.id])
             .map_err(rlua::Error::external)?;
 
-        Remodel::upload_asset(buffer, asset_id)
+        Remodel::upload_asset(context, buffer, asset_id)
     }
 
-    fn write_existing_place_asset(lua_instance: LuaInstance, asset_id: u64) -> rlua::Result<()> {
+    fn write_existing_place_asset(
+        context: Context<'_>,
+        lua_instance: LuaInstance,
+        asset_id: u64,
+    ) -> rlua::Result<()> {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
             .get_instance(lua_instance.id)
@@ -227,11 +239,12 @@ impl Remodel {
         rbx_xml::to_writer_default(&mut buffer, &tree, instance.get_children_ids())
             .map_err(rlua::Error::external)?;
 
-        Remodel::upload_asset(buffer, asset_id)
+        Remodel::upload_asset(context, buffer, asset_id)
     }
 
-    fn upload_asset(buffer: Vec<u8>, asset_id: u64) -> rlua::Result<()> {
-        let auth_cookie = get_auth_cookie().ok_or_else(|| {
+    fn upload_asset(context: Context<'_>, buffer: Vec<u8>, asset_id: u64) -> rlua::Result<()> {
+        let re_context = RemodelContext::get(context)?;
+        let auth_cookie = re_context.auth_cookie().ok_or_else(|| {
             rlua::Error::external(
                 "Uploading assets requires an auth cookie, please log into Roblox Studio.",
             )
@@ -313,19 +326,19 @@ impl UserData for Remodel {
 
         methods.add_function(
             "writeExistingModelAsset",
-            |_context, (instance, asset_id): (LuaInstance, String)| {
+            |context, (instance, asset_id): (LuaInstance, String)| {
                 let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
 
-                Remodel::write_existing_model_asset(instance, asset_id)
+                Remodel::write_existing_model_asset(context, instance, asset_id)
             },
         );
 
         methods.add_function(
             "writeExistingPlaceAsset",
-            |_context, (instance, asset_id): (LuaInstance, String)| {
+            |context, (instance, asset_id): (LuaInstance, String)| {
                 let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
 
-                Remodel::write_existing_place_asset(instance, asset_id)
+                Remodel::write_existing_place_asset(context, instance, asset_id)
             },
         );
 

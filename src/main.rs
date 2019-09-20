@@ -13,7 +13,10 @@ use std::{
 use rlua::{Lua, MultiValue, ToLua};
 use structopt::StructOpt;
 
-use crate::{remodel_api::RemodelApi, remodel_context::RemodelContext, roblox_api::RobloxApi};
+use crate::{
+    auth_cookie::get_auth_cookie, remodel_api::RemodelApi, remodel_context::RemodelContext,
+    roblox_api::RobloxApi,
+};
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -21,13 +24,16 @@ use crate::{remodel_api::RemodelApi, remodel_context::RemodelContext, roblox_api
     author = env!("CARGO_PKG_AUTHORS"),
 )]
 struct Options {
-    /// The input script to run. Should be valid Lua 5.3. Pass `-` to read from
-    /// stdin.
+    /// The Lua 5.3 script to run. Pass `-` to read from stdin.
     #[structopt(parse(from_os_str))]
     script: PathBuf,
 
     /// Arguments to pass to the script as a list of strings.
     script_arguments: Vec<String>,
+
+    /// The .ROBLOSECURITY cookie to use for authenticating to the Roblox API.
+    #[structopt(long = "auth")]
+    auth_cookie: Option<String>,
 }
 
 fn start() -> Result<(), Box<dyn Error>> {
@@ -61,7 +67,9 @@ fn start() -> Result<(), Box<dyn Error>> {
             .map(|value| value.to_lua(context))
             .collect::<Result<Vec<_>, _>>()?;
 
-        RemodelContext::inject(context)?;
+        let auth_cookie = opt.auth_cookie.or_else(get_auth_cookie);
+
+        RemodelContext::new(auth_cookie).inject(context)?;
 
         RemodelApi::inject(context)?;
         RobloxApi::inject(context)?;

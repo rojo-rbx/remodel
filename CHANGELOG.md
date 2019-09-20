@@ -7,6 +7,7 @@
 	* `remodel.readPlaceAsset`
 	* `remodel.writeExistingModelAsset`
 	* `remodel.writeExistingPlaceAsset`
+	* These APIs will pull your `.ROBLOSECURITY` cookie from Roblox Studio if you're on Windows, or you can pass a cookie explicitly using `--auth [cookie]`
 
 ## 0.4.0 (2019-09-18)
 * Added `remodel.readDir` for enumerating directories.
