@@ -1,6 +1,7 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added `Instance.new` for creating instances.
 * Added APIs for interacting with models and places on Roblox.com:
 	* `remodel.readModelAsset`
 	* `remodel.readPlaceAsset`
