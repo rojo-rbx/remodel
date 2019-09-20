@@ -3,6 +3,7 @@
 ## Unreleased Changes
 * Added APIs for interacting with models and places on Roblox.com:
 	* `remodel.readModelAsset`
+	* `remodel.readPlaceAsset`
 	* `remodel.writeExistingModelAsset`
 	* `remodel.writeExistingPlaceAsset`
 

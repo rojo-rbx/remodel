@@ -18,26 +18,10 @@ pub struct Remodel;
 
 impl Remodel {
     fn read_xml_place_file<'lua>(context: Context<'lua>, path: &Path) -> rlua::Result<LuaInstance> {
-        let master_tree = RemodelContext::get(context)?.master_tree;
-        let mut master_handle = master_tree.lock().unwrap();
-
         let file = BufReader::new(File::open(path).map_err(rlua::Error::external)?);
+        let source_tree = rbx_xml::from_reader_default(file).map_err(rlua::Error::external)?;
 
-        let mut source_tree = rbx_xml::from_reader_default(file).map_err(rlua::Error::external)?;
-
-        let source_root_id = source_tree.get_root_id();
-        let source_root = source_tree.get_instance(source_root_id).unwrap();
-        let source_children = source_root.get_children_ids().to_vec();
-
-        let master_root_id = master_handle.get_root_id();
-        let new_root_id =
-            master_handle.insert_instance(source_root.deref().clone(), master_root_id);
-
-        for child_id in source_children {
-            source_tree.move_instance(child_id, &mut master_handle, new_root_id);
-        }
-
-        Ok(LuaInstance::new(Arc::clone(&master_tree), new_root_id))
+        Remodel::import_place_tree(context, source_tree)
     }
 
     fn read_xml_model_file<'lua>(
@@ -91,6 +75,28 @@ impl Remodel {
             .collect::<Vec<_>>();
 
         Ok(instances)
+    }
+
+    fn import_place_tree<'lua>(
+        context: Context<'lua>,
+        mut source_tree: RbxTree,
+    ) -> rlua::Result<LuaInstance> {
+        let master_tree = RemodelContext::get(context)?.master_tree;
+        let mut master_handle = master_tree.lock().unwrap();
+
+        let source_root_id = source_tree.get_root_id();
+        let source_root = source_tree.get_instance(source_root_id).unwrap();
+        let source_children = source_root.get_children_ids().to_vec();
+
+        let master_root_id = master_handle.get_root_id();
+        let new_root_id =
+            master_handle.insert_instance(source_root.deref().clone(), master_root_id);
+
+        for child_id in source_children {
+            source_tree.move_instance(child_id, &mut master_handle, new_root_id);
+        }
+
+        Ok(LuaInstance::new(Arc::clone(&master_tree), new_root_id))
     }
 
     fn write_xml_place_file(lua_instance: LuaInstance, path: &Path) -> rlua::Result<()> {
@@ -149,7 +155,7 @@ impl Remodel {
     }
 
     fn read_model_asset(context: Context<'_>, asset_id: u64) -> rlua::Result<Vec<LuaInstance>> {
-        let url = format!("https://roblox.com/asset?id={}", asset_id);
+        let url = format!("https://www.roblox.com/asset/?id={}", asset_id);
 
         let client = reqwest::Client::new();
         let mut request = client.get(&url);
@@ -165,6 +171,25 @@ impl Remodel {
         let source_tree = rbx_xml::from_reader_default(response).map_err(rlua::Error::external)?;
 
         Remodel::import_model_tree(context, source_tree)
+    }
+
+    fn read_place_asset(context: Context<'_>, asset_id: u64) -> rlua::Result<LuaInstance> {
+        let url = format!("https://www.roblox.com/asset/?id={}", asset_id);
+
+        let client = reqwest::Client::new();
+        let mut request = client.get(&url);
+
+        if let Some(auth_cookie) = get_auth_cookie() {
+            request = request.header(COOKIE, format!(".ROBLOSECURITY={}", auth_cookie));
+        } else {
+            log::warn!("No auth cookie detected, Remodel may be unable to download this asset.");
+        }
+
+        let response = request.send().map_err(rlua::Error::external)?;
+
+        let source_tree = rbx_xml::from_reader_default(response).map_err(rlua::Error::external)?;
+
+        Remodel::import_place_tree(context, source_tree)
     }
 
     fn write_existing_model_asset(lua_instance: LuaInstance, asset_id: u64) -> rlua::Result<()> {
@@ -278,6 +303,12 @@ impl UserData for Remodel {
             let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
 
             Remodel::read_model_asset(context, asset_id)
+        });
+
+        methods.add_function("readPlaceAsset", |context, asset_id: String| {
+            let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
+
+            Remodel::read_place_asset(context, asset_id)
         });
 
         methods.add_function(
