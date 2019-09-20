@@ -1,3 +1,4 @@
+mod auth_cookie;
 mod remodel_api;
 mod remodel_context;
 mod roblox_api;

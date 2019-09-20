@@ -8,10 +8,11 @@ use std::{
 };
 
 use rbx_dom_weak::{RbxInstanceProperties, RbxTree};
+use reqwest::header::{CONTENT_TYPE, COOKIE, USER_AGENT};
 use rlua::{Context, UserData, UserDataMethods};
 
 use super::LuaInstance;
-use crate::remodel_context::RemodelContext;
+use crate::{auth_cookie::get_auth_cookie, remodel_context::RemodelContext};
 
 pub struct Remodel;
 
@@ -146,11 +147,100 @@ impl Remodel {
         rbx_binary::encode(&tree, &[lua_instance.id], file)
             .map_err(|err| rlua::Error::external(format!("{:?}", err)))
     }
+
+    fn read_model_asset(context: Context<'_>, asset_id: u64) -> rlua::Result<Vec<LuaInstance>> {
+        let url = format!("https://roblox.com/asset?id={}", asset_id);
+
+        let client = reqwest::Client::new();
+        let mut request = client.get(&url);
+
+        if let Some(auth_cookie) = get_auth_cookie() {
+            request = request.header(COOKIE, format!(".ROBLOSECURITY={}", auth_cookie));
+        } else {
+            log::warn!("No auth cookie detected, Remodel may be unable to download this asset.");
+        }
+
+        let response = request.send().map_err(rlua::Error::external)?;
+
+        let source_tree = rbx_xml::from_reader_default(response).map_err(rlua::Error::external)?;
+
+        Remodel::import_model_tree(context, source_tree)
+    }
+
+    fn write_existing_model_asset(lua_instance: LuaInstance, asset_id: u64) -> rlua::Result<()> {
+        let tree = lua_instance.tree.lock().unwrap();
+        let instance = tree
+            .get_instance(lua_instance.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        if instance.class_name == "DataModel" {
+            return Err(rlua::Error::external(
+                "DataModel instances must be saved as place files, not model files.",
+            ));
+        }
+
+        let mut buffer = Vec::new();
+        rbx_xml::to_writer_default(&mut buffer, &tree, &[lua_instance.id])
+            .map_err(rlua::Error::external)?;
+
+        Remodel::upload_asset(buffer, asset_id)
+    }
+
+    fn write_existing_place_asset(lua_instance: LuaInstance, asset_id: u64) -> rlua::Result<()> {
+        let tree = lua_instance.tree.lock().unwrap();
+        let instance = tree
+            .get_instance(lua_instance.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        if instance.class_name != "DataModel" {
+            return Err(rlua::Error::external(
+                "Only DataModel instances can be saved as place files.",
+            ));
+        }
+
+        let mut buffer = Vec::new();
+        rbx_xml::to_writer_default(&mut buffer, &tree, instance.get_children_ids())
+            .map_err(rlua::Error::external)?;
+
+        Remodel::upload_asset(buffer, asset_id)
+    }
+
+    fn upload_asset(buffer: Vec<u8>, asset_id: u64) -> rlua::Result<()> {
+        let auth_cookie = get_auth_cookie().ok_or_else(|| {
+            rlua::Error::external(
+                "Uploading assets requires an auth cookie, please log into Roblox Studio.",
+            )
+        })?;
+
+        let url = format!(
+            "https://data.roblox.com/Data/Upload.ashx?assetid={}",
+            asset_id
+        );
+
+        let client = reqwest::Client::new();
+        let response = client
+            .get(&url)
+            .header(COOKIE, format!(".ROBLOSECURITY={}", auth_cookie))
+            .header(CONTENT_TYPE, "application/xml")
+            .header(USER_AGENT, "Roblox/WinInet")
+            .body(buffer)
+            .send()
+            .map_err(rlua::Error::external)?;
+
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(rlua::Error::external(format!(
+                "Roblox API returned an error, status {}.",
+                response.status()
+            )))
+        }
+    }
 }
 
 impl UserData for Remodel {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_function("readPlaceFile", move |context, lua_path: String| {
+        methods.add_function("readPlaceFile", |context, lua_path: String| {
             let path = Path::new(&lua_path);
 
             match path.extension().and_then(OsStr::to_str) {
@@ -165,7 +255,7 @@ impl UserData for Remodel {
             }
         });
 
-        methods.add_function("readModelFile", move |context, lua_path: String| {
+        methods.add_function("readModelFile", |context, lua_path: String| {
             let path = Path::new(&lua_path);
 
             match path.extension().and_then(OsStr::to_str) {
@@ -183,6 +273,30 @@ impl UserData for Remodel {
                 ))),
             }
         });
+
+        methods.add_function("readModelAsset", |context, asset_id: String| {
+            let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
+
+            Remodel::read_model_asset(context, asset_id)
+        });
+
+        methods.add_function(
+            "writeExistingModelAsset",
+            |_context, (instance, asset_id): (LuaInstance, String)| {
+                let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
+
+                Remodel::write_existing_model_asset(instance, asset_id)
+            },
+        );
+
+        methods.add_function(
+            "writeExistingPlaceAsset",
+            |_context, (instance, asset_id): (LuaInstance, String)| {
+                let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
+
+                Remodel::write_existing_place_asset(instance, asset_id)
+            },
+        );
 
         methods.add_function(
             "writePlaceFile",
