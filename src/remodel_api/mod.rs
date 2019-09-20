@@ -9,7 +9,7 @@ pub use remodel::Remodel;
 pub struct RemodelApi;
 
 impl RemodelApi {
-    pub fn inject<'lua>(context: Context<'lua>) -> rlua::Result<()> {
+    pub fn inject(context: Context<'_>) -> rlua::Result<()> {
         context.globals().set("remodel", Remodel)?;
 
         Ok(())

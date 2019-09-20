@@ -29,11 +29,11 @@ impl RemodelContext {
         }
     }
 
-    pub fn get<'lua>(context: Context<'lua>) -> rlua::Result<Self> {
+    pub fn get(context: Context<'_>) -> rlua::Result<Self> {
         context.named_registry_value("remodel_context")
     }
 
-    pub fn inject<'lua>(self, context: Context<'lua>) -> rlua::Result<()> {
+    pub fn inject(self, context: Context<'_>) -> rlua::Result<()> {
         context.set_named_registry_value("remodel_context", self)?;
 
         Ok(())

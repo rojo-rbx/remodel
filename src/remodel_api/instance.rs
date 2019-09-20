@@ -23,14 +23,14 @@ impl LuaInstance {
 
         let child = instance
             .get_children_ids()
-            .into_iter()
+            .iter()
             .copied()
             .find(|id| {
                 if let Some(child_instance) = tree.get_instance(*id) {
                     return child_instance.name == name;
                 }
 
-                return false;
+                false
             })
             .map(|id| LuaInstance::new(Arc::clone(&self.tree), id));
 
@@ -46,7 +46,7 @@ impl LuaInstance {
 
         let children: Vec<LuaInstance> = instance
             .get_children_ids()
-            .into_iter()
+            .iter()
             .map(|id| LuaInstance::new(Arc::clone(&self.tree), *id))
             .collect();
 
@@ -89,7 +89,7 @@ impl LuaInstance {
 
                 Ok(())
             }
-            _ => Err(rlua::Error::external(format!("'Name' must be a string."))),
+            _ => Err(rlua::Error::external("'Name' must be a string.")),
         }
     }
 

@@ -53,8 +53,8 @@ impl Remodel {
         Remodel::import_model_tree(context, source_tree)
     }
 
-    fn import_model_tree<'lua>(
-        context: Context<'lua>,
+    fn import_model_tree(
+        context: Context<'_>,
         mut source_tree: RbxTree,
     ) -> rlua::Result<Vec<LuaInstance>> {
         let master_tree = RemodelContext::get(context)?.master_tree;
@@ -77,8 +77,8 @@ impl Remodel {
         Ok(instances)
     }
 
-    fn import_place_tree<'lua>(
-        context: Context<'lua>,
+    fn import_place_tree(
+        context: Context<'_>,
         mut source_tree: RbxTree,
     ) -> rlua::Result<LuaInstance> {
         let master_tree = RemodelContext::get(context)?.master_tree;
