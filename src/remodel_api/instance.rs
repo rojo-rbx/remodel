@@ -132,6 +132,15 @@ impl LuaInstance {
         Ok(())
     }
 
+    fn get_property<'lua>(
+        &self,
+        _context: Context<'lua>,
+        _name: &str,
+    ) -> rlua::Result<Option<rlua::Value<'lua>>> {
+        // TODO: Use rbx_reflection to look up property descriptors
+        Ok(None)
+    }
+
     fn meta_to_string<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
@@ -152,13 +161,21 @@ impl LuaInstance {
             "ClassName" => self.get_class_name(context),
             "Parent" => self.get_parent(context),
 
-            // Getting an unknown key falls back to finding children.
-            _ => self
-                .find_first_child(key)?
-                .ok_or_else(|| {
-                    rlua::Error::external(format!("'{}' is not a valid member of Instance", key))
-                })?
-                .to_lua(context),
+            // Getting an unknown key falls back to properties, then children.
+            _ => {
+                if let Some(value) = self.get_property(context, key)? {
+                    return Ok(value);
+                }
+
+                if let Some(child) = self.find_first_child(key)? {
+                    return child.to_lua(context);
+                }
+
+                Err(rlua::Error::external(format!(
+                    "'{}' is not a valid member of Instance",
+                    key
+                )))
+            }
         }
     }
 

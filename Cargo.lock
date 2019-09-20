@@ -1055,6 +1055,7 @@ dependencies = [
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "rbx_binary 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rbx_dom_weak 1.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rbx_reflection 3.2.399 (registry+https://github.com/rust-lang/crates.io-index)",
  "rbx_xml 0.11.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.9.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlua 0.16.4-alpha.0 (git+https://github.com/kyren/rlua.git)",
