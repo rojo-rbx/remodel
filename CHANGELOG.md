@@ -1,6 +1,8 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+
+## 0.5.0 (2019-09-21)
 * Added `Instance.new` for creating instances.
 * Added `Instance:Destroy()` for destroying instances instead of just parenting them to nil.
 	* Unlike Roblox, no properties can be accessed on a destroyed instance or else Remodel will throw an error. Be careful!

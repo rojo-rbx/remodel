@@ -4,7 +4,7 @@
 [![Remodel on crates.io](https://img.shields.io/crates/v/remodel.svg?label=crates.io)](https://crates.io/crates/remodel)
 [![Actions Status](https://github.com/rojo-rbx/remodel/workflows/CI/badge.svg)](https://github.com/rojo-rbx/remodel/actions)
 
-Remodel is a command line tool to manipulate Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
+Remodel is a command line tool for manipulating Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
 
 Remodel is still in early development, but much of its API is already fairly stable. Feedback is welcome!
 
@@ -50,7 +50,21 @@ end
 
 For more examples, see the [`examples`](examples) folder.
 
-## API
+## Supported Roblox API
+Remodel supports some parts of Roblox's API in order to make code familiar to existing Roblox users.
+
+* `Instance.new(className)` (0.5.0+)
+	* The second argument (parent) is not supported by Remodel.
+* `<Instance>.Name` (read + write)
+* `<Instance>.ClassName` (read only)
+* `<Instance>.Parent` (read + write)
+* `<Instance>:Destroy()` (0.5.0+)
+* `<Instance>:GetChildren()`
+* `<Instance>:FindFirstChild(name)`
+	* The second argument (recursive) is not supported by Remodel.
+
+## Remodel API
+Remodel has its own API that goes beyond what can be done inside Roblox.
 
 ### `remodel.readPlaceFile`
 ```
@@ -74,6 +88,32 @@ Note that this function returns a **list of instances** instead of a single inst
 
 Throws on error.
 
+### `remodel.readPlaceAsset` (0.5.0+)
+```
+remodel.readPlaceAsset(assetId: string): List<Instance>
+```
+
+Reads a place asset from Roblox.com, equivalent to `remodel.readPlaceFile`.
+
+Most models and places uploaded to Roblox.com are in Roblox's binary model format, which tools like Remodel and Rojo have poor support for. Models and places uploaded by Remodel and Rojo are currently always in the XML format, which is less efficient but has better support.
+
+**This method requires web authentication for private assets! See [Authentication](#authentication) for more information.**
+
+Throws on error.
+
+### `remodel.readModelAsset` (0.5.0+)
+```
+remodel.readModelAsset(assetId: string): List<Instance>
+```
+
+Reads a model asset from Roblox.com, equivalent to `remodel.readModelFile`.
+
+Most models and places uploaded to Roblox.com are in Roblox's binary model format, which tools like Remodel and Rojo have poor support for. Models and places uploaded by Remodel and Rojo are currently always in the XML format, which is less efficient but has better support.
+
+**This method requires web authentication for private assets! See [Authentication](#authentication) for more information.**
+
+Throws on error.
+
 ### `remodel.writePlaceFile`
 ```
 remodel.writePlaceFile(instance: DataModel, path: string)
@@ -93,6 +133,32 @@ remodel.writeModelFile(instance: Instance, path: string)
 Saves an `rbxmx` or `rbxm` (0.4.0+) file out of the given `Instance`.
 
 If the instance is a `DataModel`, this method will throw. Places should be saved with `writePlaceFile` instead.
+
+Throws on error.
+
+### `remodel.writeExistingPlaceAsset` (0.5.0+)
+```
+remodel.writeExistingPlaceAsset(instance: Instance, assetId: string)
+```
+
+Uploads the given `DataModel` instance to Roblox.com over an existing place.
+
+If the instance is not a `DataModel`, this method will throw. Models should be uploaded with `writeExistingModelAsset` instead.
+
+**This method always requires web authentication! See [Authentication](#authentication) for more information.**
+
+Throws on error.
+
+### `remodel.writeExistingModelAsset` (0.5.0+)
+```
+remodel.writeExistingModelAsset(instance: Instance, assetId: string)
+```
+
+Uploads the given instance to Roblox.com over an existing place.
+
+If the instance is a `DataModel`, this method will throw. Places should be uploaded with `writeExistingPlaceAsset` instead.
+
+**This method always requires web authentication! See [Authentication](#authentication) for more information.**
 
 Throws on error.
 
@@ -133,6 +199,23 @@ Makes a directory at the given path, as well as all parent directories that do n
 This is a thin wrapper around Rust's [`fs::create_dir_all`](https://doc.rust-lang.org/std/fs/fn.create_dir_all.html) function. Similar to `mkdir -p` from Unix.
 
 Throws on error.
+
+## Authentication
+Some of Remodel's APIs access the Roblox web API and need authentication in the form of a `.ROBLOSECURITY` cookie to access private assets. Auth cookies look like this:
+
+```
+_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|<actual cookie stuff here>
+```
+
+**Auth cookies are very sensitive information! If you're using Remodel on a remote server like Travis CI or GitHub Actions, you should create a throwaway account with limited permissions in a group to ensure your valuable accounts are not compromised!**
+
+If you're on Windows, Remodel will attempt to use the cookie from a logged in Roblox Studio session to authenticate all requests.
+
+To give a different auth cookie to Remodel, use the `--auth` argument:
+
+```
+remodel foo.lua --auth "$MY_AUTH_COOKIE"
+```
 
 ## Remodel vs rbxmk
 Remodel is similar to [rbxmk](https://github.com/Anaminus/rbxmk):
