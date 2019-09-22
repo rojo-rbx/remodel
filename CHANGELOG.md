@@ -2,6 +2,8 @@
 
 ## Unreleased Changes
 * Added `Instance.new` for creating instances.
+* Added `Instance:Destroy()` for destroying instances instead of just parenting them to nil.
+	* Unlike Roblox, no properties can be accessed on a destroyed instance or else Remodel will throw an error. Be careful!
 * Added APIs for interacting with models and places on Roblox.com:
 	* `remodel.readModelAsset`
 	* `remodel.readPlaceAsset`

@@ -14,6 +14,21 @@ impl LuaInstance {
         LuaInstance { tree, id }
     }
 
+    fn destroy(&self) -> rlua::Result<()> {
+        let mut tree = self.tree.lock().unwrap();
+
+        // TODO: https://github.com/rojo-rbx/rbx-dom/issues/75
+        // This check is necessary because RbxTree::remove_instance panics if
+        // the input ID doesn't exist instead of returning None.
+        tree.get_instance(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        tree.remove_instance(self.id)
+            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+
+        Ok(())
+    }
+
     fn find_first_child(&self, name: &str) -> rlua::Result<Option<LuaInstance>> {
         let tree = self.tree.lock().unwrap();
 
@@ -201,6 +216,8 @@ impl LuaInstance {
 
 impl UserData for LuaInstance {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_method("Destroy", |_context, this, _args: ()| this.destroy());
+
         methods.add_method("FindFirstChild", |_context, this, name: String| {
             this.find_first_child(&name)
         });
