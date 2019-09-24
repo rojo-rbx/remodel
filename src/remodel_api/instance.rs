@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use rbx_dom_weak::{RbxId, RbxTree};
+use rbx_dom_weak::{RbxId, RbxInstanceProperties, RbxTree};
 use rlua::{Context, FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
 
 #[derive(Clone)]
@@ -107,6 +107,62 @@ impl LuaInstance {
             .collect();
 
         Ok(children)
+    }
+
+    fn get_service(&self, service_name: &str) -> rlua::Result<LuaInstance> {
+        let mut tree = self.tree.lock().unwrap();
+
+        let instance = tree.get_instance(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call GetService() on a destroyed instance")
+        })?;
+
+        // It might be cleaner to avoid defining GetService() on all instances,
+        // but we don't have a good mechanism in Remodel to do that right now.
+        if instance.class_name != "DataModel" {
+            return Err(rlua::Error::external(
+                "Cannot call GetService() on an instance that is not a DataModel",
+            ));
+        }
+
+        match rbx_reflection::get_class_descriptor(service_name) {
+            // We should only find services, even if there's a child of
+            // DataModel with a matching ClassName.
+            Some(descriptor) if descriptor.is_service() => {
+                let existing = instance
+                    .get_children_ids()
+                    .iter()
+                    .copied()
+                    .map(|id| tree.get_instance(id).unwrap())
+                    .find(|instance| instance.class_name == service_name);
+
+                match existing {
+                    Some(existing) => Ok(LuaInstance {
+                        tree: Arc::clone(&self.tree),
+                        id: existing.get_id(),
+                    }),
+                    None => {
+                        // If we didn't find an existing service instance,
+                        // construct a new one.
+
+                        let properties = RbxInstanceProperties {
+                            name: service_name.to_owned(),
+                            class_name: service_name.to_owned(),
+                            properties: Default::default(),
+                        };
+
+                        let id = tree.insert_instance(properties, self.id);
+                        Ok(LuaInstance {
+                            tree: Arc::clone(&self.tree),
+                            id,
+                        })
+                    }
+                }
+            }
+            _ => Err(rlua::Error::external(format!(
+                "'{}' is not a valid service.",
+                service_name
+            ))),
+        }
     }
 
     fn get_class_name<'lua>(
@@ -267,6 +323,10 @@ impl UserData for LuaInstance {
 
         methods.add_method("GetChildren", |_context, this, _args: ()| {
             this.get_children()
+        });
+
+        methods.add_method("GetService", |_context, this, name: String| {
+            this.get_service(&name)
         });
 
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
