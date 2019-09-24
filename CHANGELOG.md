@@ -1,6 +1,7 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added `Instance:Clone()` for copying instances all over the place, as is Roblox tradition. ([#12](https://github.com/rojo-rbx/remodel/issues/12))
 
 ## 0.5.0 (2019-09-21)
 * Added `Instance.new` for creating instances.

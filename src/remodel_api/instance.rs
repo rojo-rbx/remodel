@@ -1,4 +1,7 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    ops::Deref,
+    sync::{Arc, Mutex},
+};
 
 use rbx_dom_weak::{RbxId, RbxTree};
 use rlua::{Context, FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
@@ -14,17 +17,55 @@ impl LuaInstance {
         LuaInstance { tree, id }
     }
 
+    fn clone_instance(&self) -> rlua::Result<LuaInstance> {
+        let mut tree = self.tree.lock().unwrap();
+
+        if tree.get_instance(self.id).is_none() {
+            return Err(rlua::Error::external(
+                "Cannot call Clone() on a destroyed instance",
+            ));
+        }
+
+        let root_id = tree.get_root_id();
+        let new_id = Self::clone_kernel(&mut tree, self.id, root_id);
+
+        Ok(LuaInstance {
+            tree: Arc::clone(&self.tree),
+            id: new_id,
+        })
+    }
+
+    fn clone_kernel(tree: &mut RbxTree, id: RbxId, parent_id: RbxId) -> RbxId {
+        let instance = tree.get_instance(id).unwrap();
+        let properties = instance.deref().clone();
+        let children = instance.get_children_ids().to_vec();
+
+        let new_id = tree.insert_instance(properties, parent_id);
+
+        for child_id in children {
+            Self::clone_kernel(tree, child_id, new_id);
+        }
+
+        new_id
+    }
+
     fn destroy(&self) -> rlua::Result<()> {
         let mut tree = self.tree.lock().unwrap();
 
         // TODO: https://github.com/rojo-rbx/rbx-dom/issues/75
         // This check is necessary because RbxTree::remove_instance panics if
         // the input ID doesn't exist instead of returning None.
-        tree.get_instance(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+        if tree.get_instance(self.id).is_none() {
+            return Err(rlua::Error::external(
+                "Cannot call Destroy() on a destroyed instance",
+            ));
+        }
 
-        tree.remove_instance(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+        if tree.remove_instance(self.id).is_none() {
+            return Err(rlua::Error::external(
+                "Cannot call Destroy() on a destroyed instance",
+            ));
+        }
 
         Ok(())
     }
@@ -216,6 +257,8 @@ impl LuaInstance {
 
 impl UserData for LuaInstance {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_method("Clone", |_context, this, _args: ()| this.clone_instance());
+
         methods.add_method("Destroy", |_context, this, _args: ()| this.destroy());
 
         methods.add_method("FindFirstChild", |_context, this, name: String| {
