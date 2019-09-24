@@ -73,9 +73,9 @@ impl LuaInstance {
     fn find_first_child(&self, name: &str) -> rlua::Result<Option<LuaInstance>> {
         let tree = self.tree.lock().unwrap();
 
-        let instance = tree
-            .get_instance(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+        let instance = tree.get_instance(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call FindFirstChild() on a destroyed instance")
+        })?;
 
         let child = instance
             .get_children_ids()
@@ -96,9 +96,9 @@ impl LuaInstance {
     fn get_children(&self) -> rlua::Result<Vec<LuaInstance>> {
         let tree = self.tree.lock().unwrap();
 
-        let instance = tree
-            .get_instance(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+        let instance = tree.get_instance(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call GetChildren() on a destroyed instance")
+        })?;
 
         let children: Vec<LuaInstance> = instance
             .get_children_ids()
@@ -115,9 +115,9 @@ impl LuaInstance {
     ) -> rlua::Result<rlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
-        let instance = tree
-            .get_instance(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+        let instance = tree.get_instance(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot access ClassName on a destroyed instance")
+        })?;
 
         instance.class_name.as_str().to_lua(context)
     }
@@ -127,7 +127,7 @@ impl LuaInstance {
 
         let instance = tree
             .get_instance(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+            .ok_or_else(|| rlua::Error::external("Cannot access Name on a destroyed instance"))?;
 
         instance.name.as_str().to_lua(context)
     }
@@ -137,7 +137,7 @@ impl LuaInstance {
 
         let instance = tree
             .get_instance_mut(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+            .ok_or_else(|| rlua::Error::external("Cannot set Name on a destroyed instance"))?;
 
         match value {
             rlua::Value::String(lua_str) => {
@@ -145,7 +145,7 @@ impl LuaInstance {
 
                 Ok(())
             }
-            _ => Err(rlua::Error::external("'Name' must be a string.")),
+            _ => Err(rlua::Error::external("Instance.Name must be a string")),
         }
     }
 
@@ -154,7 +154,7 @@ impl LuaInstance {
 
         let instance = tree
             .get_instance(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+            .ok_or_else(|| rlua::Error::external("Cannot access Parent on a destroyed instance"))?;
 
         match instance.get_parent_id() {
             Some(parent_id) => {
@@ -200,9 +200,9 @@ impl LuaInstance {
     fn meta_to_string<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
-        let instance = tree
-            .get_instance(self.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+        let instance = tree.get_instance(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot invoke tostring on a destroyed instance")
+        })?;
 
         instance.name.as_str().to_lua(context)
     }
@@ -243,7 +243,7 @@ impl LuaInstance {
     ) -> rlua::Result<()> {
         match key {
             "Name" => self.set_name(value),
-            "ClassName" => Err(rlua::Error::external("'ClassName' is read-only.")),
+            "ClassName" => Err(rlua::Error::external("Instance.ClassName is read-only.")),
             "Parent" => self.set_parent(context, value),
 
             // Setting unknown keys is an error.

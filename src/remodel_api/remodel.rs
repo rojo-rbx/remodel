@@ -105,7 +105,7 @@ impl Remodel {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
             .get_instance(lua_instance.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+            .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
         if instance.class_name != "DataModel" {
             return Err(rlua::Error::external(
@@ -125,7 +125,7 @@ impl Remodel {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
             .get_instance(lua_instance.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+            .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
         if instance.class_name == "DataModel" {
             return Err(rlua::Error::external(
@@ -142,7 +142,7 @@ impl Remodel {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
             .get_instance(lua_instance.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+            .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
         if instance.class_name == "DataModel" {
             return Err(rlua::Error::external(
@@ -204,7 +204,7 @@ impl Remodel {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
             .get_instance(lua_instance.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+            .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
         if instance.class_name == "DataModel" {
             return Err(rlua::Error::external(
@@ -227,7 +227,7 @@ impl Remodel {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
             .get_instance(lua_instance.id)
-            .ok_or_else(|| rlua::Error::external("Instance was destroyed"))?;
+            .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
         if instance.class_name != "DataModel" {
             return Err(rlua::Error::external(
