@@ -59,6 +59,7 @@ Remodel supports some parts of Roblox's API in order to make code familiar to ex
 * `<Instance>.ClassName` (read only)
 * `<Instance>.Parent` (read + write)
 * `<Instance>:Destroy()` (0.5.0+)
+* `<Instance>:Clone()`, (**unreleased**)
 * `<Instance>:GetChildren()`
 * `<Instance>:FindFirstChild(name)`
 	* The second argument (recursive) is not supported by Remodel.
