@@ -3,7 +3,7 @@
 ## Unreleased Changes
 * **Breaking:** `Instance.new` now only works for instances that actually exist.
 * Added `Instance:Clone()` for copying instances all over the place, as is Roblox tradition. ([#12](https://github.com/rojo-rbx/remodel/issues/12))
-* Added `DataModel:GetService()` for finding services and creating them if they don't exist, like Roblox does.
+* Added `DataModel:GetService()` for finding services and creating them if they don't exist, like Roblox does. ([#10](https://github.com/rojo-rbx/remodel/issues/10))
 * Improved error messages in preparation for [#7](https://github.com/rojo-rbx/remodel/issues/7) to be fixed upstream.
 
 ## 0.5.0 (2019-09-21)
