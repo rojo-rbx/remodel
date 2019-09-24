@@ -20,6 +20,13 @@ struct Instance;
 impl UserData for Instance {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_function("new", |context, class_name: String| {
+            if rbx_reflection::get_class_descriptor(&class_name).is_none() {
+                return Err(rlua::Error::external(format!(
+                    "'{}' is not a valid class of Instance.",
+                    class_name,
+                )));
+            }
+
             let master_tree = RemodelContext::get(context)?.master_tree;
             let mut master_handle = master_tree.lock().unwrap();
 
