@@ -4,6 +4,7 @@ use std::{
 };
 
 use rbx_dom_weak::{RbxId, RbxInstanceProperties, RbxTree};
+use rbx_reflection::get_class_descriptor;
 use rlua::{Context, FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
 
 #[derive(Clone)]
@@ -124,7 +125,7 @@ impl LuaInstance {
             ));
         }
 
-        match rbx_reflection::get_class_descriptor(service_name) {
+        match get_class_descriptor(service_name) {
             // We should only find services, even if there's a child of
             // DataModel with a matching ClassName.
             Some(descriptor) if descriptor.is_service() => {
