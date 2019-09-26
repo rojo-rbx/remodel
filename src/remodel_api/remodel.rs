@@ -7,9 +7,9 @@ use std::{
     sync::Arc,
 };
 
-use rbx_dom_weak::{RbxInstanceProperties, RbxTree};
+use rbx_dom_weak::{RbxInstanceProperties, RbxTree, RbxValue};
 use reqwest::header::{CONTENT_TYPE, COOKIE, USER_AGENT};
-use rlua::{Context, UserData, UserDataMethods};
+use rlua::{Context, ToLua, UserData, UserDataMethods};
 
 use super::LuaInstance;
 use crate::remodel_context::RemodelContext;
@@ -297,10 +297,37 @@ impl Remodel {
             )))
         }
     }
+
+    fn get_raw_property<'a>(
+        context: Context<'a>,
+        lua_instance: LuaInstance,
+        name: &str,
+    ) -> rlua::Result<rlua::Value<'a>> {
+        let tree = lua_instance.tree.lock().unwrap();
+
+        let instance = tree.get_instance(lua_instance.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call remodel.GetRawProperty on a destroyed instance.")
+        })?;
+
+        match instance.properties.get(name) {
+            Some(value) => match value {
+                RbxValue::String { value } => value.as_str().to_lua(context),
+                _ => unimplemented!(),
+            },
+            None => Ok(rlua::Value::Nil),
+        }
+    }
 }
 
 impl UserData for Remodel {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_function(
+            "getRawProperty",
+            |context, (instance, name): (LuaInstance, String)| {
+                Self::get_raw_property(context, instance, &name)
+            },
+        );
+
         methods.add_function("readPlaceFile", |context, lua_path: String| {
             let path = Path::new(&lua_path);
 
