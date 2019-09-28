@@ -59,11 +59,11 @@ Remodel supports some parts of Roblox's API in order to make code familiar to ex
 * `<Instance>.ClassName` (read only)
 * `<Instance>.Parent` (read + write)
 * `<Instance>:Destroy()` (0.5.0+)
-* `<Instance>:Clone()` (**unreleased**)
+* `<Instance>:Clone()` (0.6.0+)
 * `<Instance>:GetChildren()`
 * `<Instance>:FindFirstChild(name)`
 	* The second argument (recursive) is not supported by Remodel.
-* `<DataModel>:GetService(name)` (**unreleased**)
+* `<DataModel>:GetService(name)` (0.6.0+)
 
 ## Remodel API
 Remodel has its own API that goes beyond what can be done inside Roblox.
@@ -164,7 +164,7 @@ If the instance is a `DataModel`, this method will throw. Places should be uploa
 
 Throws on error.
 
-### `remodel.getRawProperty` (**unreleased**)
+### `remodel.getRawProperty` (0.6.0+)
 ```
 remodel.getRawProperty(instance: Instance, name: string): any?
 ```
@@ -175,7 +175,7 @@ This is intended to be a simple to implement but very powerful API while Remodel
 
 Throws if the value type stored on the instance cannot be represented by Remodel yet. See [Supported Roblox Types](#supported-roblox-types) for more details.
 
-### `remodel.setRawProperty` (**unreleased**)
+### `remodel.setRawProperty` (0.6.0+)
 ```
 remodel.setRawProperty(
 	instance: Instance,
