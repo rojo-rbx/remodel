@@ -7,12 +7,15 @@ use std::{
     sync::Arc,
 };
 
-use rbx_dom_weak::{RbxInstanceProperties, RbxTree, RbxValue};
+use rbx_dom_weak::{RbxInstanceProperties, RbxTree, RbxValueType};
 use reqwest::header::{CONTENT_TYPE, COOKIE, USER_AGENT};
-use rlua::{Context, ToLua, UserData, UserDataMethods};
+use rlua::{Context, UserData, UserDataMethods};
 
 use super::LuaInstance;
-use crate::remodel_context::RemodelContext;
+use crate::{
+    remodel_context::RemodelContext,
+    value::{lua_to_rbxvalue, rbxvalue_to_lua, type_from_str},
+};
 
 fn xml_encode_options() -> rbx_xml::EncodeOptions {
     rbx_xml::EncodeOptions::new().property_behavior(rbx_xml::EncodePropertyBehavior::WriteUnknown)
@@ -306,16 +309,31 @@ impl Remodel {
         let tree = lua_instance.tree.lock().unwrap();
 
         let instance = tree.get_instance(lua_instance.id).ok_or_else(|| {
-            rlua::Error::external("Cannot call remodel.GetRawProperty on a destroyed instance.")
+            rlua::Error::external("Cannot call remodel.getRawProperty on a destroyed instance.")
         })?;
 
         match instance.properties.get(name) {
-            Some(value) => match value {
-                RbxValue::String { value } => value.as_str().to_lua(context),
-                _ => unimplemented!(),
-            },
+            Some(value) => rbxvalue_to_lua(context, value),
             None => Ok(rlua::Value::Nil),
         }
+    }
+
+    fn set_raw_property(
+        lua_instance: LuaInstance,
+        key: String,
+        ty: RbxValueType,
+        lua_value: rlua::Value<'_>,
+    ) -> rlua::Result<()> {
+        let mut tree = lua_instance.tree.lock().unwrap();
+
+        let instance = tree.get_instance_mut(lua_instance.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call remodel.setRawProperty on a destroyed instance.")
+        })?;
+
+        let value = lua_to_rbxvalue(ty, lua_value)?;
+        instance.properties.insert(key, value);
+
+        Ok(())
     }
 }
 
@@ -325,6 +343,16 @@ impl UserData for Remodel {
             "getRawProperty",
             |context, (instance, name): (LuaInstance, String)| {
                 Self::get_raw_property(context, instance, &name)
+            },
+        );
+
+        methods.add_function(
+            "setRawProperty",
+            |_context, (instance, name, lua_ty, value): (LuaInstance, String, String, rlua::Value<'_>)| {
+                let ty = type_from_str(&lua_ty)
+                    .ok_or_else(|| rlua::Error::external(format!("{} is not a valid Roblox type.", lua_ty)))?;
+
+                Self::set_raw_property(instance, name, ty, value)
             },
         );
 

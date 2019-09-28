@@ -164,6 +164,33 @@ If the instance is a `DataModel`, this method will throw. Places should be uploa
 
 Throws on error.
 
+### `remodel.getRawProperty` (**unreleased**)
+```
+remodel.getRawProperty(instance: Instance, name: string): any?
+```
+
+Gets the property with the given name from the given instance, bypassing all validation.
+
+This is intended to be a simple to implement but very powerful API while Remodel grows more ergonomic functionality.
+
+Throws if the value type stored on the instance cannot be represented by Remodel yet. See [Supported Roblox Types](#supported-roblox-types) for more details.
+
+### `remodel.setRawProperty` (**unreleased**)
+```
+remodel.setRawProperty(
+	instance: Instance,
+	name: string,
+	type: string,
+	value: any,
+)
+```
+
+Sets a property on the given instance with the name, type, and value given. Valid values for `type` are defined in [Supported Roblox Types](#supported-roblox-types) in the left half of the bulleted list.
+
+This is intended to be a simple to implement but very powerful API while Remodel grows more ergonomic functionality.
+
+Throws if the value type cannot be represented by Remodel yet. See [Supported Roblox Types](#supported-roblox-types) for more details.
+
 ### `remodel.readFile` (0.3.0+)
 ```
 remodel.readFile(path: string): string
@@ -201,6 +228,21 @@ Makes a directory at the given path, as well as all parent directories that do n
 This is a thin wrapper around Rust's [`fs::create_dir_all`](https://doc.rust-lang.org/std/fs/fn.create_dir_all.html) function. Similar to `mkdir -p` from Unix.
 
 Throws on error.
+
+## Supported Roblox Types
+When interacting with Roblox instances, Remodel doesn't support all value types yet and may throw an error.
+
+Supported types and their Lua equivalents:
+
+* `String`: `string`
+* `Content`: `string`
+* `Bool`: `boolean`
+* `Float64`: `number`
+* `Float32`: `number`
+* `Int64`: `number`
+* `Int32`: `number`
+
+More types will be added as time goes on, and Remodel will slowly begin to automatically infer correct types in more contexts.
 
 ## Authentication
 Some of Remodel's APIs access the Roblox web API and need authentication in the form of a `.ROBLOSECURITY` cookie to access private assets. Auth cookies look like this:

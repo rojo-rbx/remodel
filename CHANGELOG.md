@@ -4,7 +4,8 @@
 * **Breaking:** `Instance.new` now only works for instances that actually exist.
 * Added `Instance:Clone()` for copying instances all over the place, as is Roblox tradition. ([#12](https://github.com/rojo-rbx/remodel/issues/12))
 * Added `DataModel:GetService()` for finding services and creating them if they don't exist, like Roblox does. ([#10](https://github.com/rojo-rbx/remodel/issues/10))
-* Added `remodel.getRawProperty(instance, name)` for an initial stab at reading property values.
+* Added `remodel.getRawProperty(instance, name)`, a clunky but powerful API for reading properties with no validation.
+* Added `remodel.setRawProperty(instance, name, type, value)` for writing properties with no validation.
 * Fixed Remodel dropping unknown properties when reading/writing XML models. This should make Remodel's behavior line up with Rojo.
 * Improved error messages in preparation for [#7](https://github.com/rojo-rbx/remodel/issues/7) to be fixed upstream.
 
