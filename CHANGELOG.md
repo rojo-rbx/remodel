@@ -2,6 +2,11 @@
 
 ## Unreleased Changes
 
+## 0.6.1 (2019-12-11)
+* Upgraded reflection database and dependencies.
+	* Error messages should now be improved, thanks to an rlua upgrade
+	* XML models with CRLF line endings should no longer error spuriously, thanks to an rbx_xml upgrade
+
 ## 0.6.0 (2019-09-27)
 * **Breaking:** `Instance.new` now only works for instances that actually exist.
 * Added `Instance:Clone()` for copying instances all over the place, as is Roblox tradition. ([#12](https://github.com/rojo-rbx/remodel/issues/12))
