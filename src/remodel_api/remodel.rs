@@ -33,7 +33,7 @@ impl Remodel {
         let source_tree =
             rbx_xml::from_reader(file, xml_decode_options()).map_err(rlua::Error::external)?;
 
-        Remodel::import_place_tree(context, source_tree)
+        Remodel::import_tree_root(context, source_tree)
     }
 
     fn read_xml_model_file<'lua>(
@@ -44,7 +44,7 @@ impl Remodel {
         let source_tree =
             rbx_xml::from_reader(file, xml_decode_options()).map_err(rlua::Error::external)?;
 
-        Remodel::import_model_tree(context, source_tree)
+        Remodel::import_tree_children(context, source_tree)
     }
 
     fn read_binary_model_file<'lua>(
@@ -63,10 +63,10 @@ impl Remodel {
         rbx_binary::decode(&mut source_tree, root_id, file)
             .map_err(|err| rlua::Error::external(format!("{:?}", err)))?;
 
-        Remodel::import_model_tree(context, source_tree)
+        Remodel::import_tree_children(context, source_tree)
     }
 
-    fn import_model_tree(
+    pub fn import_tree_children(
         context: Context<'_>,
         mut source_tree: RbxTree,
     ) -> rlua::Result<Vec<LuaInstance>> {
@@ -90,7 +90,7 @@ impl Remodel {
         Ok(instances)
     }
 
-    fn import_place_tree(
+    pub fn import_tree_root(
         context: Context<'_>,
         mut source_tree: RbxTree,
     ) -> rlua::Result<LuaInstance> {
@@ -192,7 +192,7 @@ impl Remodel {
         let source_tree =
             rbx_xml::from_reader(response, xml_decode_options()).map_err(rlua::Error::external)?;
 
-        Remodel::import_model_tree(context, source_tree)
+        Remodel::import_tree_children(context, source_tree)
     }
 
     fn read_place_asset(context: Context<'_>, asset_id: u64) -> rlua::Result<LuaInstance> {
@@ -214,7 +214,7 @@ impl Remodel {
         let source_tree =
             rbx_xml::from_reader(response, xml_decode_options()).map_err(rlua::Error::external)?;
 
-        Remodel::import_place_tree(context, source_tree)
+        Remodel::import_tree_root(context, source_tree)
     }
 
     fn write_existing_model_asset(
