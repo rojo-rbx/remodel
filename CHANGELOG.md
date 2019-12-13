@@ -1,6 +1,7 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added `remodel.isFile` and `remodel.isDir`.
 
 ## 0.6.1 (2019-12-11)
 * Upgraded reflection database and dependencies.

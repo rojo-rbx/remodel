@@ -495,5 +495,15 @@ impl UserData for Remodel {
         methods.add_function("createDirAll", |_context, path: String| {
             fs::create_dir_all(path).map_err(rlua::Error::external)
         });
+
+        methods.add_function("isFile", |_context, path: String| {
+            let meta = fs::metadata(path).map_err(rlua::Error::external)?;
+            Ok(meta.is_file())
+        });
+
+        methods.add_function("isDir", |_context, path: String| {
+            let meta = fs::metadata(path).map_err(rlua::Error::external)?;
+            Ok(meta.is_dir())
+        });
     }
 }

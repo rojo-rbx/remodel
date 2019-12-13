@@ -229,6 +229,28 @@ This is a thin wrapper around Rust's [`fs::create_dir_all`](https://doc.rust-lan
 
 Throws on error.
 
+### `remodel.isFile` (Unreleased)
+```
+remodel.isFile(path: string): bool
+```
+
+Tells whether the given path is a file.
+
+This is a thin wrapper around Rust's [`fs::metadata`](https://doc.rust-lang.org/std/fs/fn.metadata.html) function.
+
+Throws on error, like if the path does not exist.
+
+### `remodel.isDir` (Unreleased)
+```
+remodel.isDir(path: string): bool
+```
+
+Tells whether the given path is a directory.
+
+This is a thin wrapper around Rust's [`fs::metadata`](https://doc.rust-lang.org/std/fs/fn.metadata.html) function.
+
+Throws on error, like if the path does not exist.
+
 ## Supported Roblox Types
 When interacting with Roblox instances, Remodel doesn't support all value types yet and may throw an error.
 
