@@ -2,6 +2,8 @@
 
 ## Unreleased Changes
 * Added `remodel.isFile` and `remodel.isDir`.
+* Added (experimental) support for building Rojo projects through `rojo.buildProject`.
+* Added support for reading the auth cookie through the `REMODEL_AUTH` environment variable.
 
 ## 0.6.1 (2019-12-11)
 * Upgraded reflection database and dependencies.
