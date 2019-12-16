@@ -251,6 +251,17 @@ This is a thin wrapper around Rust's [`fs::metadata`](https://doc.rust-lang.org/
 
 Throws on error, like if the path does not exist.
 
+## Rojo API
+
+### `rojo.buildProject` (Unreleased)
+```
+rojo.buildProject(project: table): Instance
+```
+
+Builds a Rojo project from a Lua table and returns its root instance.
+
+Throws on error.
+
 ## Supported Roblox Types
 When interacting with Roblox instances, Remodel doesn't support all value types yet and may throw an error.
 
