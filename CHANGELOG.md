@@ -5,6 +5,8 @@
 * Added `remodel.isFile` and `remodel.isDir`.
 * Added (experimental) support for building Rojo projects through `rojo.buildProject`.
 * Added support for reading the auth cookie through the `REMODEL_AUTH` environment variable.
+* Added support for Remodel looking for scripts in the `.remodel` folder of a project
+	* `remodel foo` will look for `foo` as well as `.remodel/foo.lua` now!
 
 ## 0.6.1 (2019-12-11)
 * Upgraded reflection database and dependencies.
