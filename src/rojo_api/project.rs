@@ -1,4 +1,7 @@
-use std::path::PathBuf;
+use std::{
+    collections::{BTreeMap, HashMap},
+    path::PathBuf,
+};
 
 use librojo::project::{Project, ProjectNode};
 use rlua::{Context, FromLua, Value};
@@ -39,7 +42,7 @@ impl<'lua> FromLua<'lua> for RemodelProject {
 struct RemodelProjectNode(ProjectNode);
 
 impl<'lua> FromLua<'lua> for RemodelProjectNode {
-    fn from_lua(lua_value: Value<'lua>, _context: Context<'lua>) -> rlua::Result<Self> {
+    fn from_lua(lua_value: Value<'lua>, context: Context<'lua>) -> rlua::Result<Self> {
         let lua_table = match lua_value {
             Value::Table(table) => table,
             _ => {
@@ -51,17 +54,38 @@ impl<'lua> FromLua<'lua> for RemodelProjectNode {
             }
         };
 
-        let path: Option<String> = lua_table.get("$path")?;
-        let path = path.map(|value| PathBuf::from(value));
+        let mut path = None;
+        let mut class_name = None;
+        let mut ignore_unknown_instances = None;
+        let mut children = BTreeMap::new();
+        let properties = HashMap::new();
 
-        let class_name: Option<String> = lua_table.get("$className")?;
+        for pair in lua_table.pairs::<String, Value<'_>>() {
+            let (key, value) = pair?;
+
+            match key.as_str() {
+                "$path" => path = Some(String::from_lua(value, context)?),
+                "$className" => class_name = Some(String::from_lua(value, context)?),
+                "$ignoreUnknownInstances" => {
+                    ignore_unknown_instances = Some(bool::from_lua(value, context)?)
+                }
+                "$properties" => {
+                    return Err(rlua::Error::external("$properties is not implemented yet"));
+                }
+                _ => {
+                    children.insert(key, RemodelProjectNode::from_lua(value, context)?.0);
+                }
+            }
+        }
+
+        let path = path.map(|value| PathBuf::from(value));
 
         let project_node = ProjectNode {
             path,
             class_name,
-            properties: Default::default(),
-            ignore_unknown_instances: None,
-            children: Default::default(),
+            children,
+            properties,
+            ignore_unknown_instances,
         };
 
         Ok(RemodelProjectNode(project_node))
