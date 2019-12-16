@@ -251,6 +251,26 @@ This is a thin wrapper around Rust's [`fs::metadata`](https://doc.rust-lang.org/
 
 Throws on error, like if the path does not exist.
 
+## JSON API
+
+### `json.fromString` (Unreleased)
+```
+json.fromString(source: string): any
+```
+
+Decodes a string containing JSON.
+
+Throws on error, like if the input JSON is invalid.
+
+### `json.toString` (Unreleased)
+```
+json.toString(value: any): string
+```
+
+Encodes a Lua object as a JSON string. Can only encode Lua primitives like tables, strings, numbers, bools, and nil. Instances cannot be encoded to JSON.
+
+Throws on error, like if the input table cannot be encoded.
+
 ## Rojo API
 
 ### `rojo.buildProject` (Unreleased)

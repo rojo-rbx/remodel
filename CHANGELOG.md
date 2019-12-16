@@ -1,6 +1,7 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added `json.fromString` and `json.toString` for encoding/decoding JSON
 * Added `remodel.isFile` and `remodel.isDir`.
 * Added (experimental) support for building Rojo projects through `rojo.buildProject`.
 * Added support for reading the auth cookie through the `REMODEL_AUTH` environment variable.
