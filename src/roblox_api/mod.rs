@@ -1,9 +1,13 @@
+mod instance;
+
 use std::sync::Arc;
 
 use rbx_dom_weak::RbxInstanceProperties;
 use rlua::{Context, UserData, UserDataMethods};
 
-use crate::{remodel_api::LuaInstance, remodel_context::RemodelContext};
+use crate::remodel_context::RemodelContext;
+
+pub use instance::LuaInstance;
 
 pub struct RobloxApi;
 

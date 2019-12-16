@@ -11,9 +11,9 @@ use rbx_dom_weak::{RbxInstanceProperties, RbxTree, RbxValueType};
 use reqwest::header::{CONTENT_TYPE, COOKIE, USER_AGENT};
 use rlua::{Context, UserData, UserDataMethods};
 
-use super::LuaInstance;
 use crate::{
     remodel_context::RemodelContext,
+    roblox_api::LuaInstance,
     value::{lua_to_rbxvalue, rbxvalue_to_lua, type_from_str},
 };
 
