@@ -34,7 +34,7 @@ struct Options {
     script_arguments: Vec<String>,
 
     /// The .ROBLOSECURITY cookie to use for authenticating to the Roblox API.
-    #[structopt(long = "auth")]
+    #[structopt(long = "auth", env = "REMODEL_AUTH", hide_env_values = true)]
     auth_cookie: Option<String>,
 }
 
