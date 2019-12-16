@@ -2,6 +2,7 @@ mod auth_cookie;
 mod remodel_api;
 mod remodel_context;
 mod roblox_api;
+mod rojo_api;
 mod value;
 
 use std::{
@@ -16,7 +17,7 @@ use structopt::StructOpt;
 
 use crate::{
     auth_cookie::get_auth_cookie, remodel_api::RemodelApi, remodel_context::RemodelContext,
-    roblox_api::RobloxApi,
+    roblox_api::RobloxApi, rojo_api::RojoApi,
 };
 
 #[derive(Debug, StructOpt)]
@@ -74,6 +75,7 @@ fn start() -> Result<(), Box<dyn Error>> {
 
         RemodelApi::inject(context)?;
         RobloxApi::inject(context)?;
+        RojoApi::inject(context)?;
 
         let chunk = context.load(&contents).set_name(&chunk_name)?;
         chunk.call(MultiValue::from_vec(lua_args))
