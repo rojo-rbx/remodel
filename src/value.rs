@@ -99,7 +99,7 @@ pub fn lua_to_rbxvalue(ty: RbxValueType, value: LuaValue<'_>) -> LuaResult<RbxVa
             value: value as i64,
         }),
 
-        (RbxValueType::Color3, LuaValue::UserData(user_data))
+        (RbxValueType::Color3, LuaValue::UserData(ref user_data))
             if user_data.is::<Color3Value>() =>
         {
             let color = &*user_data.borrow::<Color3Value>().unwrap();
