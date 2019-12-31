@@ -2,7 +2,7 @@
 
 use rbx_dom_weak::{RbxValue, RbxValueType};
 use rlua::{
-    Context, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue
+    Context, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
 
 pub fn rbxvalue_to_lua<'lua>(
