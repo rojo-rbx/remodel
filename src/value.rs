@@ -1,7 +1,15 @@
 //! Defines how to turn RbxValue values into Lua values and back.
 
 use rbx_dom_weak::{RbxValue, RbxValueType};
-use rlua::{Context, Result as LuaResult, ToLua, Value as LuaValue};
+use rlua::{
+    Context,
+    MetaMethod,
+    Result as LuaResult,
+    ToLua,
+    UserData,
+    UserDataMethods,
+    Value as LuaValue
+};
 
 pub fn rbxvalue_to_lua<'lua>(
     context: Context<'lua>,
@@ -21,7 +29,7 @@ pub fn rbxvalue_to_lua<'lua>(
         BrickColor { value: _ } => unimplemented_type("BrickColor"),
         Bool { value } => value.to_lua(context),
         CFrame { value: _ } => unimplemented_type("CFrame"),
-        Color3 { value: _ } => unimplemented_type("Color3"),
+        Color3 { value: values } => Color3Value::new(values.clone()).to_lua(context),
         Color3uint8 { value: _ } => unimplemented_type("Color3uint8"),
         ColorSequence { value: _ } => unimplemented_type("ColorSequence"),
         Content { value } => value.as_str().to_lua(context),
@@ -91,6 +99,13 @@ pub fn lua_to_rbxvalue(ty: RbxValueType, value: LuaValue<'_>) -> LuaResult<RbxVa
             value: value as i64,
         }),
 
+        (RbxValueType::Color3, LuaValue::UserData(user_data))
+            if user_data.is::<Color3Value>() =>
+        {
+            let color = &*user_data.borrow::<Color3Value>().unwrap();
+            Ok(color.into())
+        }
+
         (_, unknown_value) => Err(rlua::Error::external(format!(
             "The Lua value {:?} could not be converted to the Roblox type {:?}",
             unknown_value, ty
@@ -130,5 +145,37 @@ pub fn type_from_str(name: &str) -> Option<RbxValueType> {
         "Vector3" => Some(Vector3),
         "Vector3int16" => Some(Vector3int16),
         _ => None,
+    }
+}
+
+struct Color3Value {
+    value: [f32; 3],
+}
+
+impl Color3Value {
+    pub fn new(value: [f32; 3]) -> Self {
+        Self {
+            value,
+        }
+    }
+
+    fn meta_to_string<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+        format!("{}, {}, {}", self.value[0], self.value[1], self.value[2]).to_lua(context)
+    }
+}
+
+impl From<&Color3Value> for RbxValue {
+    fn from(color: &Color3Value) -> RbxValue {
+        RbxValue::Color3 {
+            value: color.value.clone(),
+        }
+    }
+}
+
+impl UserData for Color3Value {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.meta_to_string(context)
+        });
     }
 }
