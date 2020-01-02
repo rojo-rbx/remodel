@@ -25,7 +25,7 @@ pub fn rbxvalue_to_lua<'lua>(
         Bool { value } => value.to_lua(context),
         CFrame { value: _ } => unimplemented_type("CFrame"),
         Color3 { value } => Color3Value::new(value.clone()).to_lua(context),
-        Color3uint8 { value: _ } => unimplemented_type("Color3uint8"),
+        Color3uint8 { value } => Color3uint8Value::new(value.clone()).to_lua(context),
         ColorSequence { value: _ } => unimplemented_type("ColorSequence"),
         Content { value } => value.as_str().to_lua(context),
         Enum { value: _ } => unimplemented_type("Enum"),
@@ -98,6 +98,10 @@ pub fn lua_to_rbxvalue(ty: RbxValueType, value: LuaValue<'_>) -> LuaResult<RbxVa
             let color = &*user_data.borrow::<Color3Value>()?;
             Ok(color.into())
         }
+        (RbxValueType::Color3uint8, LuaValue::UserData(ref user_data)) => {
+            let color = &*user_data.borrow::<Color3uint8Value>()?;
+            Ok(color.into())
+        }
 
         (_, unknown_value) => Err(rlua::Error::external(format!(
             "The Lua value {:?} could not be converted to the Roblox type {:?}",
@@ -165,6 +169,37 @@ impl From<&Color3Value> for RbxValue {
 }
 
 impl UserData for Color3Value {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.to_string().to_lua(context)
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Color3uint8Value {
+    value: [u8; 3],
+}
+
+impl fmt::Display for Color3uint8Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}, {}, {}", self.value[0], self.value[1], self.value[2])
+    }
+}
+
+impl Color3uint8Value {
+    pub fn new(value: [u8; 3]) -> Self {
+        Self { value }
+    }
+}
+
+impl From<&Color3uint8Value> for RbxValue {
+    fn from(color: &Color3uint8Value) -> RbxValue {
+        RbxValue::Color3uint8 { value: color.value }
+    }
+}
+
+impl UserData for Color3uint8Value {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
             this.to_string().to_lua(context)
