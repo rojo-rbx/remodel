@@ -4,6 +4,7 @@ use rbx_dom_weak::{RbxValue, RbxValueType};
 use rlua::{
     Context, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
+use std::fmt;
 
 pub fn rbxvalue_to_lua<'lua>(
     context: Context<'lua>,
@@ -23,7 +24,7 @@ pub fn rbxvalue_to_lua<'lua>(
         BrickColor { value: _ } => unimplemented_type("BrickColor"),
         Bool { value } => value.to_lua(context),
         CFrame { value: _ } => unimplemented_type("CFrame"),
-        Color3 { value: values } => Color3Value::new(values.clone()).to_lua(context),
+        Color3 { value } => Color3Value::new(value.clone()).to_lua(context),
         Color3uint8 { value: _ } => unimplemented_type("Color3uint8"),
         ColorSequence { value: _ } => unimplemented_type("ColorSequence"),
         Content { value } => value.as_str().to_lua(context),
@@ -93,10 +94,8 @@ pub fn lua_to_rbxvalue(ty: RbxValueType, value: LuaValue<'_>) -> LuaResult<RbxVa
             value: value as i64,
         }),
 
-        (RbxValueType::Color3, LuaValue::UserData(ref user_data))
-            if user_data.is::<Color3Value>() =>
-        {
-            let color = &*user_data.borrow::<Color3Value>().unwrap();
+        (RbxValueType::Color3, LuaValue::UserData(ref user_data)) => {
+            let color = &*user_data.borrow::<Color3Value>()?;
             Ok(color.into())
         }
 
@@ -142,32 +141,33 @@ pub fn type_from_str(name: &str) -> Option<RbxValueType> {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 struct Color3Value {
     value: [f32; 3],
+}
+
+impl fmt::Display for Color3Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}, {}, {}", self.value[0], self.value[1], self.value[2])
+    }
 }
 
 impl Color3Value {
     pub fn new(value: [f32; 3]) -> Self {
         Self { value }
     }
-
-    fn meta_to_string<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
-        format!("{}, {}, {}", self.value[0], self.value[1], self.value[2]).to_lua(context)
-    }
 }
 
 impl From<&Color3Value> for RbxValue {
     fn from(color: &Color3Value) -> RbxValue {
-        RbxValue::Color3 {
-            value: color.value.clone(),
-        }
+        RbxValue::Color3 { value: color.value }
     }
 }
 
 impl UserData for Color3Value {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
-            this.meta_to_string(context)
+            this.to_string().to_lua(context)
         });
     }
 }
