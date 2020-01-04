@@ -2,8 +2,10 @@ mod auth_cookie;
 mod remodel_api;
 mod remodel_context;
 mod roblox_api;
-mod rojo_api;
 mod value;
+
+#[cfg(feature = "unstable_rojo_api")]
+mod rojo_api;
 
 use std::{
     error::Error,
@@ -17,7 +19,7 @@ use structopt::StructOpt;
 
 use crate::{
     auth_cookie::get_auth_cookie, remodel_api::RemodelApi, remodel_context::RemodelContext,
-    roblox_api::RobloxApi, rojo_api::RojoApi,
+    roblox_api::RobloxApi,
 };
 
 #[derive(Debug, StructOpt)]
@@ -59,7 +61,11 @@ fn start() -> Result<(), Box<dyn Error>> {
 
         RemodelApi::inject(context)?;
         RobloxApi::inject(context)?;
-        RojoApi::inject(context)?;
+
+        #[cfg(feature = "unstable_rojo_api")]
+        {
+            rojo_api::RojoApi::inject(context)?;
+        }
 
         let chunk = context.load(&contents).set_name(&chunk_name)?;
         chunk.call(MultiValue::from_vec(lua_args))

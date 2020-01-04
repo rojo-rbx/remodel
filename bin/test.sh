@@ -2,7 +2,7 @@
 
 set -e
 
-cargo build
+cargo build "$@"
 
 if [ -e temp ]; then
 	rm -r temp

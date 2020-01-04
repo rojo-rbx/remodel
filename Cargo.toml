@@ -10,6 +10,12 @@ documentation = "https://github.com/rojo-rbx/remodel"
 repository = "https://github.com/rojo-rbx/remodel"
 readme = "README.md"
 
+[features]
+default = []
+
+# Enables the unstable Rojo API for Remodel
+unstable_rojo_api = ["rojo"]
+
 [dependencies]
 log = "0.4.8"
 rbx_binary = "0.4.1"
@@ -21,7 +27,7 @@ rlua = "0.17.0"
 structopt = "0.3.1"
 serde = "1.0.104"
 serde_json = "1.0.44"
-rojo = { git = "https://github.com/rojo-rbx/rojo.git", rev = "build-api" }
+rojo = { git = "https://github.com/rojo-rbx/rojo.git", rev = "build-api", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.6.2"

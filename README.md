@@ -272,8 +272,11 @@ Encodes a Lua object as a JSON string. Can only encode Lua primitives like table
 Throws on error, like if the input table cannot be encoded.
 
 ## Rojo API
+The Rojo API is unstable and not enabled by default. It may break, disappear, or eat your lunch at will.
 
-### `rojo.buildProject` (Unreleased)
+To enable it, build Remodel with the `unstable_rojo_api` feature enabled.
+
+### `rojo.buildProject` (Unstable)
 ```
 rojo.buildProject(project: table): Instance
 ```

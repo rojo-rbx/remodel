@@ -16,17 +16,30 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+
     - name: Setup Rust toolchain
       run: |
         rustup default ${{ matrix.rust_version }}
         rustup component add clippy rustfmt
-    - name: Build
+
+    - name: Build (default)
       run: cargo build --locked --verbose
-    - name: Run tests
+
+    - name: Run tests (default)
       run: |
         cargo test --locked --verbose
         ./bin/test.sh
-    - name: Clippy
-      run: cargo clippy
-    - name: Rustfmt check
-      run: cargo fmt -- --check
+
+    - name: Build (default)
+      run: cargo build --all-features --locked --verbose
+
+    - name: Run tests (default)
+      run: |
+        cargo test --all-features --locked --verbose
+        ./bin/test.sh --all-features
+
+    - name: Rustfmt and Clippy
+      run: |
+        cargo fmt -- --check
+        cargo clippy
+      if: matrix.rust_version == 'stable'
