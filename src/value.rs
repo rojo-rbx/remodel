@@ -160,6 +160,22 @@ impl Color3Value {
     pub fn new(value: [f32; 3]) -> Self {
         Self { value }
     }
+
+    fn meta_index<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+    ) -> rlua::Result<rlua::Value<'lua>> {
+        match key {
+            "r" => self.value[0].to_lua(context),
+            "g" => self.value[1].to_lua(context),
+            "b" => self.value[2].to_lua(context),
+            _ => Err(rlua::Error::external(format!(
+                "'{}' is not a valid member of Color3",
+                key
+            ))),
+        }
+    }
 }
 
 impl From<&Color3Value> for RbxValue {
@@ -172,6 +188,10 @@ impl UserData for Color3Value {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
             this.to_string().to_lua(context)
+        });
+
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
         });
     }
 }
