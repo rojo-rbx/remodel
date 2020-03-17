@@ -8,12 +8,14 @@ mod value;
 mod rojo_api;
 
 use std::{
-    error::Error,
-    fs,
+    env, fs,
     io::{self, Read},
+    panic,
     path::{Path, PathBuf},
+    process,
 };
 
+use backtrace::Backtrace;
 use rlua::{Lua, MultiValue, ToLua};
 use structopt::StructOpt;
 
@@ -27,9 +29,15 @@ use crate::{
     about = env!("CARGO_PKG_DESCRIPTION"),
     author = env!("CARGO_PKG_AUTHORS"),
 )]
-pub struct Options {
+struct Options {
     #[structopt(subcommand)]
     subcommand: Subcommand,
+
+    /// Enables more verbose logging.
+    ///
+    /// Can be specified up to 3 times to increase verbosity.
+    #[structopt(long("verbose"), short, global(true), parse(from_occurrences))]
+    verbosity: u8,
 
     /// The .ROBLOSECURITY cookie to use for authenticating to the Roblox API.
     ///
@@ -37,12 +45,7 @@ pub struct Options {
     /// Windows if it is installed and you are logged in.
     ///
     /// Can also be passed via the REMODEL_AUTH environment variable.
-    #[structopt(
-        long = "auth",
-        env = "REMODEL_AUTH",
-        hide_env_values = true,
-        global = true
-    )]
+    #[structopt(long("auth"), env("REMODEL_AUTH"), hide_env_values(true), global(true))]
     auth_cookie: Option<String>,
 }
 
@@ -62,13 +65,21 @@ enum Subcommand {
     },
 }
 
-fn start() -> Result<(), Box<dyn Error>> {
-    env_logger::from_env(env_logger::Env::default().default_filter_or("warn")).init();
+fn main() {
+    let options = Options::from_args();
+    initialize_logger(options.verbosity);
+    install_panic_hook();
 
-    let opt = Options::from_args();
-    let auth_cookie = opt.auth_cookie.or_else(get_auth_cookie);
+    if let Err(err) = run(options) {
+        log::error!("{:?}", err);
+        process::exit(1);
+    }
+}
 
-    match opt.subcommand {
+fn run(options: Options) -> Result<(), anyhow::Error> {
+    let auth_cookie = options.auth_cookie.or_else(get_auth_cookie);
+
+    match options.subcommand {
         Subcommand::Run { script, args } => {
             let (contents, chunk_name) = load_script(&script)?;
             let lua = Lua::new();
@@ -160,12 +171,65 @@ fn load_script(script: &str) -> io::Result<(String, String)> {
     }
 }
 
-fn main() {
-    match start() {
-        Ok(_) => {}
-        Err(e) => {
-            eprintln!("{}", e);
-            std::process::exit(1);
+fn initialize_logger(verbosity: u8) {
+    let log_filter = match verbosity {
+        0 => "info",
+        1 => "info,remodel=debug",
+        2 => "info,remodel=trace",
+        _ => "trace",
+    };
+
+    let log_env = env_logger::Env::default().default_filter_or(log_filter);
+
+    env_logger::Builder::from_env(log_env)
+        .format_module_path(false)
+        .format_timestamp(None)
+        // Indent following lines equal to the log level label, like `[ERROR] `
+        .format_indent(Some(8))
+        .init();
+}
+
+fn install_panic_hook() {
+    panic::set_hook(Box::new(|panic_info| {
+        // PanicInfo's payload is usually a &'static str or String.
+        // See: https://doc.rust-lang.org/beta/std/panic/struct.PanicInfo.html#method.payload
+        let message = match panic_info.payload().downcast_ref::<&str>() {
+            Some(message) => message.to_string(),
+            None => match panic_info.payload().downcast_ref::<String>() {
+                Some(message) => message.clone(),
+                None => "<no message>".to_string(),
+            },
+        };
+
+        log::error!("Remodel crashed!");
+        log::error!("This may be a Remodel bug.");
+        log::error!("");
+        log::error!(
+            "Please consider filing an issue: {}/issues",
+            env!("CARGO_PKG_REPOSITORY")
+        );
+        log::error!("");
+        log::error!("Details: {}", message);
+
+        if let Some(location) = panic_info.location() {
+            log::error!("in file {} on line {}", location.file(), location.line());
         }
-    }
+
+        // When using the backtrace crate, we need to check the RUST_BACKTRACE
+        // environment variable ourselves. Once we switch to the (currently
+        // unstable) std::backtrace module, we won't need to do this anymore.
+        let should_backtrace = env::var("RUST_BACKTRACE")
+            .map(|var| var == "1")
+            .unwrap_or(false);
+
+        if should_backtrace {
+            eprintln!("{:?}", Backtrace::new());
+        } else {
+            eprintln!(
+                "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace."
+            );
+        }
+
+        process::exit(1);
+    }));
 }

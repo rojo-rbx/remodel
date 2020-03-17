@@ -3,6 +3,7 @@
 ## Unreleased Changes
 * **Breaking**: Moved script execution to `remodel run` to make room for new subcommands.
 	* If you previously used `remodel foo.lua`, use `remodel run foo.lua` now.
+* Added `--verbose` and `-v` flags for setting verbosity.
 * Added `json.fromString` and `json.toString` for encoding/decoding JSON
 * Added `remodel.isFile` and `remodel.isDir`.
 * Added support for reading the auth cookie through the `REMODEL_AUTH` environment variable.
@@ -10,6 +11,7 @@
 	* `remodel run foo` will now run `.remodel/foo.lua` if it exists.
 * Added (experimental) support for building Rojo projects through `rojo.buildProject`.
 	* This is behind the `unstable_rojo_api` Cargo feature and is not enabled by default.
+* Improved logging and error reporting across the board.
 
 ## 0.6.1 (2019-12-11)
 * Upgraded reflection database and dependencies.
