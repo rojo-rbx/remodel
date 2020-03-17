@@ -12,7 +12,7 @@ mkdir temp
 
 for script in test-scripts/*.lua; do
 	echo "Running $(basename "$script" .lua)"
-	./target/debug/remodel "$script"
+	./target/debug/remodel run "$script"
 done
 
 if [ ! -z "${REMODEL_AUTH_TESTS}" ]; then
@@ -22,6 +22,6 @@ if [ ! -z "${REMODEL_AUTH_TESTS}" ]; then
 
 	for script in test-scripts-extra/*.lua; do
 		echo "Running $(basename "$script" .lua)"
-		./target/debug/remodel "$script"
+		./target/debug/remodel run "$script"
 	done
 fi

@@ -10,21 +10,22 @@ Remodel is still in early development, but much of its API is already fairly sta
 
 ## Installation
 
+### With [Foreman](https://github.com/rojo-rbx/foreman)
+Remodel can be installed with Foreman, a toolchain manager for Roblox projects:
+
+```toml
+[tools]
+remodel = { source = "rojo-rbx/remodel", version = "0.6.1" }
+```
+
 ### From GitHub Releases
-You can download pre-built Windows and macOS binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
+You can download pre-built binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
 
 ### From crates.io
-You'll need Rust 1.37+.
+You'll need Rust 1.37.0 or newer.
 
 ```bash
 cargo install remodel
-```
-
-### Latest development changes (unstable!!)
-You'll need Rust 1.37+.
-
-```bash
-cargo install --git https://github.com/rojo-rbx/remodel
 ```
 
 ## Quick Start
@@ -309,13 +310,15 @@ _|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-
 
 **Auth cookies are very sensitive information! If you're using Remodel on a remote server like Travis CI or GitHub Actions, you should create a throwaway account with limited permissions in a group to ensure your valuable accounts are not compromised!**
 
-If you're on Windows, Remodel will attempt to use the cookie from a logged in Roblox Studio session to authenticate all requests.
+On Windows, Remodel will attempt to use the cookie from a logged in Roblox Studio session to authenticate all requests.
 
 To give a different auth cookie to Remodel, use the `--auth` argument:
 
 ```
 remodel foo.lua --auth "$MY_AUTH_COOKIE"
 ```
+
+You can also define the `REMODEL_AUTH` environment variable to avoid passing `--auth` as an argument.
 
 ## Remodel vs rbxmk
 Remodel is similar to [rbxmk](https://github.com/Anaminus/rbxmk):
