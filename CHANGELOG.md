@@ -1,6 +1,8 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+
+## 0.7.0 (2020-04-19)
 * **Breaking**: Moved script execution to `remodel run` to make room for new subcommands.
 	* If you previously used `remodel foo.lua`, use `remodel run foo.lua` now.
 * Added `--verbose` and `-v` flags for setting verbosity.

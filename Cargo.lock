@@ -1258,7 +1258,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "remodel"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "anyhow 1.0.27 (registry+https://github.com/rust-lang/crates.io-index)",
  "backtrace 0.3.45 (registry+https://github.com/rust-lang/crates.io-index)",

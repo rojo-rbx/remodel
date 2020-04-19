@@ -6,7 +6,7 @@
 
 Remodel is a command line tool for manipulating Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
 
-Remodel is still in early development, but much of its API is already fairly stable. Feedback is welcome!
+Remodel is still in early development, but much of its API is already stable. Feedback is welcome!
 
 ## Installation
 
@@ -315,7 +315,7 @@ On Windows, Remodel will attempt to use the cookie from a logged in Roblox Studi
 To give a different auth cookie to Remodel, use the `--auth` argument:
 
 ```
-remodel foo.lua --auth "$MY_AUTH_COOKIE"
+remodel run foo.lua --auth "$MY_AUTH_COOKIE"
 ```
 
 You can also define the `REMODEL_AUTH` environment variable to avoid passing `--auth` as an argument.
