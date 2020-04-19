@@ -93,7 +93,7 @@ Throws on error.
 
 ### `remodel.readPlaceAsset` (0.5.0+)
 ```
-remodel.readPlaceAsset(assetId: string): List<Instance>
+remodel.readPlaceAsset(assetId: string): Instance
 ```
 
 Reads a place asset from Roblox.com, equivalent to `remodel.readPlaceFile`.
