@@ -4,6 +4,8 @@
 [![Remodel on crates.io](https://img.shields.io/crates/v/remodel.svg?label=crates.io)](https://crates.io/crates/remodel)
 [![Actions Status](https://github.com/Roblox/remodel/workflows/CI/badge.svg)](https://github.com/Roblox/remodel/actions)
 
+**Heads up! This repository was recently migrated from [the rojo-rbx org](https://github.com/rojo-rbx) to [the Roblox org](https://github.com/Roblox). Not much else has changed.**
+
 Remodel is a command line tool for manipulating Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
 
 Remodel is still in early development, but much of its API is already stable. Feedback is welcome!
