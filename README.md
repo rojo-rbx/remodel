@@ -2,7 +2,7 @@
 <h1 align="left">Remodel</h1>
 
 [![Remodel on crates.io](https://img.shields.io/crates/v/remodel.svg?label=crates.io)](https://crates.io/crates/remodel)
-[![Actions Status](https://github.com/rojo-rbx/remodel/workflows/CI/badge.svg)](https://github.com/rojo-rbx/remodel/actions)
+[![Actions Status](https://github.com/Roblox/remodel/workflows/CI/badge.svg)](https://github.com/Roblox/remodel/actions)
 
 Remodel is a command line tool for manipulating Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
 
@@ -15,11 +15,11 @@ Remodel can be installed with Foreman, a toolchain manager for Roblox projects:
 
 ```toml
 [tools]
-remodel = { source = "rojo-rbx/remodel", version = "0.6.1" }
+remodel = { source = "Roblox/remodel", version = "0.6.1" }
 ```
 
 ### From GitHub Releases
-You can download pre-built binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
+You can download pre-built binaries from [Remodel's GitHub Releases page](https://github.com/Roblox/remodel/releases).
 
 ### From crates.io
 You'll need Rust 1.37.0 or newer.
