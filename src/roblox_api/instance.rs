@@ -53,7 +53,7 @@ impl LuaInstance {
     fn destroy(&self) -> rlua::Result<()> {
         let mut tree = self.tree.lock().unwrap();
 
-        // TODO: https://github.com/rojo-rbx/rbx-dom/issues/75
+        // TODO: https://github.com/Roblox/rbx-dom/issues/75
         // This check is necessary because RbxTree::remove_instance panics if
         // the input ID doesn't exist instead of returning None.
         if tree.get_instance(self.id).is_none() {

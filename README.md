@@ -12,7 +12,7 @@ Remodel is still in early development, but much of its API is already stable. Fe
 
 ## Installation
 
-### With [Foreman](https://github.com/rojo-rbx/foreman)
+### With [Foreman](https://github.com/Roblox/foreman)
 Remodel can be installed with Foreman, a toolchain manager for Roblox projects:
 
 ```toml
@@ -273,20 +273,6 @@ json.toString(value: any): string
 Encodes a Lua object as a JSON string. Can only encode Lua primitives like tables, strings, numbers, bools, and nil. Instances cannot be encoded to JSON.
 
 Throws on error, like if the input table cannot be encoded.
-
-## Rojo API
-The Rojo API is unstable and not enabled by default. It may break, disappear, or eat your lunch at will.
-
-To enable it, build Remodel with the `unstable_rojo_api` feature enabled.
-
-### `rojo.buildProject` (Unstable)
-```
-rojo.buildProject(project: table): Instance
-```
-
-Builds a Rojo project from a Lua table and returns its root instance.
-
-Throws on error.
 
 ## Supported Roblox Types
 When interacting with Roblox instances, Remodel doesn't support all value types yet and may throw an error.

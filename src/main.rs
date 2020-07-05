@@ -4,9 +4,6 @@ mod remodel_context;
 mod roblox_api;
 mod value;
 
-#[cfg(feature = "unstable_rojo_api")]
-mod rojo_api;
-
 use std::{
     env, fs,
     io::{self, Read},
@@ -95,11 +92,6 @@ fn run(options: Options) -> Result<(), anyhow::Error> {
 
                 RemodelApi::inject(context)?;
                 RobloxApi::inject(context)?;
-
-                #[cfg(feature = "unstable_rojo_api")]
-                {
-                    rojo_api::RojoApi::inject(context)?;
-                }
 
                 let chunk = context.load(&contents).set_name(&chunk_name)?;
                 chunk.call(MultiValue::from_vec(lua_args))

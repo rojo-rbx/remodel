@@ -22,21 +22,13 @@ jobs:
         rustup default ${{ matrix.rust_version }}
         rustup component add clippy rustfmt
 
-    - name: Build (default)
+    - name: Build
       run: cargo build --locked --verbose
 
-    - name: Run tests (default)
+    - name: Run tests
       run: |
         cargo test --locked --verbose
         ./bin/test.sh
-
-    - name: Build (default)
-      run: cargo build --all-features --locked --verbose
-
-    - name: Run tests (default)
-      run: |
-        cargo test --all-features --locked --verbose
-        ./bin/test.sh --all-features
 
     - name: Rustfmt and Clippy
       run: |
