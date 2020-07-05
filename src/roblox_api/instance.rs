@@ -3,31 +3,31 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use rbx_dom_weak::{RbxId, RbxInstanceProperties, RbxTree};
-use rbx_reflection::get_class_descriptor;
+use rbx_dom_weak::{types::Ref, InstanceBuilder, WeakDom};
+use rbx_reflection::ClassTag;
 use rlua::{Context, FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
 
 #[derive(Clone)]
 pub struct LuaInstance {
-    pub tree: Arc<Mutex<RbxTree>>,
-    pub id: RbxId,
+    pub tree: Arc<Mutex<WeakDom>>,
+    pub id: Ref,
 }
 
 impl LuaInstance {
-    pub fn new(tree: Arc<Mutex<RbxTree>>, id: RbxId) -> Self {
+    pub fn new(tree: Arc<Mutex<WeakDom>>, id: Ref) -> Self {
         LuaInstance { tree, id }
     }
 
     fn clone_instance(&self) -> rlua::Result<LuaInstance> {
         let mut tree = self.tree.lock().unwrap();
 
-        if tree.get_instance(self.id).is_none() {
+        if tree.get_by_ref(self.id).is_none() {
             return Err(rlua::Error::external(
                 "Cannot call Clone() on a destroyed instance",
             ));
         }
 
-        let root_id = tree.get_root_id();
+        let root_id = tree.root_ref();
         let new_id = Self::clone_kernel(&mut tree, self.id, root_id);
 
         Ok(LuaInstance {
@@ -36,12 +36,12 @@ impl LuaInstance {
         })
     }
 
-    fn clone_kernel(tree: &mut RbxTree, id: RbxId, parent_id: RbxId) -> RbxId {
-        let instance = tree.get_instance(id).unwrap();
-        let properties = instance.deref().clone();
-        let children = instance.get_children_ids().to_vec();
+    fn clone_kernel(tree: &mut WeakDom, id: Ref, parent_id: Ref) -> Ref {
+        let instance = tree.get_by_ref(id).unwrap();
+        let builder: InstanceBuilder = unimplemented!();
+        let children = instance.children().to_vec();
 
-        let new_id = tree.insert_instance(properties, parent_id);
+        let new_id = tree.insert(parent_id, builder);
 
         for child_id in children {
             Self::clone_kernel(tree, child_id, new_id);
@@ -54,19 +54,15 @@ impl LuaInstance {
         let mut tree = self.tree.lock().unwrap();
 
         // TODO: https://github.com/Roblox/rbx-dom/issues/75
-        // This check is necessary because RbxTree::remove_instance panics if
+        // This check is necessary because WeakDom::remove_instance panics if
         // the input ID doesn't exist instead of returning None.
-        if tree.get_instance(self.id).is_none() {
+        if tree.get_by_ref(self.id).is_none() {
             return Err(rlua::Error::external(
                 "Cannot call Destroy() on a destroyed instance",
             ));
         }
 
-        if tree.remove_instance(self.id).is_none() {
-            return Err(rlua::Error::external(
-                "Cannot call Destroy() on a destroyed instance",
-            ));
-        }
+        tree.destroy(self.id);
 
         Ok(())
     }
@@ -74,16 +70,16 @@ impl LuaInstance {
     fn find_first_child(&self, name: &str) -> rlua::Result<Option<LuaInstance>> {
         let tree = self.tree.lock().unwrap();
 
-        let instance = tree.get_instance(self.id).ok_or_else(|| {
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
             rlua::Error::external("Cannot call FindFirstChild() on a destroyed instance")
         })?;
 
         let child = instance
-            .get_children_ids()
+            .children()
             .iter()
             .copied()
             .find(|id| {
-                if let Some(child_instance) = tree.get_instance(*id) {
+                if let Some(child_instance) = tree.get_by_ref(*id) {
                     return child_instance.name == name;
                 }
 
@@ -97,12 +93,12 @@ impl LuaInstance {
     fn get_children(&self) -> rlua::Result<Vec<LuaInstance>> {
         let tree = self.tree.lock().unwrap();
 
-        let instance = tree.get_instance(self.id).ok_or_else(|| {
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
             rlua::Error::external("Cannot call GetChildren() on a destroyed instance")
         })?;
 
         let children: Vec<LuaInstance> = instance
-            .get_children_ids()
+            .children()
             .iter()
             .map(|id| LuaInstance::new(Arc::clone(&self.tree), *id))
             .collect();
@@ -113,45 +109,43 @@ impl LuaInstance {
     fn get_service(&self, service_name: &str) -> rlua::Result<LuaInstance> {
         let mut tree = self.tree.lock().unwrap();
 
-        let instance = tree.get_instance(self.id).ok_or_else(|| {
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
             rlua::Error::external("Cannot call GetService() on a destroyed instance")
         })?;
 
         // It might be cleaner to avoid defining GetService() on all instances,
         // but we don't have a good mechanism in Remodel to do that right now.
-        if instance.class_name != "DataModel" {
+        if instance.class != "DataModel" {
             return Err(rlua::Error::external(
                 "Cannot call GetService() on an instance that is not a DataModel",
             ));
         }
 
-        match get_class_descriptor(service_name) {
+        let database = rbx_reflection_database::get();
+
+        match database.classes.get(service_name) {
             // We should only find services, even if there's a child of
             // DataModel with a matching ClassName.
-            Some(descriptor) if descriptor.is_service() => {
+            Some(descriptor) if descriptor.tags.contains(&ClassTag::Service) => {
                 let existing = instance
-                    .get_children_ids()
+                    .children()
                     .iter()
                     .copied()
-                    .map(|id| tree.get_instance(id).unwrap())
-                    .find(|instance| instance.class_name == service_name);
+                    .map(|id| tree.get_by_ref(id).unwrap())
+                    .find(|instance| instance.class == service_name);
 
                 match existing {
                     Some(existing) => Ok(LuaInstance {
                         tree: Arc::clone(&self.tree),
-                        id: existing.get_id(),
+                        id: existing.referent(),
                     }),
                     None => {
                         // If we didn't find an existing service instance,
                         // construct a new one.
 
-                        let properties = RbxInstanceProperties {
-                            name: service_name.to_owned(),
-                            class_name: service_name.to_owned(),
-                            properties: Default::default(),
-                        };
+                        let properties = InstanceBuilder::new(service_name);
 
-                        let id = tree.insert_instance(properties, self.id);
+                        let id = tree.insert(self.id, properties);
                         Ok(LuaInstance {
                             tree: Arc::clone(&self.tree),
                             id,
@@ -172,18 +166,18 @@ impl LuaInstance {
     ) -> rlua::Result<rlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
-        let instance = tree.get_instance(self.id).ok_or_else(|| {
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
             rlua::Error::external("Cannot access ClassName on a destroyed instance")
         })?;
 
-        instance.class_name.as_str().to_lua(context)
+        instance.class.as_str().to_lua(context)
     }
 
     fn get_name<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
         let instance = tree
-            .get_instance(self.id)
+            .get_by_ref(self.id)
             .ok_or_else(|| rlua::Error::external("Cannot access Name on a destroyed instance"))?;
 
         instance.name.as_str().to_lua(context)
@@ -193,7 +187,7 @@ impl LuaInstance {
         let mut tree = self.tree.lock().unwrap();
 
         let instance = tree
-            .get_instance_mut(self.id)
+            .get_by_ref_mut(self.id)
             .ok_or_else(|| rlua::Error::external("Cannot set Name on a destroyed instance"))?;
 
         match value {
@@ -210,18 +204,18 @@ impl LuaInstance {
         let tree = self.tree.lock().unwrap();
 
         let instance = tree
-            .get_instance(self.id)
+            .get_by_ref(self.id)
             .ok_or_else(|| rlua::Error::external("Cannot access Parent on a destroyed instance"))?;
 
-        match instance.get_parent_id() {
-            Some(parent_id) => {
-                if parent_id == tree.get_root_id() {
+        match instance.parent() {
+            parent if parent.is_some() => {
+                if parent == tree.root_ref() {
                     Ok(rlua::Value::Nil)
                 } else {
-                    LuaInstance::new(Arc::clone(&self.tree), parent_id).to_lua(context)
+                    LuaInstance::new(Arc::clone(&self.tree), parent).to_lua(context)
                 }
             }
-            None => Ok(rlua::Value::Nil),
+            _nil => Ok(rlua::Value::Nil),
         }
     }
 
@@ -234,11 +228,13 @@ impl LuaInstance {
 
         match Option::<LuaInstance>::from_lua(value, context)? {
             Some(new_parent) => {
-                tree.set_parent(self.id, new_parent.id);
+                // FIXME
+                // tree.set_parent(self.id, new_parent.id);
             }
             None => {
-                let root_id = tree.get_root_id();
-                tree.set_parent(self.id, root_id);
+                let root_id = tree.root_ref();
+                // FIXME
+                // tree.set_parent(self.id, root_id);
             }
         }
 
@@ -257,7 +253,7 @@ impl LuaInstance {
     fn meta_to_string<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
-        let instance = tree.get_instance(self.id).ok_or_else(|| {
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
             rlua::Error::external("Cannot invoke tostring on a destroyed instance")
         })?;
 

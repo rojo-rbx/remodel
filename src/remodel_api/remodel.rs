@@ -7,7 +7,7 @@ use std::{
     sync::Arc,
 };
 
-use rbx_dom_weak::{RbxInstanceProperties, RbxTree, RbxValueType};
+use rbx_dom_weak::{types::VariantType, InstanceBuilder, WeakDom};
 use reqwest::header::{CONTENT_TYPE, COOKIE, USER_AGENT};
 use rlua::{Context, UserData, UserDataMethods};
 
@@ -51,16 +51,9 @@ impl Remodel {
         context: Context<'lua>,
         path: &Path,
     ) -> rlua::Result<Vec<LuaInstance>> {
-        let mut source_tree = RbxTree::new(RbxInstanceProperties {
-            name: "TEMP_RBX_BINARY_ROOT".to_owned(),
-            class_name: "DataModel".to_owned(),
-            properties: Default::default(),
-        });
-        let root_id = source_tree.get_root_id();
-
         let file = BufReader::new(File::open(path).map_err(rlua::Error::external)?);
 
-        rbx_binary::decode(&mut source_tree, root_id, file)
+        let source_tree = rbx_binary::from_reader_default(file)
             .map_err(|err| rlua::Error::external(format!("{:?}", err)))?;
 
         Remodel::import_tree_children(context, source_tree)
@@ -68,21 +61,22 @@ impl Remodel {
 
     pub fn import_tree_children(
         context: Context<'_>,
-        mut source_tree: RbxTree,
+        mut source_tree: WeakDom,
     ) -> rlua::Result<Vec<LuaInstance>> {
         let master_tree = RemodelContext::get(context)?.master_tree;
         let mut master_handle = master_tree.lock().unwrap();
 
-        let source_root_id = source_tree.get_root_id();
-        let source_root = source_tree.get_instance(source_root_id).unwrap();
-        let source_children = source_root.get_children_ids().to_vec();
+        let source_root_ref = source_tree.root_ref();
+        let source_root = source_tree.get_by_ref(source_root_ref).unwrap();
+        let source_children = source_root.children().to_vec();
 
-        let master_root_id = master_handle.get_root_id();
+        let master_root_ref = master_handle.root_ref();
 
         let instances = source_children
             .into_iter()
             .map(|id| {
-                source_tree.move_instance(id, &mut master_handle, master_root_id);
+                // FIXME
+                // source_tree.move_instance(id, &mut master_handle, master_root_ref);
                 LuaInstance::new(Arc::clone(&master_tree), id)
             })
             .collect::<Vec<_>>();
@@ -92,24 +86,25 @@ impl Remodel {
 
     pub fn import_tree_root(
         context: Context<'_>,
-        mut source_tree: RbxTree,
+        mut source_tree: WeakDom,
     ) -> rlua::Result<LuaInstance> {
         let master_tree = RemodelContext::get(context)?.master_tree;
         let mut master_handle = master_tree.lock().unwrap();
 
-        let source_root_id = source_tree.get_root_id();
-        let source_root = source_tree.get_instance(source_root_id).unwrap();
-        let source_children = source_root.get_children_ids().to_vec();
+        let source_root_ref = source_tree.root_ref();
+        let source_root = source_tree.get_by_ref(source_root_ref).unwrap();
+        let source_children = source_root.children().to_vec();
+        let source_builder: InstanceBuilder = unimplemented!();
 
-        let master_root_id = master_handle.get_root_id();
-        let new_root_id =
-            master_handle.insert_instance(source_root.deref().clone(), master_root_id);
+        let master_root_ref = master_handle.root_ref();
+        let new_root_ref = master_handle.insert(master_root_ref, source_builder);
 
         for child_id in source_children {
-            source_tree.move_instance(child_id, &mut master_handle, new_root_id);
+            // FIXME
+            // source_tree.move_instance(child_id, &mut master_handle, new_root_ref);
         }
 
-        Ok(LuaInstance::new(Arc::clone(&master_tree), new_root_id))
+        Ok(LuaInstance::new(Arc::clone(&master_tree), new_root_ref))
     }
 
     fn write_xml_place_file(lua_instance: LuaInstance, path: &Path) -> rlua::Result<()> {
@@ -117,22 +112,17 @@ impl Remodel {
 
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
-            .get_instance(lua_instance.id)
+            .get_by_ref(lua_instance.id)
             .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
-        if instance.class_name != "DataModel" {
+        if instance.class != "DataModel" {
             return Err(rlua::Error::external(
                 "Only DataModel instances can be saved as place files.",
             ));
         }
 
-        rbx_xml::to_writer(
-            file,
-            &tree,
-            instance.get_children_ids(),
-            xml_encode_options(),
-        )
-        .map_err(rlua::Error::external)?;
+        rbx_xml::to_writer(file, &tree, instance.children(), xml_encode_options())
+            .map_err(rlua::Error::external)?;
 
         Ok(())
     }
@@ -142,10 +132,10 @@ impl Remodel {
 
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
-            .get_instance(lua_instance.id)
+            .get_by_ref(lua_instance.id)
             .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
-        if instance.class_name == "DataModel" {
+        if instance.class == "DataModel" {
             return Err(rlua::Error::external(
                 "DataModel instances must be saved as place files, not model files.",
             ));
@@ -160,16 +150,16 @@ impl Remodel {
 
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
-            .get_instance(lua_instance.id)
+            .get_by_ref(lua_instance.id)
             .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
-        if instance.class_name == "DataModel" {
+        if instance.class == "DataModel" {
             return Err(rlua::Error::external(
                 "DataModel instances must be saved as place files, not model files.",
             ));
         }
 
-        rbx_binary::encode(&tree, &[lua_instance.id], file)
+        rbx_binary::to_writer_default(file, &tree, &[lua_instance.id])
             .map_err(|err| rlua::Error::external(format!("{:?}", err)))
     }
 
@@ -224,10 +214,10 @@ impl Remodel {
     ) -> rlua::Result<()> {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
-            .get_instance(lua_instance.id)
+            .get_by_ref(lua_instance.id)
             .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
-        if instance.class_name == "DataModel" {
+        if instance.class == "DataModel" {
             return Err(rlua::Error::external(
                 "DataModel instances must be saved as place files, not model files.",
             ));
@@ -247,10 +237,10 @@ impl Remodel {
     ) -> rlua::Result<()> {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
-            .get_instance(lua_instance.id)
+            .get_by_ref(lua_instance.id)
             .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
 
-        if instance.class_name != "DataModel" {
+        if instance.class != "DataModel" {
             return Err(rlua::Error::external(
                 "Only DataModel instances can be saved as place files.",
             ));
@@ -260,7 +250,7 @@ impl Remodel {
         rbx_xml::to_writer(
             &mut buffer,
             &tree,
-            instance.get_children_ids(),
+            instance.children(),
             xml_encode_options(),
         )
         .map_err(rlua::Error::external)?;
@@ -308,7 +298,7 @@ impl Remodel {
     ) -> rlua::Result<rlua::Value<'a>> {
         let tree = lua_instance.tree.lock().unwrap();
 
-        let instance = tree.get_instance(lua_instance.id).ok_or_else(|| {
+        let instance = tree.get_by_ref(lua_instance.id).ok_or_else(|| {
             rlua::Error::external("Cannot call remodel.getRawProperty on a destroyed instance.")
         })?;
 
@@ -321,12 +311,12 @@ impl Remodel {
     fn set_raw_property(
         lua_instance: LuaInstance,
         key: String,
-        ty: RbxValueType,
+        ty: VariantType,
         lua_value: rlua::Value<'_>,
     ) -> rlua::Result<()> {
         let mut tree = lua_instance.tree.lock().unwrap();
 
-        let instance = tree.get_instance_mut(lua_instance.id).ok_or_else(|| {
+        let instance = tree.get_by_ref_mut(lua_instance.id).ok_or_else(|| {
             rlua::Error::external("Cannot call remodel.setRawProperty on a destroyed instance.")
         })?;
 

@@ -20,13 +20,15 @@ panic = "abort"
 panic = "abort"
 
 [dependencies]
+rbx_binary = { path = "../rbx-dom/rbx_binary" }
+rbx_dom_weak = { path = "../rbx-dom/rbx_dom_weak" }
+rbx_reflection = { path = "../rbx-dom/rbx_reflection" }
+rbx_reflection_database = { path = "../rbx-dom/rbx_reflection_database" }
+rbx_xml = { path = "../rbx-dom/rbx_xml" }
+
 anyhow = "1.0.27"
 backtrace = "0.3.45"
 log = "0.4.8"
-rbx_binary = "0.4.1"
-rbx_dom_weak = "1.10.0"
-rbx_reflection = "3.2.399"
-rbx_xml = "0.11.2"
 reqwest = "0.9.20"
 rlua = "0.17.0"
 serde = "1.0.104"
