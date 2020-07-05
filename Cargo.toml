@@ -20,11 +20,11 @@ panic = "abort"
 panic = "abort"
 
 [dependencies]
-rbx_binary = { path = "../rbx-dom/rbx_binary" }
-rbx_dom_weak = { path = "../rbx-dom/rbx_dom_weak" }
-rbx_reflection = { path = "../rbx-dom/rbx_reflection" }
-rbx_reflection_database = { path = "../rbx-dom/rbx_reflection_database" }
-rbx_xml = { path = "../rbx-dom/rbx_xml" }
+rbx_binary = { git = "https://github.com/Roblox/rbx-dom" }
+rbx_dom_weak = { git = "https://github.com/Roblox/rbx-dom" }
+rbx_reflection = { git = "https://github.com/Roblox/rbx-dom" }
+rbx_reflection_database = { git = "https://github.com/Roblox/rbx-dom" }
+rbx_xml = { git = "https://github.com/Roblox/rbx-dom" }
 
 anyhow = "1.0.27"
 backtrace = "0.3.45"
