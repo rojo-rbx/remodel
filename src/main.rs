@@ -84,7 +84,6 @@ fn run(options: Options) -> Result<(), anyhow::Error> {
             lua.context(move |context| {
                 let lua_args = args
                     .into_iter()
-                    .skip(1)
                     .map(|value| value.to_lua(context))
                     .collect::<Result<Vec<_>, _>>()?;
 
