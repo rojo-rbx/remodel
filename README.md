@@ -17,7 +17,7 @@ Remodel can be installed with Foreman, a toolchain manager for Roblox projects:
 
 ```toml
 [tools]
-remodel = { source = "Roblox/remodel", version = "0.6.1" }
+remodel = { source = "Roblox/remodel", version = "0.7.1" }
 ```
 
 ### From GitHub Releases

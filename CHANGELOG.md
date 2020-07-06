@@ -1,6 +1,8 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+
+## 0.7.1 (2020-07-06)
 * Fixed first argument to `remodel run` script being eaten by Remodel. ([#19](https://github.com/Roblox/remodel/issues/19))
 
 ## 0.7.0 (2020-04-19)
