@@ -219,8 +219,15 @@ impl Remodel {
 
         let response = request.send().map_err(rlua::Error::external)?;
 
-        let source_tree =
-            rbx_xml::from_reader(response, xml_decode_options()).map_err(rlua::Error::external)?;
+        let mut source_tree = RbxTree::new(RbxInstanceProperties {
+            name: "TEMP_RBX_BINARY_ROOT".to_owned(),
+            class_name: "DataModel".to_owned(),
+            properties: Default::default(),
+        });
+        let root_id = source_tree.get_root_id();
+
+        rbx_binary::decode(&mut source_tree, root_id, response)
+            .map_err(|err| rlua::Error::external(format!("{:?}", err)))?;
 
         Remodel::import_tree_root(context, source_tree)
     }
