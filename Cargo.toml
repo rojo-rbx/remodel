@@ -5,9 +5,9 @@ description = "A tool to read, modify, and write Roblox objects."
 authors = ["Lucien Greathouse <me@lpghatguy.com>"]
 edition = "2018"
 license = "MIT"
-homepage = "https://github.com/Roblox/remodel"
-documentation = "https://github.com/Roblox/remodel"
-repository = "https://github.com/Roblox/remodel"
+homepage = "https://github.com/rojo-rbx/remodel"
+documentation = "https://github.com/rojo-rbx/remodel"
+repository = "https://github.com/rojo-rbx/remodel"
 readme = "README.md"
 
 [features]
