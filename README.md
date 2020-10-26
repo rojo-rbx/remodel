@@ -4,7 +4,14 @@
 [![Remodel on crates.io](https://img.shields.io/crates/v/remodel.svg?label=crates.io)](https://crates.io/crates/remodel)
 [![Actions Status](https://github.com/rojo-rbx/remodel/workflows/CI/badge.svg)](https://github.com/rojo-rbx/remodel/actions)
 
-Remodel is a command line tool for manipulating Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
+Remodel is a command line tool for manipulating Roblox files and the instances contained within them. It's a scriptable tool designed to enable workflows where no other tool will do.
+
+Remodel can be used to do almost anything with Roblox files. Some uses include:
+* [Extracting models from a place to use with Rojo](examples/02-extract-models.lua)
+* [Copying terrain from place place into another](examples/04-move-terrain.lua)
+* Minifying scripts before deploying a place
+* Automatically attaching build metadata to a place
+* Synchronizing development places with production
 
 Remodel is still in early development, but much of its API is already stable. Feedback is welcome!
 
