@@ -8,7 +8,7 @@ Remodel is a command line tool for manipulating Roblox files and the instances c
 
 Remodel can be used to do almost anything with Roblox files. Some uses include:
 * [Extracting models from a place to use with Rojo](examples/02-extract-models.lua)
-* [Copying terrain from place place into another](examples/04-move-terrain.lua)
+* [Copying terrain from one place into another](examples/04-move-terrain.lua)
 * Minifying scripts before deploying a place
 * Automatically attaching build metadata to a place
 * Synchronizing development places with production
