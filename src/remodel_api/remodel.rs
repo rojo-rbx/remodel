@@ -2,7 +2,6 @@ use std::{
     ffi::OsStr,
     fs::{self, File},
     io::{BufReader, BufWriter},
-    ops::Deref,
     path::Path,
     sync::Arc,
 };
@@ -75,8 +74,7 @@ impl Remodel {
         let instances = source_children
             .into_iter()
             .map(|id| {
-                // FIXME
-                // source_tree.move_instance(id, &mut master_handle, master_root_ref);
+                source_tree.transfer(id, &mut master_handle, master_root_ref);
                 LuaInstance::new(Arc::clone(&master_tree), id)
             })
             .collect::<Vec<_>>();
@@ -91,17 +89,14 @@ impl Remodel {
         let master_tree = RemodelContext::get(context)?.master_tree;
         let mut master_handle = master_tree.lock().unwrap();
 
-        let source_root_ref = source_tree.root_ref();
-        let source_root = source_tree.get_by_ref(source_root_ref).unwrap();
-        let source_children = source_root.children().to_vec();
-        let source_builder: InstanceBuilder = unimplemented!();
+        let source_children = source_tree.root().children().to_vec();
+        let source_builder = InstanceBuilder::new("DataModel");
 
         let master_root_ref = master_handle.root_ref();
         let new_root_ref = master_handle.insert(master_root_ref, source_builder);
 
         for child_id in source_children {
-            // FIXME
-            // source_tree.move_instance(child_id, &mut master_handle, new_root_ref);
+            source_tree.transfer(child_id, &mut master_handle, new_root_ref);
         }
 
         Ok(LuaInstance::new(Arc::clone(&master_tree), new_root_ref))

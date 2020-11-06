@@ -1,7 +1,4 @@
-use std::{
-    ops::Deref,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use rbx_dom_weak::{types::Ref, InstanceBuilder, WeakDom};
 use rbx_reflection::ClassTag;
@@ -38,7 +35,14 @@ impl LuaInstance {
 
     fn clone_kernel(tree: &mut WeakDom, id: Ref, parent_id: Ref) -> Ref {
         let instance = tree.get_by_ref(id).unwrap();
-        let builder: InstanceBuilder = unimplemented!();
+        let builder = InstanceBuilder::new(&instance.name)
+            .with_name(&instance.class)
+            .with_properties(
+                instance
+                    .properties
+                    .iter()
+                    .map(|(key, value)| (key.clone(), value.clone())),
+            );
         let children = instance.children().to_vec();
 
         let new_id = tree.insert(parent_id, builder);
@@ -53,9 +57,6 @@ impl LuaInstance {
     fn destroy(&self) -> rlua::Result<()> {
         let mut tree = self.tree.lock().unwrap();
 
-        // TODO: https://github.com/Roblox/rbx-dom/issues/75
-        // This check is necessary because WeakDom::remove_instance panics if
-        // the input ID doesn't exist instead of returning None.
         if tree.get_by_ref(self.id).is_none() {
             return Err(rlua::Error::external(
                 "Cannot call Destroy() on a destroyed instance",
@@ -228,13 +229,11 @@ impl LuaInstance {
 
         match Option::<LuaInstance>::from_lua(value, context)? {
             Some(new_parent) => {
-                // FIXME
-                // tree.set_parent(self.id, new_parent.id);
+                tree.transfer_within(self.id, new_parent.id);
             }
             None => {
                 let root_id = tree.root_ref();
-                // FIXME
-                // tree.set_parent(self.id, root_id);
+                tree.transfer_within(self.id, root_id);
             }
         }
 

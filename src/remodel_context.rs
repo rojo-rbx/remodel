@@ -1,10 +1,7 @@
 //! The state global to a given Lua state is stored in the Lua registry inside
 //! `RemodelContext`, defined by this module.
 
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use rbx_dom_weak::{InstanceBuilder, WeakDom};
 use rlua::{Context, UserData};

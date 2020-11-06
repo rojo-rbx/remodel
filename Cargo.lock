@@ -1116,7 +1116,7 @@ dependencies = [
 [[package]]
 name = "rbx_binary"
 version = "0.6.0-dev"
-source = "git+https://github.com/Roblox/rbx-dom#0307f9c25217fc422783f990425bd286111f4321"
+source = "git+https://github.com/Roblox/rbx-dom#6a3e19315603e8b53ecc1ad1fba24e31cfaf25e0"
 dependencies = [
  "log",
  "lz4",
@@ -1129,7 +1129,7 @@ dependencies = [
 [[package]]
 name = "rbx_dom_weak"
 version = "2.0.0-dev"
-source = "git+https://github.com/Roblox/rbx-dom#0307f9c25217fc422783f990425bd286111f4321"
+source = "git+https://github.com/Roblox/rbx-dom#6a3e19315603e8b53ecc1ad1fba24e31cfaf25e0"
 dependencies = [
  "rbx_types",
  "serde",
@@ -1138,7 +1138,7 @@ dependencies = [
 [[package]]
 name = "rbx_reflection"
 version = "4.0.0-dev"
-source = "git+https://github.com/Roblox/rbx-dom#0307f9c25217fc422783f990425bd286111f4321"
+source = "git+https://github.com/Roblox/rbx-dom#6a3e19315603e8b53ecc1ad1fba24e31cfaf25e0"
 dependencies = [
  "rbx_types",
  "serde",
@@ -1147,7 +1147,7 @@ dependencies = [
 [[package]]
 name = "rbx_reflection_database"
 version = "0.1.0"
-source = "git+https://github.com/Roblox/rbx-dom#0307f9c25217fc422783f990425bd286111f4321"
+source = "git+https://github.com/Roblox/rbx-dom#6a3e19315603e8b53ecc1ad1fba24e31cfaf25e0"
 dependencies = [
  "lazy_static",
  "rbx_reflection",
@@ -1158,7 +1158,7 @@ dependencies = [
 [[package]]
 name = "rbx_types"
 version = "0.2.0"
-source = "git+https://github.com/Roblox/rbx-dom#0307f9c25217fc422783f990425bd286111f4321"
+source = "git+https://github.com/Roblox/rbx-dom#6a3e19315603e8b53ecc1ad1fba24e31cfaf25e0"
 dependencies = [
  "base64 0.11.0",
  "bitflags",
@@ -1171,7 +1171,7 @@ dependencies = [
 [[package]]
 name = "rbx_xml"
 version = "0.12.0-dev"
-source = "git+https://github.com/Roblox/rbx-dom#0307f9c25217fc422783f990425bd286111f4321"
+source = "git+https://github.com/Roblox/rbx-dom#6a3e19315603e8b53ecc1ad1fba24e31cfaf25e0"
 dependencies = [
  "base64 0.11.0",
  "log",
