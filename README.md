@@ -2,11 +2,16 @@
 <h1 align="left">Remodel</h1>
 
 [![Remodel on crates.io](https://img.shields.io/crates/v/remodel.svg?label=crates.io)](https://crates.io/crates/remodel)
-[![Actions Status](https://github.com/Roblox/remodel/workflows/CI/badge.svg)](https://github.com/Roblox/remodel/actions)
+[![Actions Status](https://github.com/rojo-rbx/remodel/workflows/CI/badge.svg)](https://github.com/rojo-rbx/remodel/actions)
 
-**Heads up! This repository was recently migrated from [the rojo-rbx org](https://github.com/rojo-rbx) to [the Roblox org](https://github.com/Roblox). Not much else has changed.**
+Remodel is a command line tool for manipulating Roblox files and the instances contained within them. It's a scriptable tool designed to enable workflows where no other tool will do.
 
-Remodel is a command line tool for manipulating Roblox files and the instances contained within them. It's intended as a building block for Roblox automation tooling.
+Remodel can be used to do almost anything with Roblox files. Some uses include:
+* [Extracting models from a place to use with Rojo](examples/02-extract-models.lua)
+* [Copying terrain from one place into another](examples/04-move-terrain.lua)
+* Minifying scripts before deploying a place
+* Automatically attaching build metadata to a place
+* Synchronizing development places with production
 
 Remodel is still in early development, but much of its API is already stable. Feedback is welcome!
 
@@ -17,11 +22,11 @@ Remodel can be installed with Foreman, a toolchain manager for Roblox projects:
 
 ```toml
 [tools]
-remodel = { source = "Roblox/remodel", version = "0.6.1" }
+remodel = { source = "rojo-rbx/remodel", version = "0.7.1" }
 ```
 
 ### From GitHub Releases
-You can download pre-built binaries from [Remodel's GitHub Releases page](https://github.com/Roblox/remodel/releases).
+You can download pre-built binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
 
 ### From crates.io
 You'll need Rust 1.37.0 or newer.
