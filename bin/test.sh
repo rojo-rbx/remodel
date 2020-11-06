@@ -15,10 +15,10 @@ for script in test-scripts/*.lua; do
 	output_file="test-scripts/$test_name.expected"
 
 	echo "Running $test_name"
-	output=$(./target/debug/remodel run "$script" arg1 arg2 arg3)
+	output=$(./target/debug/remodel run "$script" arg1 arg2 arg3 | dos2unix)
 
 	if [ -f $output_file ]; then
-		expected_output=$(cat "$output_file")
+		expected_output=$(cat "$output_file" | dos2unix)
 
 		if [ "$output" = "$expected_output" ]; then
 			echo "Output was correct."
