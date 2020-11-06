@@ -35,8 +35,8 @@ impl LuaInstance {
 
     fn clone_kernel(tree: &mut WeakDom, id: Ref, parent_id: Ref) -> Ref {
         let instance = tree.get_by_ref(id).unwrap();
-        let builder = InstanceBuilder::new(&instance.name)
-            .with_name(&instance.class)
+        let builder = InstanceBuilder::new(&instance.class)
+            .with_name(&instance.name)
             .with_properties(
                 instance
                     .properties
