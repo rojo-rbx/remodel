@@ -2,8 +2,6 @@ use std::fs;
 use std::io::{self, Read};
 use std::process::{Command, Stdio};
 
-use anyhow::Context;
-
 #[test]
 fn test_scripts() -> anyhow::Result<()> {
     for entry in fs::read_dir("test-scripts")? {
