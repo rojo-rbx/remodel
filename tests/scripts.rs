@@ -4,6 +4,8 @@ use std::process::{Command, Stdio};
 
 #[test]
 fn test_scripts() -> anyhow::Result<()> {
+    fs::create_dir_all("temp")?;
+
     for entry in fs::read_dir("test-scripts")? {
         let entry = entry?;
         let path = entry.path();
