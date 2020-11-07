@@ -26,9 +26,7 @@ jobs:
       run: cargo build --locked --verbose
 
     - name: Run tests
-      run: |
-        cargo test --locked --verbose
-        ./bin/test.sh
+      run: cargo test --locked --verbose
 
     - name: Rustfmt and Clippy
       run: |
