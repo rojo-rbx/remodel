@@ -1,27 +1,22 @@
 //! The state global to a given Lua state is stored in the Lua registry inside
 //! `RemodelContext`, defined by this module.
 
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
-use rbx_dom_weak::{RbxInstanceProperties, RbxTree};
+use rbx_dom_weak::{InstanceBuilder, WeakDom};
 use rlua::{Context, UserData};
 
 #[derive(Clone)]
 pub struct RemodelContext {
-    pub master_tree: Arc<Mutex<RbxTree>>,
+    pub master_tree: Arc<Mutex<WeakDom>>,
     auth_cookie: Option<String>,
 }
 
 impl RemodelContext {
     pub fn new(auth_cookie: Option<String>) -> Self {
-        let master_tree = Arc::new(Mutex::new(RbxTree::new(RbxInstanceProperties {
-            name: "REMODEL ROOT".to_owned(),
-            class_name: "REMODEL ROOT".to_owned(),
-            properties: HashMap::new(),
-        })));
+        let master_tree = Arc::new(Mutex::new(WeakDom::new(InstanceBuilder::new(
+            "RemodelRoot",
+        ))));
 
         Self {
             master_tree,

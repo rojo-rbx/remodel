@@ -29,7 +29,7 @@ remodel = { source = "rojo-rbx/remodel", version = "0.7.1" }
 You can download pre-built binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
 
 ### From crates.io
-You'll need Rust 1.37.0 or newer.
+You'll need Rust 1.40.0 or newer.
 
 ```bash
 cargo install remodel
