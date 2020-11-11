@@ -1,7 +1,7 @@
 use std::{
     ffi::OsStr,
     fs::{self, File},
-    io::{BufReader, BufWriter},
+    io::{BufReader, BufWriter, Read},
     path::Path,
     sync::Arc,
 };
@@ -13,6 +13,7 @@ use rlua::{Context, UserData, UserDataMethods};
 use crate::{
     remodel_context::RemodelContext,
     roblox_api::LuaInstance,
+    sniff_type::{sniff_type, DocumentType},
     value::{lua_to_rbxvalue, rbxvalue_to_lua, type_from_str},
 };
 
@@ -161,7 +162,7 @@ impl Remodel {
     fn read_model_asset(context: Context<'_>, asset_id: u64) -> rlua::Result<Vec<LuaInstance>> {
         let re_context = RemodelContext::get(context)?;
         let auth_cookie = re_context.auth_cookie();
-        let url = format!("https://www.roblox.com/asset/?id={}", asset_id);
+        let url = format!("https://assetdelivery.roblox.com/v1/asset/?id={}", asset_id);
 
         let client = reqwest::Client::new();
         let mut request = client.get(&url);
@@ -172,10 +173,33 @@ impl Remodel {
             log::warn!("No auth cookie detected, Remodel may be unable to download this asset.");
         }
 
-        let response = request.send().map_err(rlua::Error::external)?;
+        let mut response = request.send().map_err(rlua::Error::external)?;
 
-        let source_tree =
-            rbx_xml::from_reader(response, xml_decode_options()).map_err(rlua::Error::external)?;
+        let mut body = Vec::new();
+        response
+            .read_to_end(&mut body)
+            .map_err(rlua::Error::external)?;
+
+        let source_tree = match sniff_type(&body) {
+            Some(DocumentType::Binary) => {
+                rbx_binary::from_reader_default(body.as_slice()).map_err(rlua::Error::external)?
+            }
+
+            Some(DocumentType::Xml) => rbx_xml::from_reader(body.as_slice(), xml_decode_options())
+                .map_err(rlua::Error::external)?,
+
+            None => {
+                let first_few_bytes: Vec<_> = body.iter().copied().take(20).collect();
+                let snippet = std::str::from_utf8(first_few_bytes.as_slice());
+
+                let message = format!(
+                    "Unknown response trying to read model asset ID {}. First few bytes:\n{:?}",
+                    asset_id, snippet
+                );
+
+                return Err(rlua::Error::external(message));
+            }
+        };
 
         Remodel::import_tree_children(context, source_tree)
     }
@@ -183,7 +207,7 @@ impl Remodel {
     fn read_place_asset(context: Context<'_>, asset_id: u64) -> rlua::Result<LuaInstance> {
         let re_context = RemodelContext::get(context)?;
         let auth_cookie = re_context.auth_cookie();
-        let url = format!("https://www.roblox.com/asset/?id={}", asset_id);
+        let url = format!("https://assetdelivery.roblox.com/v1/asset/?id={}", asset_id);
 
         let client = reqwest::Client::new();
         let mut request = client.get(&url);
@@ -194,10 +218,33 @@ impl Remodel {
             log::warn!("No auth cookie detected, Remodel may be unable to download this asset.");
         }
 
-        let response = request.send().map_err(rlua::Error::external)?;
+        let mut response = request.send().map_err(rlua::Error::external)?;
 
-        let source_tree =
-            rbx_xml::from_reader(response, xml_decode_options()).map_err(rlua::Error::external)?;
+        let mut body = Vec::new();
+        response
+            .read_to_end(&mut body)
+            .map_err(rlua::Error::external)?;
+
+        let source_tree = match sniff_type(&body) {
+            Some(DocumentType::Binary) => {
+                rbx_binary::from_reader_default(body.as_slice()).map_err(rlua::Error::external)?
+            }
+
+            Some(DocumentType::Xml) => rbx_xml::from_reader(body.as_slice(), xml_decode_options())
+                .map_err(rlua::Error::external)?,
+
+            None => {
+                let first_few_bytes: Vec<_> = body.iter().copied().take(20).collect();
+                let snippet = std::str::from_utf8(first_few_bytes.as_slice());
+
+                let message = format!(
+                    "Unknown response trying to read model asset ID {}. First few bytes:\n{:?}",
+                    asset_id, snippet
+                );
+
+                return Err(rlua::Error::external(message));
+            }
+        };
 
         Remodel::import_tree_root(context, source_tree)
     }
