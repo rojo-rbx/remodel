@@ -47,6 +47,16 @@ impl Remodel {
         Remodel::import_tree_children(context, source_tree)
     }
 
+    fn read_binary_place_file<'lua>(
+        context: Context<'lua>,
+        path: &Path,
+    ) -> rlua::Result<LuaInstance> {
+        let file = BufReader::new(File::open(path).map_err(rlua::Error::external)?);
+        let source_tree = rbx_binary::from_reader_default(file).map_err(rlua::Error::external)?;
+
+        Remodel::import_tree_root(context, source_tree)
+    }
+
     fn read_binary_model_file<'lua>(
         context: Context<'lua>,
         path: &Path,
@@ -393,9 +403,7 @@ impl UserData for Remodel {
 
             match path.extension().and_then(OsStr::to_str) {
                 Some("rbxlx") => Remodel::read_xml_place_file(context, path),
-                Some("rbxl") => Err(rlua::Error::external(
-                    "Reading rbxl place files is not supported yet.",
-                )),
+                Some("rbxl") => Remodel::read_binary_place_file(context, path),
                 _ => Err(rlua::Error::external(format!(
                     "Invalid place file path {}",
                     path.display()
@@ -408,13 +416,7 @@ impl UserData for Remodel {
 
             match path.extension().and_then(OsStr::to_str) {
                 Some("rbxmx") => Remodel::read_xml_model_file(context, path),
-                Some("rbxm") => {
-                    log::warn!(
-                        "rbxm model support in Remodel is limited. rbxmx models are recommended."
-                    );
-
-                    Remodel::read_binary_model_file(context, path)
-                }
+                Some("rbxm") => Remodel::read_binary_model_file(context, path),
                 _ => Err(rlua::Error::external(format!(
                     "Invalid model file path {}",
                     path.display()
@@ -477,11 +479,7 @@ impl UserData for Remodel {
 
                 match path.extension().and_then(OsStr::to_str) {
                     Some("rbxmx") => Remodel::write_xml_model_file(instance, path),
-                    Some("rbxm") => {
-                        log::warn!("rbxm model support in Remodel is limited. rbxmx models are recommended.");
-
-                        Remodel::write_binary_model_file(instance, path)
-                    },
+                    Some("rbxm") => Remodel::write_binary_model_file(instance, path),
                     _ => Err(rlua::Error::external(format!(
                         "Invalid model file path {}",
                         path.display()
