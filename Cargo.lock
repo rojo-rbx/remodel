@@ -1027,7 +1027,7 @@ checksum = "0ef9e7e66b4468674bfcb0c81af8b7fa0bb154fa9f28eb840da5c447baeb8d7e"
 dependencies = [
  "libc",
  "rand_chacha 0.3.0",
- "rand_core 0.6.1",
+ "rand_core 0.6.2",
  "rand_hc 0.3.0",
 ]
 
@@ -1058,7 +1058,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e12735cf05c9e10bf21534da50a147b924d555dc7a547c42e6bb2d5b6017ae0d"
 dependencies = [
  "ppv-lite86",
- "rand_core 0.6.1",
+ "rand_core 0.6.2",
 ]
 
 [[package]]
@@ -1087,9 +1087,9 @@ dependencies = [
 
 [[package]]
 name = "rand_core"
-version = "0.6.1"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c026d7df8b298d90ccbbc5190bd04d85e159eaf5576caeacf8741da93ccbd2e5"
+checksum = "34cf66eb183df1c5876e2dcf6b13d57340741e8dc255b48e40a26de954d06ae7"
 dependencies = [
  "getrandom 0.2.2",
 ]
@@ -1118,7 +1118,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3190ef7066a446f2e7f42e239d161e905420ccab01eb967c9eb27d21b2322a73"
 dependencies = [
- "rand_core 0.6.1",
+ "rand_core 0.6.2",
 ]
 
 [[package]]
@@ -1177,7 +1177,7 @@ dependencies = [
 [[package]]
 name = "rbx_binary"
 version = "0.6.0-dev"
-source = "git+https://github.com/Roblox/rbx-dom#5b34ac5873a94e533532b9dea30ad7a876574172"
+source = "git+https://github.com/Roblox/rbx-dom#e75caa3cb0d283add38457ec2a20ed3fa3fef711"
 dependencies = [
  "log",
  "lz4",
@@ -1190,7 +1190,7 @@ dependencies = [
 [[package]]
 name = "rbx_dom_weak"
 version = "2.0.0-dev"
-source = "git+https://github.com/Roblox/rbx-dom#5b34ac5873a94e533532b9dea30ad7a876574172"
+source = "git+https://github.com/Roblox/rbx-dom#e75caa3cb0d283add38457ec2a20ed3fa3fef711"
 dependencies = [
  "rbx_types",
  "serde",
@@ -1199,7 +1199,7 @@ dependencies = [
 [[package]]
 name = "rbx_reflection"
 version = "4.0.0-dev"
-source = "git+https://github.com/Roblox/rbx-dom#5b34ac5873a94e533532b9dea30ad7a876574172"
+source = "git+https://github.com/Roblox/rbx-dom#e75caa3cb0d283add38457ec2a20ed3fa3fef711"
 dependencies = [
  "rbx_types",
  "serde",
@@ -1208,7 +1208,7 @@ dependencies = [
 [[package]]
 name = "rbx_reflection_database"
 version = "0.1.0"
-source = "git+https://github.com/Roblox/rbx-dom#5b34ac5873a94e533532b9dea30ad7a876574172"
+source = "git+https://github.com/Roblox/rbx-dom#e75caa3cb0d283add38457ec2a20ed3fa3fef711"
 dependencies = [
  "lazy_static",
  "rbx_reflection",
@@ -1219,7 +1219,7 @@ dependencies = [
 [[package]]
 name = "rbx_types"
 version = "0.2.0"
-source = "git+https://github.com/Roblox/rbx-dom#5b34ac5873a94e533532b9dea30ad7a876574172"
+source = "git+https://github.com/Roblox/rbx-dom#e75caa3cb0d283add38457ec2a20ed3fa3fef711"
 dependencies = [
  "base64 0.11.0",
  "bitflags",
@@ -1232,7 +1232,7 @@ dependencies = [
 [[package]]
 name = "rbx_xml"
 version = "0.12.0-dev"
-source = "git+https://github.com/Roblox/rbx-dom#5b34ac5873a94e533532b9dea30ad7a876574172"
+source = "git+https://github.com/Roblox/rbx-dom#e75caa3cb0d283add38457ec2a20ed3fa3fef711"
 dependencies = [
  "base64 0.11.0",
  "log",
@@ -1259,9 +1259,9 @@ checksum = "41cc0f7e4d5d4544e8861606a285bb08d3e70712ccc7d2b84d7c0ccfaf4b05ce"
 
 [[package]]
 name = "redox_syscall"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05ec8ca9416c5ea37062b502703cd7fcb207736bc294f6e0cf367ac6fc234570"
+checksum = "94341e4e44e24f6b591b59e47a8a027df12e008d73fd5672dbea9cc22f4507d9"
 dependencies = [
  "bitflags",
 ]
@@ -1589,7 +1589,7 @@ dependencies = [
  "cfg-if 1.0.0",
  "libc",
  "rand 0.8.3",
- "redox_syscall 0.2.4",
+ "redox_syscall 0.2.5",
  "remove_dir_all",
  "winapi 0.3.9",
 ]
