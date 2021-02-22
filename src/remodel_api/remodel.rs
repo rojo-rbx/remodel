@@ -279,7 +279,7 @@ impl Remodel {
         }
 
         let mut buffer = Vec::new();
-        rbx_xml::to_writer(&mut buffer, &tree, &[lua_instance.id], xml_encode_options())
+        rbx_binary::to_writer_default(&mut buffer, &tree, &[lua_instance.id])
             .map_err(rlua::Error::external)?;
 
         Remodel::upload_asset(context, buffer, asset_id)
@@ -302,13 +302,8 @@ impl Remodel {
         }
 
         let mut buffer = Vec::new();
-        rbx_xml::to_writer(
-            &mut buffer,
-            &tree,
-            instance.children(),
-            xml_encode_options(),
-        )
-        .map_err(rlua::Error::external)?;
+        rbx_binary::to_writer_default(&mut buffer, &tree, instance.children())
+            .map_err(rlua::Error::external)?;
 
         Remodel::upload_asset(context, buffer, asset_id)
     }

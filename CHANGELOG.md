@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 * Ported to rbx-dom v2, which includes full support for binary and XML model files.
+* Changed all upload commands to upload as binary instead of XML.
 * Added support for CSRF negotiation to fix asset uploading. ([#25][#25])
 
 [#25]: https://github.com/rojo-rbx/remodel/issues/25
