@@ -7,7 +7,10 @@ use std::{
 };
 
 use rbx_dom_weak::{types::VariantType, InstanceBuilder, WeakDom};
-use reqwest::header::{CONTENT_TYPE, COOKIE, USER_AGENT};
+use reqwest::{
+    header::{ACCEPT, CONTENT_TYPE, COOKIE, USER_AGENT},
+    StatusCode,
+};
 use rlua::{Context, UserData, UserDataMethods};
 
 use crate::{
@@ -324,14 +327,31 @@ impl Remodel {
         );
 
         let client = reqwest::Client::new();
-        let response = client
-            .get(&url)
-            .header(COOKIE, format!(".ROBLOSECURITY={}", auth_cookie))
-            .header(CONTENT_TYPE, "application/xml")
-            .header(USER_AGENT, "Roblox/WinInet")
-            .body(buffer)
-            .send()
-            .map_err(rlua::Error::external)?;
+        let build_request = move || {
+            client
+                .post(&url)
+                .header(COOKIE, format!(".ROBLOSECURITY={}", auth_cookie))
+                .header(USER_AGENT, "Roblox/WinInet")
+                .header(CONTENT_TYPE, "application/xml")
+                .header(ACCEPT, "application/json")
+                .body(buffer.clone())
+        };
+
+        log::debug!("Uploading to Roblox...");
+        let mut response = build_request().send().map_err(rlua::Error::external)?;
+
+        // Starting in Feburary, 2021, the upload endpoint performs CSRF challenges.
+        // If we receive an HTTP 403 with a X-CSRF-Token reply, we should retry the
+        // request, echoing the value of that header.
+        if response.status() == StatusCode::FORBIDDEN {
+            if let Some(csrf_token) = response.headers().get("X-CSRF-Token") {
+                log::debug!("Received CSRF challenge, retrying with token...");
+                response = build_request()
+                    .header("X-CSRF-Token", csrf_token)
+                    .send()
+                    .map_err(rlua::Error::external)?;
+            }
+        }
 
         if response.status().is_success() {
             Ok(())

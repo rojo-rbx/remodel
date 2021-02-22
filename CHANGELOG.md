@@ -1,6 +1,10 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Ported to rbx-dom v2, which includes full support for binary and XML model files.
+* Added support for CSRF negotiation to fix asset uploading. ([#25][#25])
+
+[#25]: https://github.com/rojo-rbx/remodel/issues/25
 
 ## 0.7.1 (2020-07-06)
 * Fixed first argument to `remodel run` script being eaten by Remodel. ([#19](https://github.com/rojo-rbx/remodel/issues/19))
