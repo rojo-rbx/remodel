@@ -237,7 +237,7 @@ This is a thin wrapper around Rust's [`fs::create_dir_all`](https://doc.rust-lan
 
 Throws on error.
 
-### `remodel.isFile` (Unreleased)
+### `remodel.isFile` (0.7.0+)
 ```
 remodel.isFile(path: string): bool
 ```
@@ -248,7 +248,7 @@ This is a thin wrapper around Rust's [`fs::metadata`](https://doc.rust-lang.org/
 
 Throws on error, like if the path does not exist.
 
-### `remodel.isDir` (Unreleased)
+### `remodel.isDir` (0.7.0+)
 ```
 remodel.isDir(path: string): bool
 ```
@@ -261,7 +261,7 @@ Throws on error, like if the path does not exist.
 
 ## JSON API
 
-### `json.fromString` (Unreleased)
+### `json.fromString` (0.7.0+)
 ```
 json.fromString(source: string): any
 ```
@@ -270,7 +270,7 @@ Decodes a string containing JSON.
 
 Throws on error, like if the input JSON is invalid.
 
-### `json.toString` (Unreleased)
+### `json.toString` (0.7.0+)
 ```
 json.toString(value: any): string
 ```
