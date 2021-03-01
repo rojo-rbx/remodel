@@ -28,6 +28,7 @@ rbx_xml = "0.12.0-alpha.1"
 
 anyhow = "1.0.27"
 backtrace = "0.3.45"
+base64 = "0.13.0"
 log = "0.4.8"
 reqwest = "0.9.20"
 rlua = "0.17.0"
