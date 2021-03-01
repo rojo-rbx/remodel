@@ -15,7 +15,9 @@ pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResu
     }
 
     match value {
-        Variant::BinaryString(_) => unimplemented_type("BinaryString"),
+        Variant::BinaryString(value) => {
+            base64::encode(AsRef::<[u8]>::as_ref(value)).to_lua(context)
+        }
         Variant::BrickColor(_) => unimplemented_type("BrickColor"),
         Variant::Bool(value) => value.to_lua(context),
         Variant::CFrame(_) => unimplemented_type("CFrame"),
@@ -86,6 +88,12 @@ pub fn lua_to_rbxvalue(ty: VariantType, value: LuaValue<'_>) -> LuaResult<Varian
             let vector3int16 = &*user_data.borrow::<Vector3int16Value>()?;
             Ok(vector3int16.into())
         }
+
+        (VariantType::BinaryString, LuaValue::String(lua_string)) => Ok(Variant::BinaryString(
+            base64::decode(lua_string)
+                .map_err(rlua::Error::external)?
+                .into(),
+        )),
 
         (_, unknown_value) => Err(rlua::Error::external(format!(
             "The Lua value {:?} could not be converted to the Roblox type {:?}",

@@ -1,0 +1,13 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="BinaryStringValue" referent="RBXAE482D28A20845A1B854E0F4F01EA76C">
+		<Properties>
+			<BinaryString name="AttributesSerialize"></BinaryString>
+			<string name="Name">Binary</string>
+			<int64 name="SourceAssetId">-1</int64>
+			<BinaryString name="Value">S2FtcGZrYXJyZW4gd3V6IGhlcmU=</BinaryString>
+		</Properties>
+	</Item>
+</roblox>
