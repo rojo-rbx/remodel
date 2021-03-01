@@ -1,6 +1,6 @@
 //! Defines how to turn Variant values into Lua values and back.
 
-use rbx_dom_weak::types::{Color3, Color3uint8, Variant, VariantType};
+use rbx_dom_weak::types::{Color3, Color3uint8, Variant, VariantType, Vector3int16};
 use rlua::{
     Context, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
@@ -41,7 +41,7 @@ pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResu
         Variant::Vector2(_) => unimplemented_type("Vector2"),
         Variant::Vector2int16(_) => unimplemented_type("Vector2int16"),
         Variant::Vector3(_) => unimplemented_type("Vector3"),
-        Variant::Vector3int16(_) => unimplemented_type("Vector3int16"),
+        Variant::Vector3int16(value) => Vector3int16Value::new(value.clone()).to_lua(context),
 
         _ => Err(rlua::Error::external(format!(
             "The type '{:?}' is unknown to Remodel, please file a bug!",
@@ -80,6 +80,11 @@ pub fn lua_to_rbxvalue(ty: VariantType, value: LuaValue<'_>) -> LuaResult<Varian
         (VariantType::Color3uint8, LuaValue::UserData(ref user_data)) => {
             let color = &*user_data.borrow::<Color3uint8Value>()?;
             Ok(color.into())
+        }
+
+        (VariantType::Vector3int16, LuaValue::UserData(ref user_data)) => {
+            let vector3int16 = &*user_data.borrow::<Vector3int16Value>()?;
+            Ok(vector3int16.into())
         }
 
         (_, unknown_value) => Err(rlua::Error::external(format!(
@@ -196,6 +201,39 @@ impl From<&Color3uint8Value> for Variant {
 
 impl UserData for Color3uint8Value {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.to_string().to_lua(context)
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Vector3int16Value(Vector3int16);
+
+impl fmt::Display for Vector3int16Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}, {}, {}", self.0.x, self.0.y, self.0.z)
+    }
+}
+
+impl Vector3int16Value {
+    pub fn new(value: Vector3int16) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&Vector3int16Value> for Variant {
+    fn from(color: &Vector3int16Value) -> Variant {
+        Variant::Vector3int16(color.0)
+    }
+}
+
+impl UserData for Vector3int16Value {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Vector3int16Value| {
+            (this.0 == rhs.0).to_lua(context)
+        });
+
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
             this.to_string().to_lua(context)
         });

@@ -5,7 +5,7 @@ use std::sync::Arc;
 use rbx_dom_weak::InstanceBuilder;
 use rlua::{Context, UserData, UserDataMethods};
 
-use crate::remodel_context::RemodelContext;
+use crate::{remodel_context::RemodelContext, value::Vector3int16Value};
 
 pub use instance::LuaInstance;
 
@@ -14,6 +14,7 @@ pub struct RobloxApi;
 impl RobloxApi {
     pub fn inject(context: Context<'_>) -> rlua::Result<()> {
         context.globals().set("Instance", Instance)?;
+        context.globals().set("Vector3int16", Vector3int16)?;
 
         Ok(())
     }
@@ -43,5 +44,17 @@ impl UserData for Instance {
 
             Ok(LuaInstance::new(Arc::clone(&master_tree), id))
         });
+    }
+}
+
+struct Vector3int16;
+
+impl UserData for Vector3int16 {
+    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_function("new", |_context, (x, y, z): (i16, i16, i16)| {
+            Ok(Vector3int16Value::new(
+                rbx_dom_weak::types::Vector3int16::new(x, y, z),
+            ))
+        })
     }
 }
