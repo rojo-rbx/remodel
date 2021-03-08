@@ -102,6 +102,22 @@ pub fn lua_to_rbxvalue(ty: VariantType, value: LuaValue<'_>) -> LuaResult<Varian
     }
 }
 
+pub fn guess_type_from_rbxvalue(value: &LuaValue<'_>) -> Option<VariantType> {
+    match value {
+        rlua::Value::Boolean(_) => Some(VariantType::Bool),
+        rlua::Value::Integer(_) | rlua::Value::Number(_) => Some(VariantType::Float64),
+        rlua::Value::String(_) => Some(VariantType::String),
+        rlua::Value::UserData(userdata) => {
+            if userdata.is::<Vector3int16Value>() {
+                Some(VariantType::Vector3)
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
+}
+
 pub fn type_from_str(name: &str) -> Option<VariantType> {
     use VariantType::*;
 
