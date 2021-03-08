@@ -28,3 +28,4 @@ end
 assert(contains(descendants, childA), "`A` was not in descendants")
 assert(contains(descendants, childB), "`B` was not in descendants")
 assert(contains(descendants, grandchild), "`Grandchild` was not in descendants")
+assert(#descendants == 3, "There were not exactly 3 descendants.")
