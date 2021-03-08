@@ -1171,8 +1171,7 @@ dependencies = [
 [[package]]
 name = "rbx_binary"
 version = "0.6.0-alpha.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49b77e46ae30b5770d6789846602f5a3d07168bc38fb2e949252fa845edfa220"
+source = "git+https://github.com/Kampfkarren/rbx-tree?branch=attributes#903086a75f8f902a7137d70d1b67a1e53e1e3246"
 dependencies = [
  "log",
  "lz4",
@@ -1185,8 +1184,7 @@ dependencies = [
 [[package]]
 name = "rbx_dom_weak"
 version = "2.0.0-alpha.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ffa16d4ae69867cbe305d740790900193147ce5a904fc583f88dbfc7de43a95"
+source = "git+https://github.com/Kampfkarren/rbx-tree?branch=attributes#903086a75f8f902a7137d70d1b67a1e53e1e3246"
 dependencies = [
  "rbx_types",
  "serde",
@@ -1195,8 +1193,7 @@ dependencies = [
 [[package]]
 name = "rbx_reflection"
 version = "4.0.0-alpha.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c43632d239190aad5b9406a6f0df2233ae3b46489957dd6d11c4d6daa9046c5"
+source = "git+https://github.com/Kampfkarren/rbx-tree?branch=attributes#903086a75f8f902a7137d70d1b67a1e53e1e3246"
 dependencies = [
  "rbx_types",
  "serde",
@@ -1205,8 +1202,7 @@ dependencies = [
 [[package]]
 name = "rbx_reflection_database"
 version = "0.1.0+roblox-465"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bcc9eca1c8c2016cb7237c290a298799fdef45f30782e088d3c625945b0f273c"
+source = "git+https://github.com/Kampfkarren/rbx-tree?branch=attributes#903086a75f8f902a7137d70d1b67a1e53e1e3246"
 dependencies = [
  "lazy_static",
  "rbx_reflection",
@@ -1217,8 +1213,7 @@ dependencies = [
 [[package]]
 name = "rbx_types"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4094f41f16e2a79cb7760bd64ac6f9d7bfe704accb6261dbff4c8fc58dd10c8c"
+source = "git+https://github.com/Kampfkarren/rbx-tree?branch=attributes#903086a75f8f902a7137d70d1b67a1e53e1e3246"
 dependencies = [
  "base64 0.11.0",
  "bitflags",
@@ -1226,13 +1221,13 @@ dependencies = [
  "lazy_static",
  "rand 0.7.3",
  "serde",
+ "thiserror",
 ]
 
 [[package]]
 name = "rbx_xml"
 version = "0.12.0-alpha.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "949c698c7b6a8b32a731a468c8861e20cffe78fd12b52797c9a03a068d868a9d"
+source = "git+https://github.com/Kampfkarren/rbx-tree?branch=attributes#903086a75f8f902a7137d70d1b67a1e53e1e3246"
 dependencies = [
  "base64 0.11.0",
  "log",
