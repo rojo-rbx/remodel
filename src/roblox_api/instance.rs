@@ -91,6 +91,35 @@ impl LuaInstance {
         Ok(child)
     }
 
+    fn get_descendants(&self) -> rlua::Result<Vec<LuaInstance>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call GetDescendants() on a destroyed instance")
+        })?;
+
+        let mut descendants = Vec::new();
+        let mut stack = Vec::new();
+        let mut current = Some(instance);
+
+        while let Some(current_instance) = current {
+            let children = current_instance.children();
+
+            for child_ref in children.into_iter().copied() {
+                let child_instance = tree
+                    .get_by_ref(child_ref)
+                    .expect("received invalid child in tree when recursing through descendants");
+
+                descendants.push(LuaInstance::new(Arc::clone(&self.tree), child_ref));
+                stack.push(child_instance);
+            }
+
+            current = stack.pop();
+        }
+
+        Ok(descendants)
+    }
+
     fn get_children(&self) -> rlua::Result<Vec<LuaInstance>> {
         let tree = self.tree.lock().unwrap();
 
@@ -319,6 +348,10 @@ impl UserData for LuaInstance {
 
         methods.add_method("GetChildren", |_context, this, _args: ()| {
             this.get_children()
+        });
+
+        methods.add_method("GetDescendants", |_context, this, _args: ()| {
+            this.get_descendants()
         });
 
         methods.add_method("GetService", |_context, this, name: String| {
