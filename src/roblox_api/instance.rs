@@ -102,9 +102,7 @@ impl LuaInstance {
         let mut stack = vec![instance];
 
         while let Some(current) = stack.pop() {
-            let children = current.children();
-
-            for &child_ref in children {
+            for &child_ref in current.children() {
                 let child_instance = tree
                     .get_by_ref(child_ref)
                     .expect("received invalid child in tree when recursing through descendants");
