@@ -99,11 +99,10 @@ impl LuaInstance {
         })?;
 
         let mut descendants = Vec::new();
-        let mut stack = Vec::new();
-        let mut current = Some(instance);
+        let mut stack = vec![instance];
 
-        while let Some(current_instance) = current {
-            let children = current_instance.children();
+        while let Some(current) = stack.pop() {
+            let children = current.children();
 
             for child_ref in children.into_iter().copied() {
                 let child_instance = tree
@@ -113,8 +112,6 @@ impl LuaInstance {
                 descendants.push(LuaInstance::new(Arc::clone(&self.tree), child_ref));
                 stack.push(child_instance);
             }
-
-            current = stack.pop();
         }
 
         Ok(descendants)

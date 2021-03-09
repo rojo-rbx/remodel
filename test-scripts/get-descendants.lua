@@ -15,17 +15,7 @@ childB.Parent = root
 
 local descendants = root:GetDescendants()
 
-local function contains(haystack, needle)
-	for _, thing in ipairs(haystack) do
-		if thing == needle then
-			return true
-		end
-	end
-
-	return false
-end
-
-assert(contains(descendants, childA), "`A` was not in descendants")
-assert(contains(descendants, childB), "`B` was not in descendants")
-assert(contains(descendants, grandchild), "`Grandchild` was not in descendants")
+assert(descendants[1] == childA, "`A` was not the first in descendants, instead it was " .. tostring(descendants[1]))
+assert(descendants[2] == childB, "`B` was not the first in descendants, instead it was " .. tostring(descendants[2]))
+assert(descendants[3] == grandchild, "`Grandchild` was not the first in descendants, instead it was " .. tostring(descendants[3]))
 assert(#descendants == 3, "There were not exactly 3 descendants.")
