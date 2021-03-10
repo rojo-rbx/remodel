@@ -119,6 +119,11 @@ impl LuaInstance {
         };
 
         let attribute_bytes: &[u8] = attribute_binary_string.as_ref();
+
+        if attribute_bytes.is_empty() {
+            return Ok(None);
+        }
+
         let mut attributes = Attributes::from_reader(attribute_bytes).map_err(|error| {
             rlua::Error::external(format!("Attributes could not be deserialized: {}", error))
         })?;
