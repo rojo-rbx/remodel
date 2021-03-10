@@ -1,10 +1,7 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use rbx_dom_weak::{
-    types::{attributes_from_map, get_attributes, BinaryString, Ref, Variant, VariantType},
+    types::{Attributes, Ref, Variant, VariantType},
     InstanceBuilder, WeakDom,
 };
 use rbx_reflection::ClassTag;
@@ -122,13 +119,13 @@ impl LuaInstance {
         };
 
         let attribute_bytes: &[u8] = attribute_binary_string.as_ref();
-        let mut attributes = get_attributes(attribute_bytes).map_err(|error| {
+        let mut attributes = Attributes::from_reader(attribute_bytes).map_err(|error| {
             rlua::Error::external(format!("Attributes could not be deserialized: {}", error))
         })?;
 
         rbxvalue_to_lua(
             context,
-            &match attributes.remove(attribute_name.as_bytes()) {
+            &match attributes.remove(attribute_name) {
                 Some(variant) => match variant {
                     Variant::BinaryString(binary) => {
                         Variant::String(String::from_utf8_lossy(binary.as_ref()).into_owned())
@@ -156,7 +153,7 @@ impl LuaInstance {
         let mut attributes = match instance.properties.get("AttributesSerialize") {
             Some(Variant::BinaryString(bytes)) => {
                 let attribute_bytes: &[u8] = bytes.as_ref();
-                get_attributes(attribute_bytes).map_err(|error| {
+                Attributes::from_reader(attribute_bytes).map_err(|error| {
                     rlua::Error::external(format!(
                         "Attributes could not be deserialized: {}",
                         error
@@ -169,13 +166,11 @@ impl LuaInstance {
                     other,
                 )))
             }
-            None => HashMap::new(),
+            None => Attributes::new(),
         };
 
-        let attribute_key = attribute_name.as_bytes().to_vec();
-
         if matches!(value, rlua::Value::Nil) {
-            attributes.remove(&attribute_key);
+            attributes.remove(attribute_name);
         } else {
             let guessed_type = guess_type_from_rbxvalue(&value).ok_or_else(|| {
                 rlua::Error::external(format!("{:?} is not a valid attribute value", value))
@@ -194,19 +189,23 @@ impl LuaInstance {
                 other @ _ => other,
             };
 
-            attributes.insert(attribute_key, lua_to_rbxvalue(variant_type, value)?);
+            attributes.insert(
+                attribute_name.to_owned(),
+                lua_to_rbxvalue(variant_type, value)?,
+            );
         }
+
+        let mut buffer: Vec<u8> = Vec::new();
+        attributes.to_writer(&mut buffer).map_err(|error| {
+            rlua::Error::external(format!(
+                "There was an error while setting the attribute: {}",
+                error,
+            ))
+        })?;
 
         instance.properties.insert(
             "AttributesSerialize".to_owned(),
-            Variant::BinaryString(BinaryString::from(
-                attributes_from_map(attributes).map_err(|error| {
-                    rlua::Error::external(format!(
-                        "There was an error while setting the attribute: {}",
-                        error,
-                    ))
-                })?,
-            )),
+            Variant::BinaryString(buffer.into()),
         );
 
         Ok(())
