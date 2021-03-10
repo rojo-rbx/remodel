@@ -9,13 +9,30 @@ local grandchild = Instance.new("Folder")
 grandchild.Name = "Grandchild"
 grandchild.Parent = childA
 
+local greatGrandchild = Instance.new("Folder")
+greatGrandchild.Name = "GreatGrandchild"
+greatGrandchild.Parent = grandchild
+
 local childB = Instance.new("Folder")
 childB.Name = "B"
 childB.Parent = root
 
+local grandchildB = Instance.new("Folder")
+grandchildB.Name = "GrandchildB"
+grandchildB.Parent = childB
+
 local descendants = root:GetDescendants()
 
-assert(descendants[1] == childA, "`A` was not the first in descendants, instead it was " .. tostring(descendants[1]))
-assert(descendants[2] == childB, "`B` was not the first in descendants, instead it was " .. tostring(descendants[2]))
-assert(descendants[3] == grandchild, "`Grandchild` was not the first in descendants, instead it was " .. tostring(descendants[3]))
-assert(#descendants == 3, "There were not exactly 3 descendants.")
+local expectedDescendants = {
+	childA,
+	grandchild,
+	greatGrandchild,
+	childB,
+	grandchildB,
+}
+
+assert(#descendants == #expectedDescendants, "Got bad number of descendants: " .. #descendants)
+
+for index, expected in ipairs(expectedDescendants) do
+	assert(descendants[index] == expected, "Invalid descendant at " .. index .. ": " .. descendants[index].Name)
+end

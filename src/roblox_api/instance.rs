@@ -1,4 +1,8 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    collections::VecDeque,
+    iter::FromIterator,
+    sync::{Arc, Mutex},
+};
 
 use rbx_dom_weak::{types::Ref, InstanceBuilder, WeakDom};
 use rbx_reflection::ClassTag;
@@ -99,17 +103,18 @@ impl LuaInstance {
         })?;
 
         let mut descendants = Vec::new();
-        let mut stack = vec![instance];
+        let mut stack = VecDeque::from_iter(instance.children().into_iter());
 
-        while let Some(current) = stack.pop() {
-            for &child_ref in current.children() {
-                let child_instance = tree
-                    .get_by_ref(child_ref)
-                    .expect("received invalid child in tree when recursing through descendants");
+        while let Some(current) = stack.pop_front() {
+            descendants.push(LuaInstance::new(Arc::clone(&self.tree), *current));
 
-                descendants.push(LuaInstance::new(Arc::clone(&self.tree), child_ref));
-                stack.push(child_instance);
-            }
+            let current_instance = tree
+                .get_by_ref(*current)
+                .expect("received invalid child in tree when recursing through descendants");
+
+            let mut new_stack = VecDeque::from_iter(current_instance.children());
+            new_stack.extend(&stack);
+            stack = new_stack;
         }
 
         Ok(descendants)
