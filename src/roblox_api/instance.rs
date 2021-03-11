@@ -1,4 +1,8 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    collections::VecDeque,
+    iter::FromIterator,
+    sync::{Arc, Mutex},
+};
 
 use rbx_dom_weak::{types::Ref, InstanceBuilder, WeakDom};
 use rbx_reflection::ClassTag;
@@ -89,6 +93,31 @@ impl LuaInstance {
             .map(|id| LuaInstance::new(Arc::clone(&self.tree), id));
 
         Ok(child)
+    }
+
+    fn get_descendants(&self) -> rlua::Result<Vec<LuaInstance>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call GetDescendants() on a destroyed instance")
+        })?;
+
+        let mut descendants = Vec::new();
+        let mut stack = VecDeque::from_iter(instance.children().into_iter());
+
+        while let Some(current) = stack.pop_front() {
+            descendants.push(LuaInstance::new(Arc::clone(&self.tree), *current));
+
+            let current_instance = tree
+                .get_by_ref(*current)
+                .expect("received invalid child in tree when recursing through descendants");
+
+            for child in current_instance.children().iter().rev() {
+                stack.push_front(child);
+            }
+        }
+
+        Ok(descendants)
     }
 
     fn get_children(&self) -> rlua::Result<Vec<LuaInstance>> {
@@ -319,6 +348,10 @@ impl UserData for LuaInstance {
 
         methods.add_method("GetChildren", |_context, this, _args: ()| {
             this.get_children()
+        });
+
+        methods.add_method("GetDescendants", |_context, this, _args: ()| {
+            this.get_descendants()
         });
 
         methods.add_method("GetService", |_context, this, name: String| {
