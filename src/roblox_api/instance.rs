@@ -112,9 +112,9 @@ impl LuaInstance {
                 .get_by_ref(*current)
                 .expect("received invalid child in tree when recursing through descendants");
 
-            let mut new_stack = VecDeque::from_iter(current_instance.children());
-            new_stack.extend(&stack);
-            stack = new_stack;
+            for child in current_instance.children().iter().rev() {
+                stack.push_front(child);
+            }
         }
 
         Ok(descendants)
