@@ -136,6 +136,26 @@ impl Remodel {
         Ok(())
     }
 
+    fn write_binary_place_file(lua_instance: LuaInstance, path: &Path) -> rlua::Result<()> {
+        let file = BufWriter::new(File::create(&path).map_err(rlua::Error::external)?);
+
+        let tree = lua_instance.tree.lock().unwrap();
+        let instance = tree
+            .get_by_ref(lua_instance.id)
+            .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
+
+        if instance.class != "DataModel" {
+            return Err(rlua::Error::external(
+                "Only DataModel instances can be saved as place files.",
+            ));
+        }
+
+        rbx_binary::to_writer_default(file, &tree, instance.children())
+            .map_err(|err| rlua::Error::external(format!("{:?}", err)))?;
+    
+        Ok(())
+    }
+
     fn write_xml_model_file(lua_instance: LuaInstance, path: &Path) -> rlua::Result<()> {
         let file = BufWriter::new(File::create(&path).map_err(rlua::Error::external)?);
 
@@ -169,24 +189,6 @@ impl Remodel {
         }
 
         rbx_binary::to_writer_default(file, &tree, &[lua_instance.id])
-            .map_err(|err| rlua::Error::external(format!("{:?}", err)))
-    }
-
-    fn write_binary_place_file(lua_instance: LuaInstance, path: &Path) -> rlua::Result<()> {
-        let file = BufWriter::new(File::create(&path).map_err(rlua::Error::external)?);
-
-        let tree = lua_instance.tree.lock().unwrap();
-        let instance = tree
-            .get_by_ref(lua_instance.id)
-            .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
-
-        if instance.class != "DataModel" {
-            return Err(rlua::Error::external(
-                "Only DataModel instances can be saved as place files.",
-            ));
-        }
-
-        rbx_binary::to_writer_default(file, &tree, instance.children())
             .map_err(|err| rlua::Error::external(format!("{:?}", err)))
     }
 
