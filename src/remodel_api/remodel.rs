@@ -172,6 +172,24 @@ impl Remodel {
             .map_err(|err| rlua::Error::external(format!("{:?}", err)))
     }
 
+    fn write_binary_place_file(lua_instance: LuaInstance, path: &Path) -> rlua::Result<()> {
+        let file = BufWriter::new(File::create(&path).map_err(rlua::Error::external)?);
+
+        let tree = lua_instance.tree.lock().unwrap();
+        let instance = tree
+            .get_by_ref(lua_instance.id)
+            .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
+
+        if instance.class != "DataModel" {
+            return Err(rlua::Error::external(
+                "Only DataModel instances can be saved as place files.",
+            ));
+        }
+
+        rbx_binary::to_writer_default(file, &tree, instance.children())
+            .map_err(|err| rlua::Error::external(format!("{:?}", err)))
+    }
+
     fn read_model_asset(context: Context<'_>, asset_id: u64) -> rlua::Result<Vec<LuaInstance>> {
         let re_context = RemodelContext::get(context)?;
         let auth_cookie = re_context.auth_cookie();
@@ -476,9 +494,7 @@ impl UserData for Remodel {
 
                 match path.extension().and_then(OsStr::to_str) {
                     Some("rbxlx") => Remodel::write_xml_place_file(instance, path),
-                    Some("rbxl") => Err(rlua::Error::external(
-                        "Writing rbxl place files is not supported yet.",
-                    )),
+                    Some("rbxl") => Remodel::write_binary_place_file(instance, path),
                     _ => Err(rlua::Error::external(format!(
                         "Invalid place file path {}",
                         path.display()
