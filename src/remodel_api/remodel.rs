@@ -152,7 +152,7 @@ impl Remodel {
 
         rbx_binary::to_writer_default(file, &tree, instance.children())
             .map_err(|err| rlua::Error::external(format!("{:?}", err)))?;
-    
+
         Ok(())
     }
 
