@@ -351,7 +351,11 @@ impl Remodel {
         Remodel::upload_asset(context, buffer, asset_id)
     }
 
-    fn upload_animation_asset(context: Context<'_>, buffer: Vec<u8>, asset_id: u64) -> rlua::Result<()> {
+    fn upload_animation_asset(
+        context: Context<'_>,
+        buffer: Vec<u8>,
+        asset_id: u64,
+    ) -> rlua::Result<()> {
         let re_context = RemodelContext::get(context)?;
         let auth_cookie = re_context.auth_cookie().ok_or_else(|| {
             rlua::Error::external(
