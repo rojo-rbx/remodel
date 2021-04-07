@@ -374,8 +374,6 @@ impl Remodel {
                 .post(&url)
                 .header(COOKIE, format!(".ROBLOSECURITY={}", auth_cookie))
                 .header(USER_AGENT, "Roblox")
-                //.header(CONTENT_TYPE, "application/xml")
-                //.header(ACCEPT, "application/json")
                 .body(buffer.clone())
         };
 
