@@ -1236,9 +1236,9 @@ dependencies = [
 
 [[package]]
 name = "rbx_xml"
-version = "0.12.0-alpha.3"
+version = "0.12.0-alpha.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db7941a876c1b34ad4ec0a5b17632ed53bdb2436c5b5f8881c2880ffc3fe9e8b"
+checksum = "86e2277d678ea30609e6f383a8f34eabab7bb2f9d62144cbe400d179acea2d47"
 dependencies = [
  "base64 0.11.0",
  "log",
@@ -1274,7 +1274,7 @@ dependencies = [
 
 [[package]]
 name = "remodel"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "anyhow",
  "backtrace",

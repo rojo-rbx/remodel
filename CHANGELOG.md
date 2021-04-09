@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+## 0.8.1 (2021-04-09)
+* Updated to latest rbx_xml, which should fix `OptionalCoordinateFrame`-related issues.
+
 ## 0.8.0 (2021-04-09)
 * Ported to rbx-dom v2, which includes full support for binary and XML model files.
 * Changed all upload commands to upload as binary instead of XML.
