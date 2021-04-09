@@ -1,12 +1,14 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+
+## 0.8.0 (2021-04-09)
 * Ported to rbx-dom v2, which includes full support for binary and XML model files.
 * Changed all upload commands to upload as binary instead of XML.
 * Added support for CSRF negotiation to fix asset uploading. ([#25][#25])
 * Added support for Vector3int16.
 * Added support for BinaryString values.
-* Added :GetDescendants().
+* Added Instance:GetDescendants().
 
 [#25]: https://github.com/rojo-rbx/remodel/issues/25
 
