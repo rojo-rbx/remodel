@@ -22,7 +22,7 @@ Remodel can be installed with Foreman, a toolchain manager for Roblox projects:
 
 ```toml
 [tools]
-remodel = { source = "rojo-rbx/remodel", version = "0.7.1" }
+remodel = { source = "rojo-rbx/remodel", version = "0.8.0" }
 ```
 
 ### From GitHub Releases
@@ -69,7 +69,7 @@ Remodel supports some parts of Roblox's API in order to make code familiar to ex
 * `<Instance>:Destroy()` (0.5.0+)
 * `<Instance>:Clone()` (0.6.0+)
 * `<Instance>:GetChildren()`
-* `<Instance>:GetDescendants()` (unreleased)
+* `<Instance>:GetDescendants()` (0.8.0+)
 * `<Instance>:FindFirstChild(name)`
 	* The second argument (recursive) is not supported by Remodel.
 * `<DataModel>:GetService(name)` (0.6.0+)
