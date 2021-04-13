@@ -282,6 +282,14 @@ impl Remodel {
         Remodel::import_tree_root(context, source_tree)
     }
 
+    fn write_model_asset(context: Context<'_>, lua_instance: LuaInstance) -> rlua::Result<()> {
+        Remodel::write_existing_model_asset(context, lua_instance, 0)
+    }
+
+    fn write_place_asset(context: Context<'_>, lua_instance: LuaInstance) -> rlua::Result<()> {
+        Remodel::write_existing_place_asset(context, lua_instance, 0)
+    }
+
     fn write_existing_model_asset(
         context: Context<'_>,
         lua_instance: LuaInstance,
@@ -469,6 +477,14 @@ impl UserData for Remodel {
             let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
 
             Remodel::read_place_asset(context, asset_id)
+        });
+
+        methods.add_function("writeModelAsset", |context, instance: LuaInstance| {
+            Remodel::write_model_asset(context, instance)
+        });
+
+        methods.add_function("writePlaceAsset", |context, instance: LuaInstance| {
+            Remodel::write_place_asset(context, instance)
         });
 
         methods.add_function(
