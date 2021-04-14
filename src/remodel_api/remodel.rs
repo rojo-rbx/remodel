@@ -474,7 +474,7 @@ impl Remodel {
                 .query(queries)
                 .body(buffer.clone())
         };
-        
+
         log::debug!("Uploading to Roblox...");
         let mut response = build_request().send().map_err(rlua::Error::external)?;
 
