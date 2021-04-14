@@ -71,9 +71,10 @@ fn get_bool_option(options: &Table, option: &str, default: bool) -> rlua::Result
 }
 
 fn bool_into_query(boolean: bool) -> String {
-    match boolean {
-        true => String::from("True"),
-        false => String::from("False"),
+    if boolean {
+        String::from("True")
+    } else {
+        String::from("False")
     }
 }
 
