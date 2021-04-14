@@ -11,7 +11,7 @@ use reqwest::{
     header::{ACCEPT, CONTENT_TYPE, COOKIE, USER_AGENT},
     StatusCode,
 };
-use rlua::{Context, UserData, UserDataMethods};
+use rlua::{Context, Table, UserData, UserDataMethods, Value};
 
 use crate::{
     remodel_context::RemodelContext,
@@ -26,6 +26,55 @@ fn xml_encode_options() -> rbx_xml::EncodeOptions {
 
 fn xml_decode_options() -> rbx_xml::DecodeOptions {
     rbx_xml::DecodeOptions::new().property_behavior(rbx_xml::DecodePropertyBehavior::ReadUnknown)
+}
+
+fn get_required_string_option(options: &Table, option: &str) -> rlua::Result<String> {
+    let value = options.get(option).map_err(rlua::Error::external)?;
+
+    match value {
+        Value::String(value) => Ok(value.to_str().map_err(rlua::Error::external)?.to_string()),
+        Value::Nil => Err(rlua::Error::external(format!(
+            "The option {} must be specified",
+            option
+        ))),
+        _ => Err(rlua::Error::external(format!(
+            "The option {} must be a string",
+            option
+        ))),
+    }
+}
+
+fn get_string_option(options: &Table, option: &str, default: &str) -> rlua::Result<String> {
+    let value = options.get(option).map_err(rlua::Error::external)?;
+
+    match value {
+        Value::String(value) => Ok(value.to_str().map_err(rlua::Error::external)?.to_string()),
+        Value::Nil => Ok(default.to_string()),
+        _ => Err(rlua::Error::external(format!(
+            "The option {} must be a string",
+            option
+        ))),
+    }
+}
+
+fn get_bool_option(options: &Table, option: &str, default: bool) -> rlua::Result<bool> {
+    let value = options.get(option).map_err(rlua::Error::external)?;
+
+    match value {
+        Value::Boolean(value) => Ok(value),
+        Value::Nil => Ok(default),
+        _ => Err(rlua::Error::external(format!(
+            "The option {} must be a bool",
+            option
+        ))),
+    }
+}
+
+fn bool_into_query(boolean: bool) -> String {
+    match boolean {
+        true => String::from("True"),
+        false => String::from("False"),
+    }
 }
 
 pub struct Remodel;
@@ -282,18 +331,11 @@ impl Remodel {
         Remodel::import_tree_root(context, source_tree)
     }
 
-    fn write_model_asset(context: Context<'_>, lua_instance: LuaInstance) -> rlua::Result<()> {
-        Remodel::write_existing_model_asset(context, lua_instance, 0)
-    }
-
-    fn write_place_asset(context: Context<'_>, lua_instance: LuaInstance) -> rlua::Result<()> {
-        Remodel::write_existing_place_asset(context, lua_instance, 0)
-    }
-
-    fn write_existing_model_asset(
+    fn write_model_asset(
         context: Context<'_>,
         lua_instance: LuaInstance,
         asset_id: u64,
+        queries: &[(&str, &str)],
     ) -> rlua::Result<()> {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
@@ -310,13 +352,14 @@ impl Remodel {
         rbx_binary::to_writer_default(&mut buffer, &tree, &[lua_instance.id])
             .map_err(rlua::Error::external)?;
 
-        Remodel::upload_asset(context, buffer, asset_id)
+        Remodel::upload_asset(context, buffer, asset_id, queries)
     }
 
-    fn write_existing_place_asset(
+    fn write_place_asset(
         context: Context<'_>,
         lua_instance: LuaInstance,
         asset_id: u64,
+        queries: &[(&str, &str)],
     ) -> rlua::Result<()> {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
@@ -333,10 +376,81 @@ impl Remodel {
         rbx_binary::to_writer_default(&mut buffer, &tree, instance.children())
             .map_err(rlua::Error::external)?;
 
-        Remodel::upload_asset(context, buffer, asset_id)
+        Remodel::upload_asset(context, buffer, asset_id, queries)
     }
 
-    fn upload_asset(context: Context<'_>, buffer: Vec<u8>, asset_id: u64) -> rlua::Result<()> {
+    fn write_new_model_asset(
+        context: Context<'_>,
+        lua_instance: LuaInstance,
+        name: String,
+        description: String,
+        is_public: bool,
+        allow_comments: bool,
+    ) -> rlua::Result<()> {
+        let is_public = bool_into_query(is_public);
+        let allow_comments = bool_into_query(allow_comments);
+
+        Remodel::write_model_asset(
+            context,
+            lua_instance,
+            0,
+            &[
+                ("type", "Model"),
+                ("name", &name),
+                ("description", &description),
+                ("isPublic", &is_public),
+                ("allowComments", &allow_comments),
+            ],
+        )
+    }
+
+    fn write_new_place_asset(
+        context: Context<'_>,
+        lua_instance: LuaInstance,
+        name: String,
+        description: String,
+        is_public: bool,
+        allow_comments: bool,
+    ) -> rlua::Result<()> {
+        let is_public = bool_into_query(is_public);
+        let allow_comments = bool_into_query(allow_comments);
+
+        Remodel::write_place_asset(
+            context,
+            lua_instance,
+            0,
+            &[
+                ("type", "Model"),
+                ("name", &name),
+                ("description", &description),
+                ("isPublic", &is_public),
+                ("allowComments", &allow_comments),
+            ],
+        )
+    }
+
+    fn write_existing_model_asset(
+        context: Context<'_>,
+        lua_instance: LuaInstance,
+        asset_id: u64,
+    ) -> rlua::Result<()> {
+        Remodel::write_model_asset(context, lua_instance, asset_id, &[])
+    }
+
+    fn write_existing_place_asset(
+        context: Context<'_>,
+        lua_instance: LuaInstance,
+        asset_id: u64,
+    ) -> rlua::Result<()> {
+        Remodel::write_model_asset(context, lua_instance, asset_id, &[])
+    }
+
+    fn upload_asset(
+        context: Context<'_>,
+        buffer: Vec<u8>,
+        asset_id: u64,
+        queries: &[(&str, &str)],
+    ) -> rlua::Result<()> {
         let re_context = RemodelContext::get(context)?;
         let auth_cookie = re_context.auth_cookie().ok_or_else(|| {
             rlua::Error::external(
@@ -357,9 +471,10 @@ impl Remodel {
                 .header(USER_AGENT, "Roblox/WinInet")
                 .header(CONTENT_TYPE, "application/xml")
                 .header(ACCEPT, "application/json")
+                .query(queries)
                 .body(buffer.clone())
         };
-
+        
         log::debug!("Uploading to Roblox...");
         let mut response = build_request().send().map_err(rlua::Error::external)?;
 
@@ -479,13 +594,43 @@ impl UserData for Remodel {
             Remodel::read_place_asset(context, asset_id)
         });
 
-        methods.add_function("writeModelAsset", |context, instance: LuaInstance| {
-            Remodel::write_model_asset(context, instance)
-        });
+        methods.add_function(
+            "writeNewModelAsset",
+            |context, (instance, options): (LuaInstance, Table)| {
+                let name = get_required_string_option(&options, "name")?;
+                let description = get_string_option(&options, "description", "")?;
+                let is_public = get_bool_option(&options, "isPublic", false)?;
+                let allow_comments = get_bool_option(&options, "allowComments", false)?;
 
-        methods.add_function("writePlaceAsset", |context, instance: LuaInstance| {
-            Remodel::write_place_asset(context, instance)
-        });
+                Remodel::write_new_model_asset(
+                    context,
+                    instance,
+                    name,
+                    description,
+                    is_public,
+                    allow_comments,
+                )
+            },
+        );
+
+        methods.add_function(
+            "writeNewPlaceAsset",
+            |context, (instance, options): (LuaInstance, Table)| {
+                let name = get_required_string_option(&options, "name")?;
+                let description = get_string_option(&options, "description", "")?;
+                let is_public = get_bool_option(&options, "isPublic", false)?;
+                let allow_comments = get_bool_option(&options, "allowComments", false)?;
+
+                Remodel::write_new_place_asset(
+                    context,
+                    instance,
+                    name,
+                    description,
+                    is_public,
+                    allow_comments,
+                )
+            },
+        );
 
         methods.add_function(
             "writeExistingModelAsset",
