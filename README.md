@@ -149,14 +149,14 @@ Throws on error.
 
 ### `remodel.writeNewPlaceAsset`
 ```
-type Options {
+remodel.writeNewPlaceAsset(instance: DataModel, options: Options)
+
+where Options: {
 	name: string,
 	description: string?,
 	isPublic: boolean?,
 	allowComments: boolean?,
 }
-
-remodel.writeNewPlaceAsset(instance: DataModel, options: Options)
 ```
 
 Uploads the given `DataModel` instance to Roblox.com as a new place with the corresponding options.
@@ -174,14 +174,14 @@ Throws on error.
 
 ### `remodel.writeNewModelAsset`
 ```
-type Options {
+remodel.writeNewModelAsset(instance: Instance, options: Options)
+
+where Options: {
 	name: string,
 	description: string?,
 	isPublic: boolean?,
 	allowComments: boolean?,
 }
-
-remodel.writeNewModelAsset(instance: Instance, options: Options)
 ```
 
 Uploads the given instance to Roblox.com as a new model with the corresponding options.
