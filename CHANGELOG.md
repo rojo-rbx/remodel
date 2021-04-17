@@ -1,6 +1,9 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added APIs for uploading new models and places on Roblox.com:
+	* `remodel.writeNewModelAsset`
+	* `remodel.writeNewPlaceAsset`
 
 ## 0.8.1 (2021-04-09)
 * Updated to latest rbx_xml, which should fix `OptionalCoordinateFrame`-related issues.
