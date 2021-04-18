@@ -337,7 +337,7 @@ impl Remodel {
         lua_instance: LuaInstance,
         asset_id: u64,
         queries: &[(&str, &str)],
-    ) -> rlua::Result<()> {
+    ) -> rlua::Result<String> {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
             .get_by_ref(lua_instance.id)
@@ -361,7 +361,7 @@ impl Remodel {
         lua_instance: LuaInstance,
         asset_id: u64,
         queries: &[(&str, &str)],
-    ) -> rlua::Result<()> {
+    ) -> rlua::Result<String> {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
             .get_by_ref(lua_instance.id)
@@ -387,7 +387,7 @@ impl Remodel {
         description: String,
         is_public: bool,
         allow_comments: bool,
-    ) -> rlua::Result<()> {
+    ) -> rlua::Result<String> {
         let is_public = bool_into_query(is_public);
         let allow_comments = bool_into_query(allow_comments);
 
@@ -412,7 +412,7 @@ impl Remodel {
         description: String,
         is_public: bool,
         allow_comments: bool,
-    ) -> rlua::Result<()> {
+    ) -> rlua::Result<String> {
         let is_public = bool_into_query(is_public);
         let allow_comments = bool_into_query(allow_comments);
 
@@ -435,7 +435,10 @@ impl Remodel {
         lua_instance: LuaInstance,
         asset_id: u64,
     ) -> rlua::Result<()> {
-        Remodel::write_model_asset(context, lua_instance, asset_id, &[])
+        match Remodel::write_model_asset(context, lua_instance, asset_id, &[]) {
+            Ok(_) => Ok(()),
+            Err(error) => Err(rlua::Error::external(error)),
+        }
     }
 
     fn write_existing_place_asset(
@@ -443,7 +446,10 @@ impl Remodel {
         lua_instance: LuaInstance,
         asset_id: u64,
     ) -> rlua::Result<()> {
-        Remodel::write_model_asset(context, lua_instance, asset_id, &[])
+        match Remodel::write_place_asset(context, lua_instance, asset_id, &[]) {
+            Ok(_) => Ok(()),
+            Err(error) => Err(rlua::Error::external(error)),
+        }
     }
 
     fn upload_asset(
@@ -451,7 +457,7 @@ impl Remodel {
         buffer: Vec<u8>,
         asset_id: u64,
         queries: &[(&str, &str)],
-    ) -> rlua::Result<()> {
+    ) -> rlua::Result<String> {
         let re_context = RemodelContext::get(context)?;
         let auth_cookie = re_context.auth_cookie().ok_or_else(|| {
             rlua::Error::external(
@@ -493,7 +499,12 @@ impl Remodel {
         }
 
         if response.status().is_success() {
-            Ok(())
+            let asset_id = response.headers().get("roblox-assetid");
+
+            match asset_id {
+                Some(asset_id) => Ok(String::from(asset_id.to_str().unwrap())),
+                None => Err(rlua::Error::external("Asset had no roblox-assetid")),
+            }
         } else {
             Err(rlua::Error::external(format!(
                 "Roblox API returned an error, status {}.",
