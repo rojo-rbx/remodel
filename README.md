@@ -149,7 +149,7 @@ Throws on error.
 
 ### `remodel.writeNewPlaceAsset`
 ```
-remodel.writeNewPlaceAsset(instance: DataModel, options: Options)
+remodel.writeNewPlaceAsset(instance: DataModel, options: Options): string
 
 where Options: {
 	name: string,
@@ -166,6 +166,8 @@ The options: `description`, `isPublic`, and `allowComments` are all optional.
 
 ``allowComments`` does not have any function for places.
 
+Returns the place's asset id.
+
 If the instance is not a `DataModel`, this method will throw. Models should be uploaded with `writeNewModelAsset` instead.
 
 **This method always requires web authentication! See [Authentication](#authentication) for more information.**
@@ -174,7 +176,7 @@ Throws on error.
 
 ### `remodel.writeNewModelAsset`
 ```
-remodel.writeNewModelAsset(instance: Instance, options: Options)
+remodel.writeNewModelAsset(instance: Instance, options: Options): string
 
 where Options: {
 	name: string,
@@ -188,6 +190,8 @@ Uploads the given instance to Roblox.com as a new model with the corresponding o
 
 The options: `description`, `isPublic`, and `allowComments` are all optional.
 ``description`` default to an empty string. ``isPublic`` and ``allowComments`` default to ``false``.
+
+Returns the model's asset id.
 
 If the instance is a `DataModel`, this method will throw. Places should be uploaded with `writeNewPlaceAsset` instead.
 
