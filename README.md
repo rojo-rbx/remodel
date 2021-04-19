@@ -161,8 +161,7 @@ where Options: {
 
 Uploads the given `DataModel` instance to Roblox.com as a new place with the corresponding options.
 
-The options: `description`, `isPublic`, and `allowComments` are all optional.
-``description`` default to an empty string. ``isPublic`` and ``allowComments`` default to ``false``.
+The options: `description`, `isPublic`, and `allowComments` are all optional.``description`` default to an empty string. ``isPublic`` and ``allowComments`` default to ``false``.
 
 ``allowComments`` does not have any function for places.
 
@@ -188,8 +187,7 @@ where Options: {
 
 Uploads the given instance to Roblox.com as a new model with the corresponding options.
 
-The options: `description`, `isPublic`, and `allowComments` are all optional.
-``description`` default to an empty string. ``isPublic`` and ``allowComments`` default to ``false``.
+The options: `description`, `isPublic`, and `allowComments` are all optional. `description` default to an empty string. `isPublic` and `allowComments` default to `false`.
 
 Returns the model's asset id.
 
