@@ -165,7 +165,7 @@ Throws on error.
 remodel.writeExistingModelAsset(instance: Instance, assetId: string)
 ```
 
-Uploads the given instance to Roblox.com over an existing place.
+Uploads the given instance to Roblox.com over an existing model.
 
 If the instance is a `DataModel`, this method will throw. Places should be uploaded with `writeExistingPlaceAsset` instead.
 
