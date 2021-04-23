@@ -5,7 +5,10 @@ use std::sync::Arc;
 use rbx_dom_weak::InstanceBuilder;
 use rlua::{Context, UserData, UserDataMethods};
 
-use crate::{remodel_context::RemodelContext, value::Vector3int16Value};
+use crate::{
+    remodel_context::RemodelContext,
+    value::{Color3Value, Vector3int16Value},
+};
 
 pub use instance::LuaInstance;
 
@@ -15,6 +18,7 @@ impl RobloxApi {
     pub fn inject(context: Context<'_>) -> rlua::Result<()> {
         context.globals().set("Instance", Instance)?;
         context.globals().set("Vector3int16", Vector3int16)?;
+        context.globals().set("Color3", Color3)?;
 
         Ok(())
     }
@@ -56,5 +60,22 @@ impl UserData for Vector3int16 {
                 rbx_dom_weak::types::Vector3int16::new(x, y, z),
             ))
         })
+    }
+}
+
+struct Color3;
+
+impl UserData for Color3 {
+    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_function("new", |_context, (x, y, z): (f32, f32, f32)| {
+            Ok(Color3Value::new(rbx_dom_weak::types::Color3::new(x, y, z)))
+        });
+        methods.add_function("fromRGB", |_context, (x, y, z): (f32, f32, f32)| {
+            Ok(Color3Value::new(rbx_dom_weak::types::Color3::new(
+                x / 255.0,
+                y / 255.0,
+                z / 255.0,
+            )))
+        });
     }
 }

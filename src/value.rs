@@ -21,8 +21,8 @@ pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResu
         Variant::BrickColor(_) => unimplemented_type("BrickColor"),
         Variant::Bool(value) => value.to_lua(context),
         Variant::CFrame(_) => unimplemented_type("CFrame"),
-        Variant::Color3(value) => Color3Value::new(value.clone()).to_lua(context),
-        Variant::Color3uint8(value) => Color3uint8Value::new(value.clone()).to_lua(context),
+        Variant::Color3(value) => Color3Value::new(*value).to_lua(context),
+        Variant::Color3uint8(value) => Color3uint8Value::new(*value).to_lua(context),
         Variant::ColorSequence(_) => unimplemented_type("ColorSequence"),
         Variant::Content(value) => AsRef::<str>::as_ref(value).to_lua(context),
         Variant::Enum(_) => unimplemented_type("Enum"),
@@ -43,7 +43,7 @@ pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResu
         Variant::Vector2(_) => unimplemented_type("Vector2"),
         Variant::Vector2int16(_) => unimplemented_type("Vector2int16"),
         Variant::Vector3(_) => unimplemented_type("Vector3"),
-        Variant::Vector3int16(value) => Vector3int16Value::new(value.clone()).to_lua(context),
+        Variant::Vector3int16(value) => Vector3int16Value::new(*value).to_lua(context),
 
         _ => Err(rlua::Error::external(format!(
             "The type '{:?}' is unknown to Remodel, please file a bug!",
@@ -138,7 +138,7 @@ pub fn type_from_str(name: &str) -> Option<VariantType> {
 }
 
 #[derive(Debug, Clone, Copy)]
-struct Color3Value(Color3);
+pub struct Color3Value(Color3);
 
 impl fmt::Display for Color3Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -157,9 +157,9 @@ impl Color3Value {
         key: &str,
     ) -> rlua::Result<rlua::Value<'lua>> {
         match key {
-            "r" => self.0.r.to_lua(context),
-            "g" => self.0.g.to_lua(context),
-            "b" => self.0.b.to_lua(context),
+            "r" | "R" => self.0.r.to_lua(context),
+            "g" | "G" => self.0.g.to_lua(context),
+            "b" | "B" => self.0.b.to_lua(context),
             _ => Err(rlua::Error::external(format!(
                 "'{}' is not a valid member of Color3",
                 key
