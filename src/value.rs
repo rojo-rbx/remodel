@@ -7,6 +7,7 @@ use rlua::{
     Context, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
 use std::fmt;
+use std::ops;
 
 pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResult<LuaValue<'lua>> {
     fn unimplemented_type(name: &str) -> LuaResult<LuaValue<'_>> {
