@@ -1,6 +1,8 @@
 //! Defines how to turn Variant values into Lua values and back.
 
-use rbx_dom_weak::types::{Color3, Color3uint8, Variant, VariantType, Vector3int16};
+use rbx_dom_weak::types::{
+    Color3, Color3uint8, Variant, VariantType, Vector3, Vector3int16,
+};
 use rlua::{
     Context, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
@@ -84,6 +86,10 @@ pub fn lua_to_rbxvalue(ty: VariantType, value: LuaValue<'_>) -> LuaResult<Varian
             Ok(color.into())
         }
 
+        (VariantType::Vector3, LuaValue::UserData(ref user_data)) => {
+            let vector3 = &*user_data.borrow::<Vector3Value>()?;
+            Ok(vector3.into())
+        }
         (VariantType::Vector3int16, LuaValue::UserData(ref user_data)) => {
             let vector3int16 = &*user_data.borrow::<Vector3int16Value>()?;
             Ok(vector3int16.into())
@@ -216,6 +222,86 @@ impl UserData for Color3uint8Value {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub struct Vector3Value(Vector3);
+
+impl fmt::Display for Vector3Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}, {}, {}", self.0.x, self.0.y, self.0.z)
+    }
+}
+
+impl Vector3Value {
+    pub fn new(value: Vector3) -> Self {
+        Self(value)
+    }
+
+    fn meta_index<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+    ) -> rlua::Result<rlua::Value<'lua>> {
+        match key {
+            "X" => self.0.x.to_lua(context),
+            "Y" => self.0.y.to_lua(context),
+            "Z" => self.0.z.to_lua(context),
+            _ => Err(rlua::Error::external(format!(
+                "'{}' is not a valid member of Vector3",
+                key
+            ))),
+        }
+    }
+}
+
+impl ops::Add for &Vector3Value {
+    type Output = Vector3Value;
+    fn add(self, other: Self) -> Self::Output {
+        Vector3Value::new(Vector3::new(
+            self.0.x + other.0.x,
+            self.0.y + other.0.y,
+            self.0.z + other.0.z,
+        ))
+    }
+}
+
+impl ops::Sub for &Vector3Value {
+    type Output = Vector3Value;
+    fn sub(self, other: Self) -> Self::Output {
+        Vector3Value::new(Vector3::new(
+            self.0.x - other.0.x,
+            self.0.y - other.0.y,
+            self.0.z - other.0.z,
+        ))
+    }
+}
+
+impl From<&Vector3Value> for Variant {
+    fn from(vector: &Vector3Value) -> Variant {
+        Variant::Vector3(vector.0)
+    }
+}
+
+impl UserData for Vector3Value {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Self| {
+            (this.0 == rhs.0).to_lua(context)
+        });
+        methods.add_meta_method(MetaMethod::Add, |context, this, rhs: Self| {
+            (this + &rhs).to_lua(context)
+        });
+        methods.add_meta_method(MetaMethod::Sub, |context, this, rhs: Self| {
+            (this - &rhs).to_lua(context)
+        });
+
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
+        });
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.to_string().to_lua(context)
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct Vector3int16Value(Vector3int16);
 
 impl fmt::Display for Vector3int16Value {
@@ -228,6 +314,44 @@ impl Vector3int16Value {
     pub fn new(value: Vector3int16) -> Self {
         Self(value)
     }
+
+    fn meta_index<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+    ) -> rlua::Result<rlua::Value<'lua>> {
+        match key {
+            "X" => self.0.x.to_lua(context),
+            "Y" => self.0.y.to_lua(context),
+            "Z" => self.0.z.to_lua(context),
+            _ => Err(rlua::Error::external(format!(
+                "'{}' is not a valid member of Vector3",
+                key
+            ))),
+        }
+    }
+}
+
+impl ops::Add for &Vector3int16Value {
+    type Output = Vector3int16Value;
+    fn add(self, other: Self) -> Self::Output {
+        Vector3int16Value::new(Vector3int16::new(
+            self.0.x + other.0.x,
+            self.0.y + other.0.y,
+            self.0.z + other.0.z,
+        ))
+    }
+}
+
+impl ops::Sub for &Vector3int16Value {
+    type Output = Vector3int16Value;
+    fn sub(self, other: Self) -> Self::Output {
+        Vector3int16Value::new(Vector3int16::new(
+            self.0.x - other.0.x,
+            self.0.y - other.0.y,
+            self.0.z - other.0.z,
+        ))
+    }
 }
 
 impl From<&Vector3int16Value> for Variant {
@@ -238,10 +362,19 @@ impl From<&Vector3int16Value> for Variant {
 
 impl UserData for Vector3int16Value {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Vector3int16Value| {
+        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Self| {
             (this.0 == rhs.0).to_lua(context)
         });
+        methods.add_meta_method(MetaMethod::Add, |context, this, rhs: Self| {
+            (this + &rhs).to_lua(context)
+        });
+        methods.add_meta_method(MetaMethod::Sub, |context, this, rhs: Self| {
+            (this - &rhs).to_lua(context)
+        });
 
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
+        });
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
             this.to_string().to_lua(context)
         });
