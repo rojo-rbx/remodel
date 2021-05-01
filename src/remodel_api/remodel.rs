@@ -30,34 +30,20 @@ fn xml_decode_options() -> rbx_xml::DecodeOptions {
     rbx_xml::DecodeOptions::new().property_behavior(rbx_xml::DecodePropertyBehavior::ReadUnknown)
 }
 
-fn get_required_option<'lua, T: FromLua<'lua>>(
-    context: Context<'lua>,
-    options: &Table<'lua>,
-    option: &str,
-) -> rlua::Result<T> {
-    let value = options.get(option).map_err(rlua::Error::external)?;
-
-    if let Value::Nil = value {
-        Err(rlua::Error::external(format!(
-            "The option {} must be specified",
-            option
-        )))
-    } else {
-        FromLua::from_lua(value, context)
-    }
-}
-
 fn get_option<'lua, T: FromLua<'lua>>(
     context: Context<'lua>,
     options: &Table<'lua>,
     option: &str,
-    default: T,
-) -> rlua::Result<T> {
+) -> rlua::Result<Option<T>> {
     let value = options.get(option).map_err(rlua::Error::external)?;
 
     match value {
-        Value::Nil => Ok(default),
-        _ => FromLua::from_lua(value, context),
+        Value::Nil => Ok(None),
+        _ => {
+            let value = FromLua::from_lua(value, context)?;
+
+            Ok(Some(value))
+        }
     }
 }
 
@@ -618,10 +604,33 @@ impl UserData for Remodel {
         methods.add_function(
             "writeNewModelAsset",
             |context, (instance, options): (LuaInstance, Table)| {
-                let name = get_required_option(context, &options, "name")?;
-                let description = get_option(context, &options, "description", String::new())?;
-                let is_public = get_option(context, &options, "isPublic", false)?;
-                let allow_comments = get_option(context, &options, "allowComments", false)?;
+                let name: Option<String> = get_option(context, &options, "name")?;
+                let name = match name {
+                    Some(value) => value,
+                    None => {
+                        return Err(rlua::Error::external(format!(
+                            "The option name must be specified",
+                        )))
+                    }
+                };
+
+                let description = get_option(context, &options, "description")?;
+                let description = match description {
+                    Some(value) => value,
+                    None => String::new(),
+                };
+
+                let is_public = get_option(context, &options, "is_public")?;
+                let is_public = match is_public {
+                    Some(value) => value,
+                    None => false,
+                };
+
+                let allow_comments = get_option(context, &options, "allow_comments")?;
+                let allow_comments = match allow_comments {
+                    Some(value) => value,
+                    None => false,
+                };
 
                 Remodel::write_new_model_asset(
                     context,
@@ -637,10 +646,33 @@ impl UserData for Remodel {
         methods.add_function(
             "writeNewPlaceAsset",
             |context, (instance, options): (LuaInstance, Table)| {
-                let name = get_required_option(context, &options, "name")?;
-                let description = get_option(context, &options, "description", String::new())?;
-                let is_public = get_option(context, &options, "isPublic", false)?;
-                let allow_comments = get_option(context, &options, "allowComments", false)?;
+                let name: Option<String> = get_option(context, &options, "name")?;
+                let name = match name {
+                    Some(value) => value,
+                    None => {
+                        return Err(rlua::Error::external(format!(
+                            "The option name must be specified",
+                        )))
+                    }
+                };
+
+                let description = get_option(context, &options, "description")?;
+                let description = match description {
+                    Some(value) => value,
+                    None => String::new(),
+                };
+
+                let is_public = get_option(context, &options, "is_public")?;
+                let is_public = match is_public {
+                    Some(value) => value,
+                    None => false,
+                };
+
+                let allow_comments = get_option(context, &options, "allow_comments")?;
+                let allow_comments = match allow_comments {
+                    Some(value) => value,
+                    None => false,
+                };
 
                 Remodel::write_new_place_asset(
                     context,
