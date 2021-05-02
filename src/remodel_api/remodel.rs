@@ -614,23 +614,10 @@ impl UserData for Remodel {
                     }
                 };
 
-                let description = get_option(context, &options, "description")?;
-                let description = match description {
-                    Some(value) => value,
-                    None => String::new(),
-                };
-
-                let is_public = get_option(context, &options, "is_public")?;
-                let is_public = match is_public {
-                    Some(value) => value,
-                    None => false,
-                };
-
-                let allow_comments = get_option(context, &options, "allow_comments")?;
-                let allow_comments = match allow_comments {
-                    Some(value) => value,
-                    None => false,
-                };
+                let description = get_option(context, &options, "description")?.unwrap_or_default();
+                let is_public = get_option(context, &options, "is_public")?.unwrap_or_default();
+                let allow_comments =
+                    get_option(context, &options, "allow_comments")?.unwrap_or_default();
 
                 Remodel::write_new_model_asset(
                     context,
@@ -656,23 +643,10 @@ impl UserData for Remodel {
                     }
                 };
 
-                let description = get_option(context, &options, "description")?;
-                let description = match description {
-                    Some(value) => value,
-                    None => String::new(),
-                };
-
-                let is_public = get_option(context, &options, "is_public")?;
-                let is_public = match is_public {
-                    Some(value) => value,
-                    None => false,
-                };
-
-                let allow_comments = get_option(context, &options, "allow_comments")?;
-                let allow_comments = match allow_comments {
-                    Some(value) => value,
-                    None => false,
-                };
+                let description = get_option(context, &options, "description")?.unwrap_or_default();
+                let is_public = get_option(context, &options, "is_public")?.unwrap_or_default();
+                let allow_comments =
+                    get_option(context, &options, "allow_comments")?.unwrap_or_default();
 
                 Remodel::write_new_place_asset(
                     context,
