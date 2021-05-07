@@ -251,7 +251,7 @@ impl Vector3Value {
     }
 }
 
-impl ops::Add for &Vector3Value {
+impl ops::Add for Vector3Value {
     type Output = Vector3Value;
     fn add(self, other: Self) -> Self::Output {
         Vector3Value::new(Vector3::new(
@@ -262,7 +262,7 @@ impl ops::Add for &Vector3Value {
     }
 }
 
-impl ops::Sub for &Vector3Value {
+impl ops::Sub for Vector3Value {
     type Output = Vector3Value;
     fn sub(self, other: Self) -> Self::Output {
         Vector3Value::new(Vector3::new(
@@ -285,10 +285,10 @@ impl UserData for Vector3Value {
             (this.0 == rhs.0).to_lua(context)
         });
         methods.add_meta_method(MetaMethod::Add, |context, this, rhs: Self| {
-            (this + &rhs).to_lua(context)
+            (*this + rhs).to_lua(context)
         });
         methods.add_meta_method(MetaMethod::Sub, |context, this, rhs: Self| {
-            (this - &rhs).to_lua(context)
+            (*this - rhs).to_lua(context)
         });
 
         methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
@@ -331,7 +331,7 @@ impl Vector3int16Value {
     }
 }
 
-impl ops::Add for &Vector3int16Value {
+impl ops::Add for Vector3int16Value {
     type Output = Vector3int16Value;
     fn add(self, other: Self) -> Self::Output {
         Vector3int16Value::new(Vector3int16::new(
@@ -342,7 +342,7 @@ impl ops::Add for &Vector3int16Value {
     }
 }
 
-impl ops::Sub for &Vector3int16Value {
+impl ops::Sub for Vector3int16Value {
     type Output = Vector3int16Value;
     fn sub(self, other: Self) -> Self::Output {
         Vector3int16Value::new(Vector3int16::new(
@@ -365,10 +365,10 @@ impl UserData for Vector3int16Value {
             (this.0 == rhs.0).to_lua(context)
         });
         methods.add_meta_method(MetaMethod::Add, |context, this, rhs: Self| {
-            (this + &rhs).to_lua(context)
+            (*this + rhs).to_lua(context)
         });
         methods.add_meta_method(MetaMethod::Sub, |context, this, rhs: Self| {
-            (this - &rhs).to_lua(context)
+            (*this - rhs).to_lua(context)
         });
 
         methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
