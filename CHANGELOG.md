@@ -2,7 +2,8 @@
 
 ## Unreleased Changes
 
-* Add Color3.fromRGB(red, blue, green) ([#44](https://github.com/rojo-rbx/remodel/issues/44))
+* Added support for Vector3, and improved Vector3int16 ([#46](https://github.com/rojo-rbx/remodel/pull/46))
+* Added Color3.fromRGB(red, blue, green) ([#44](https://github.com/rojo-rbx/remodel/pull/44))
 
 ## 0.8.1 (2021-04-09)
 * Updated to latest rbx_xml, which should fix `OptionalCoordinateFrame`-related issues.
