@@ -1,6 +1,8 @@
 //! Defines how to turn Variant values into Lua values and back.
 
-use rbx_dom_weak::types::{Color3, Color3uint8, Variant, VariantType, Vector3, Vector3int16};
+use rbx_dom_weak::types::{
+    CFrame, Color3, Color3uint8, Variant, VariantType, Vector3, Vector3int16,
+};
 use rlua::{
     Context, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
@@ -21,7 +23,7 @@ pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResu
         }
         Variant::BrickColor(_) => unimplemented_type("BrickColor"),
         Variant::Bool(value) => value.to_lua(context),
-        Variant::CFrame(_) => unimplemented_type("CFrame"),
+        Variant::CFrame(cframe) => CFrameValue::new(*cframe).to_lua(context),
         Variant::Color3(value) => Color3Value::new(*value).to_lua(context),
         Variant::Color3uint8(value) => Color3uint8Value::new(*value).to_lua(context),
         Variant::ColorSequence(_) => unimplemented_type("ColorSequence"),
@@ -223,6 +225,12 @@ impl UserData for Color3uint8Value {
 #[derive(Debug, Clone, Copy)]
 pub struct Vector3Value(Vector3);
 
+impl Into<Vector3> for Vector3Value {
+    fn into(self) -> Vector3 {
+        self.0
+    }
+}
+
 impl fmt::Display for Vector3Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}, {}, {}", self.0.x, self.0.y, self.0.z)
@@ -374,6 +382,95 @@ impl UserData for Vector3int16Value {
         methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
             this.meta_index(context, &key)
         });
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.to_string().to_lua(context)
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct CFrameValue(CFrame);
+
+impl CFrameValue {
+    pub fn new(value: CFrame) -> Self {
+        Self(value)
+    }
+
+    fn meta_index<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+    ) -> rlua::Result<rlua::Value<'lua>> {
+        match key {
+            "X" => self.0.position.x.to_lua(context),
+            "Y" => self.0.position.y.to_lua(context),
+            "Z" => self.0.position.z.to_lua(context),
+            "RightVector" => Vector3Value::new(Vector3::new(
+                self.0.orientation.x.x,
+                self.0.orientation.y.x,
+                self.0.orientation.z.x,
+            ))
+            .to_lua(context),
+            "UpVector" => Vector3Value::new(Vector3::new(
+                self.0.orientation.x.y,
+                self.0.orientation.y.y,
+                self.0.orientation.z.y,
+            ))
+            .to_lua(context),
+            "LookVector" => Vector3Value::new(Vector3::new(
+                -self.0.orientation.x.z,
+                -self.0.orientation.y.z,
+                -self.0.orientation.z.z,
+            ))
+            .to_lua(context),
+            "XVector" => Vector3Value::new(self.0.orientation.x).to_lua(context),
+            "YVector" => Vector3Value::new(self.0.orientation.y).to_lua(context),
+            "ZVector" => Vector3Value::new(self.0.orientation.z).to_lua(context),
+            _ => Err(rlua::Error::external(format!(
+                "'{}' is not a valid member of Vector3",
+                key
+            ))),
+        }
+    }
+}
+
+impl From<&CFrameValue> for Variant {
+    fn from(cframe: &CFrameValue) -> Variant {
+        Variant::CFrame(cframe.0)
+    }
+}
+
+impl fmt::Display for CFrameValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
+            self.0.position.x,
+            self.0.position.y,
+            self.0.position.z,
+            self.0.orientation.x.x,
+            self.0.orientation.y.x,
+            self.0.orientation.z.x,
+            self.0.orientation.x.y,
+            self.0.orientation.y.y,
+            self.0.orientation.z.y,
+            self.0.orientation.x.z,
+            self.0.orientation.y.z,
+            self.0.orientation.z.z,
+        )
+    }
+}
+
+impl UserData for CFrameValue {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Self| {
+            (this.0 == rhs.0).to_lua(context)
+        });
+
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
+        });
+
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
             this.to_string().to_lua(context)
         });
