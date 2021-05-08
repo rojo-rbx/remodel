@@ -19,80 +19,57 @@ impl CFrame {
     }
 }
 
+#[derive(Debug, Clone)]
+enum Either {
+    Number(f32),
+    Vector(Vector3Value),
+    Other,
+}
+
+impl From<LuaValue<'_>> for Either {
+    fn from(value: LuaValue<'_>) -> Self {
+        match value {
+            LuaValue::Number(number) => Self::Number(number as f32),
+            LuaValue::Integer(number) => Self::Number(number as f32),
+            LuaValue::UserData(user_data) => user_data
+                .borrow::<Vector3Value>()
+                .ok()
+                .map(|vector| Self::Vector(*vector))
+                .unwrap_or(Self::Other),
+            _ => Either::Other,
+        }
+    }
+}
+
 impl UserData for CFrame {
     fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_function(
             "new",
             |_context,
-             triplet: (
+             arguments: (
                 Option<LuaValue<'_>>,
                 Option<LuaValue<'_>>,
                 Option<LuaValue<'_>>,
             )| {
-                match triplet {
+                let arguments = (
+                    arguments.0.map(Either::from),
+                    arguments.1.map(Either::from),
+                    arguments.2.map(Either::from),
+                );
+                match arguments {
                     (None, None, None) => Ok(Self::from_position(0.0, 0.0, 0.0)),
-                    (Some(LuaValue::Number(x)), None, None) => {
+                    (Some(Either::Number(x)), None, None) => {
                         Ok(Self::from_position(x as f32, 0.0, 0.0))
                     }
-                    (Some(LuaValue::Integer(x)), None, None) => {
-                        Ok(Self::from_position(x as f32, 0.0, 0.0))
-                    }
-                    (Some(LuaValue::Number(x)), Some(LuaValue::Number(y)), None) => {
+                    (Some(Either::Number(x)), Some(Either::Number(y)), None) => {
                         Ok(Self::from_position(x as f32, y as f32, 0.0))
                     }
-                    (Some(LuaValue::Number(x)), Some(LuaValue::Integer(y)), None) => {
-                        Ok(Self::from_position(x as f32, y as f32, 0.0))
+                    (Some(Either::Number(x)), Some(Either::Number(y)), Some(Either::Number(z))) => {
+                        Ok(Self::from_position(x as f32, y as f32, z as f32))
                     }
-                    (Some(LuaValue::Integer(x)), Some(LuaValue::Integer(y)), None) => {
-                        Ok(Self::from_position(x as f32, y as f32, 0.0))
-                    }
-                    (Some(LuaValue::Integer(x)), Some(LuaValue::Number(y)), None) => {
-                        Ok(Self::from_position(x as f32, y as f32, 0.0))
-                    }
-                    (
-                        Some(LuaValue::Number(x)),
-                        Some(LuaValue::Number(y)),
-                        Some(LuaValue::Number(z)),
-                    ) => Ok(Self::from_position(x as f32, y as f32, z as f32)),
-                    (
-                        Some(LuaValue::Number(x)),
-                        Some(LuaValue::Integer(y)),
-                        Some(LuaValue::Number(z)),
-                    ) => Ok(Self::from_position(x as f32, y as f32, z as f32)),
-                    (
-                        Some(LuaValue::Number(x)),
-                        Some(LuaValue::Number(y)),
-                        Some(LuaValue::Integer(z)),
-                    ) => Ok(Self::from_position(x as f32, y as f32, z as f32)),
-                    (
-                        Some(LuaValue::Number(x)),
-                        Some(LuaValue::Integer(y)),
-                        Some(LuaValue::Integer(z)),
-                    ) => Ok(Self::from_position(x as f32, y as f32, z as f32)),
-                    (
-                        Some(LuaValue::Integer(x)),
-                        Some(LuaValue::Integer(y)),
-                        Some(LuaValue::Integer(z)),
-                    ) => Ok(Self::from_position(x as f32, y as f32, z as f32)),
-                    (
-                        Some(LuaValue::Integer(x)),
-                        Some(LuaValue::Number(y)),
-                        Some(LuaValue::Integer(z)),
-                    ) => Ok(Self::from_position(x as f32, y as f32, z as f32)),
-                    (
-                        Some(LuaValue::Integer(x)),
-                        Some(LuaValue::Integer(y)),
-                        Some(LuaValue::Number(z)),
-                    ) => Ok(Self::from_position(x as f32, y as f32, z as f32)),
-                    (
-                        Some(LuaValue::Integer(x)),
-                        Some(LuaValue::Number(y)),
-                        Some(LuaValue::Number(z)),
-                    ) => Ok(Self::from_position(x as f32, y as f32, z as f32)),
-                    (Some(LuaValue::UserData(user_data)), None, None) => {
-                        let position = &*user_data.borrow::<Vector3Value>()?;
+                    (Some(Either::Vector(position)), None, None) => {
                         Ok(CFrameValue::new(rbx_dom_weak::types::CFrame::new(
-                            (*position).into(),
+                            position.into(),
                             // TODO: replace with `rbx_dom_weak::types::Matrix3::identity()` once
                             // a version higher than 0.3.0 of rbx_types ships
                             rbx_dom_weak::types::Matrix3::new(
