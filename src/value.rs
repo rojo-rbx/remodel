@@ -427,7 +427,7 @@ impl CFrameValue {
             "YVector" => Vector3Value::new(self.0.orientation.y).to_lua(context),
             "ZVector" => Vector3Value::new(self.0.orientation.z).to_lua(context),
             _ => Err(rlua::Error::external(format!(
-                "'{}' is not a valid member of Vector3",
+                "'{}' is not a valid member of CFrame",
                 key
             ))),
         }
