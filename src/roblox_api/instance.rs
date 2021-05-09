@@ -95,6 +95,28 @@ impl LuaInstance {
         Ok(child)
     }
 
+    fn get_full_name(&self) -> rlua::Result<String> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call GetFullName() on a destroyed instance")
+        })?;
+
+        let mut names = vec![instance.name.clone()];
+        let mut current = instance.parent();
+
+        while let Some(parent_instance) = tree.get_by_ref(current) {
+            if current != tree.root_ref() && parent_instance.class != "DataModel" {
+                names.push(parent_instance.name.clone());
+            }
+            current = parent_instance.parent();
+        }
+
+        names.reverse();
+
+        Ok(names.join("."))
+    }
+
     fn get_descendants(&self) -> rlua::Result<Vec<LuaInstance>> {
         let tree = self.tree.lock().unwrap();
 
@@ -344,6 +366,10 @@ impl UserData for LuaInstance {
 
         methods.add_method("FindFirstChild", |_context, this, name: String| {
             this.find_first_child(&name)
+        });
+
+        methods.add_method("GetFullName", |_context, this, _args: ()| {
+            this.get_full_name()
         });
 
         methods.add_method("GetChildren", |_context, this, _args: ()| {
