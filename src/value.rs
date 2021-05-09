@@ -225,12 +225,6 @@ impl UserData for Color3uint8Value {
 #[derive(Debug, Clone, Copy)]
 pub struct Vector3Value(Vector3);
 
-impl Into<Vector3> for Vector3Value {
-    fn into(self) -> Vector3 {
-        self.0
-    }
-}
-
 impl fmt::Display for Vector3Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}, {}, {}", self.0.x, self.0.y, self.0.z)
@@ -240,6 +234,10 @@ impl fmt::Display for Vector3Value {
 impl Vector3Value {
     pub fn new(value: Vector3) -> Self {
         Self(value)
+    }
+
+    pub fn inner(&self) -> Vector3 {
+        self.0
     }
 
     fn meta_index<'lua>(

@@ -11,7 +11,7 @@ use crate::{
     value::{Color3Value, Vector3Value, Vector3int16Value},
 };
 
-use cframe::*;
+use cframe::CFrame;
 pub use instance::LuaInstance;
 
 pub struct RobloxApi;

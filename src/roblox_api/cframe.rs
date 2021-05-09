@@ -1,3 +1,4 @@
+use rbx_dom_weak::types::{CFrame as DomCFrame, Matrix3, Vector3};
 use rlua::{UserData, UserDataMethods, Value as LuaValue};
 
 use crate::value::{CFrameValue, Vector3Value};
@@ -6,14 +7,14 @@ pub struct CFrame;
 
 impl CFrame {
     fn from_position(x: f32, y: f32, z: f32) -> CFrameValue {
-        CFrameValue::new(rbx_dom_weak::types::CFrame::new(
-            rbx_dom_weak::types::Vector3::new(x as f32, y as f32, z as f32),
-            // TODO: replace with `rbx_dom_weak::types::Matrix3::identity()` once
+        CFrameValue::new(DomCFrame::new(
+            Vector3::new(x as f32, y as f32, z as f32),
+            // TODO: replace with `Matrix3::identity()` once
             // a version higher than 0.3.0 of rbx_types ships
-            rbx_dom_weak::types::Matrix3::new(
-                rbx_dom_weak::types::Vector3::new(1.0, 0.0, 0.0),
-                rbx_dom_weak::types::Vector3::new(0.0, 1.0, 0.0),
-                rbx_dom_weak::types::Vector3::new(0.0, 0.0, 1.0),
+            Matrix3::new(
+                Vector3::new(1.0, 0.0, 0.0),
+                Vector3::new(0.0, 1.0, 0.0),
+                Vector3::new(0.0, 0.0, 1.0),
             ),
         ))
     }
@@ -68,14 +69,14 @@ impl UserData for CFrame {
                         Ok(Self::from_position(x as f32, y as f32, z as f32))
                     }
                     (Some(Either::Vector(position)), None, None) => {
-                        Ok(CFrameValue::new(rbx_dom_weak::types::CFrame::new(
-                            position.into(),
+                        Ok(CFrameValue::new(DomCFrame::new(
+                            position.inner(),
                             // TODO: replace with `rbx_dom_weak::types::Matrix3::identity()` once
                             // a version higher than 0.3.0 of rbx_types ships
-                            rbx_dom_weak::types::Matrix3::new(
-                                rbx_dom_weak::types::Vector3::new(1.0, 0.0, 0.0),
-                                rbx_dom_weak::types::Vector3::new(0.0, 1.0, 0.0),
-                                rbx_dom_weak::types::Vector3::new(0.0, 0.0, 1.0),
+                            Matrix3::new(
+                                Vector3::new(1.0, 0.0, 0.0),
+                                Vector3::new(0.0, 1.0, 0.0),
+                                Vector3::new(0.0, 0.0, 1.0),
                             ),
                         )))
                     }
