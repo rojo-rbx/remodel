@@ -12,18 +12,13 @@ end
 
 -- new with combinations of integer and floats
 assertCFramePosition(CFrame.new(), 0, 0, 0)
-assertCFramePosition(CFrame.new(1), 1, 0, 0)
-assertCFramePosition(CFrame.new(1, 2), 1, 2, 0)
 assertCFramePosition(CFrame.new(1, 2, 3), 1, 2, 3)
-
-assertCFramePosition(CFrame.new(1.5), 1.5, 0, 0)
-assertCFramePosition(CFrame.new(1.5, 2), 1.5, 2, 0)
 assertCFramePosition(CFrame.new(1.5, 2, 3), 1.5, 2, 3)
-
-assertCFramePosition(CFrame.new(1, 2.5), 1, 2.5, 0)
 assertCFramePosition(CFrame.new(1, 2.5, 3), 1, 2.5, 3)
-
 assertCFramePosition(CFrame.new(1, 2, 3.5), 1, 2, 3.5)
+assertCFramePosition(CFrame.new(1.5, 2.5, 3), 1.5, 2.5, 3)
+assertCFramePosition(CFrame.new(1, 2.5, 3.5), 1, 2.5, 3.5)
+assertCFramePosition(CFrame.new(1.5, 2.5, 3.5), 1.5, 2.5, 3.5)
 
 -- new from Vector3
 assertCFramePosition(CFrame.new(Vector3.new(1, 2, 3)), 1, 2, 3)
