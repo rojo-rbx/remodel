@@ -95,6 +95,29 @@ impl LuaInstance {
         Ok(child)
     }
 
+    fn find_first_child_of_class(&self, class_name: &str) -> rlua::Result<Option<LuaInstance>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call FindFirstChildOfClass() on a destroyed instance")
+        })?;
+
+        let child = instance
+            .children()
+            .iter()
+            .copied()
+            .find(|id| {
+                if let Some(child_instance) = tree.get_by_ref(*id) {
+                    return child_instance.class == class_name;
+                }
+
+                false
+            })
+            .map(|id| LuaInstance::new(Arc::clone(&self.tree), id));
+
+        Ok(child)
+    }
+
     fn get_descendants(&self) -> rlua::Result<Vec<LuaInstance>> {
         let tree = self.tree.lock().unwrap();
 
@@ -344,6 +367,10 @@ impl UserData for LuaInstance {
 
         methods.add_method("FindFirstChild", |_context, this, name: String| {
             this.find_first_child(&name)
+        });
+
+        methods.add_method("FindFirstChildOfClass", |_context, this, class: String| {
+            this.find_first_child_of_class(&class)
         });
 
         methods.add_method("GetChildren", |_context, this, _args: ()| {
