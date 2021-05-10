@@ -99,7 +99,7 @@ impl LuaInstance {
         let tree = self.tree.lock().unwrap();
 
         let instance = tree.get_by_ref(self.id).ok_or_else(|| {
-            rlua::Error::external("Cannot call FindFirstChild() on a destroyed instance")
+            rlua::Error::external("Cannot call FindFirstChildOfClass() on a destroyed instance")
         })?;
 
         let child = instance
