@@ -1,13 +1,13 @@
-use rbx_dom_weak::types::{CFrame as DomCFrame, Matrix3, Vector3};
+use rbx_dom_weak::types::{CFrame, Matrix3, Vector3};
 use rlua::{UserData, UserDataMethods, Value as LuaValue};
 
 use crate::value::{CFrameValue, Vector3Value};
 
-pub struct CFrame;
+pub struct CFrameUserData;
 
-impl CFrame {
+impl CFrameUserData {
     fn from_position(x: f32, y: f32, z: f32) -> CFrameValue {
-        CFrameValue::new(DomCFrame::new(
+        CFrameValue::new(CFrame::new(
             Vector3::new(x as f32, y as f32, z as f32),
             // TODO: replace with `Matrix3::identity()` once
             // a version higher than 0.3.0 of rbx_types ships
@@ -28,7 +28,7 @@ fn try_into_f32(value: LuaValue<'_>) -> Option<f32> {
     }
 }
 
-impl UserData for CFrame {
+impl UserData for CFrameUserData {
     fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_function(
             "new",
@@ -42,7 +42,7 @@ impl UserData for CFrame {
                     (None, None, None) => return Ok(Self::from_position(0.0, 0.0, 0.0)),
                     (Some(LuaValue::UserData(user_data)), None, None) => {
                         let position = &*user_data.borrow::<Vector3Value>()?;
-                        return Ok(CFrameValue::new(DomCFrame::new(
+                        return Ok(CFrameValue::new(CFrame::new(
                             position.inner(),
                             // TODO: replace with `rbx_dom_weak::types::Matrix3::identity()` once
                             // a version higher than 0.3.0 of rbx_types ships

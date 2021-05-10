@@ -11,7 +11,7 @@ use crate::{
     value::{Color3Value, Vector3Value, Vector3int16Value},
 };
 
-use cframe::CFrame;
+use cframe::CFrameUserData;
 pub use instance::LuaInstance;
 
 pub struct RobloxApi;
@@ -22,7 +22,7 @@ impl RobloxApi {
         context.globals().set("Vector3", Vector3)?;
         context.globals().set("Vector3int16", Vector3int16)?;
         context.globals().set("Color3", Color3)?;
-        context.globals().set("CFrame", CFrame)?;
+        context.globals().set("CFrame", CFrameUserData)?;
 
         Ok(())
     }
