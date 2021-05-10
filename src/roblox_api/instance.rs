@@ -125,12 +125,12 @@ impl LuaInstance {
             rlua::Error::external("Cannot call GetFullName() on a destroyed instance")
         })?;
 
-        let mut names = vec![instance.name.clone()];
+        let mut names = vec![instance.name.as_str()];
         let mut current = instance.parent();
 
         while let Some(parent_instance) = tree.get_by_ref(current) {
             if current != tree.root_ref() && parent_instance.class != "DataModel" {
-                names.push(parent_instance.name.clone());
+                names.push(parent_instance.name.as_str());
             }
             current = parent_instance.parent();
         }
