@@ -588,7 +588,7 @@ impl Region3int16Value {
             "Min" => Vector3int16Value::new(self.0.min).to_lua(context),
             "Max" => Vector3int16Value::new(self.0.max).to_lua(context),
             _ => Err(rlua::Error::external(format!(
-                "'{}' is not a valid member of Region3",
+                "'{}' is not a valid member of Region3int16",
                 key
             ))),
         }
