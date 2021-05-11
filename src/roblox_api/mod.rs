@@ -118,7 +118,8 @@ impl UserData for Region3 {
             "new",
             |_context, (min, max): (Vector3Value, Vector3Value)| {
                 Ok(Region3Value::new(rbx_dom_weak::types::Region3::new(
-                    min.inner(), max.inner(),
+                    min.inner(),
+                    max.inner(),
                 )))
             },
         );
