@@ -11,56 +11,6 @@ use rbx_dom_weak::{
 use rbx_reflection::ClassTag;
 use rlua::{Context, FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
 
-mod terrain {
-    use super::*;
-
-    pub fn copy_region<'lua>(
-        _context: Context<'lua>,
-        terrain: Option<LuaInstance>,
-    ) -> rlua::Result<LuaInstance> {
-        let terrain = terrain
-            .map(|instance| {
-                instance
-                    .get_raw_class_name()
-                    .map(|class_name| (class_name, instance))
-            })
-            .transpose()?
-            .and_then(|(class_name, instance)| {
-                if class_name == "Terrain" {
-                    Some(instance)
-                } else {
-                    None
-                }
-            })
-            .ok_or(rlua::Error::external(
-                "Expected ':' not '.' calling member function CopyRegion",
-            ))?;
-
-        let mut tree = terrain.tree.lock().unwrap();
-
-        let terrain_instance = tree.get_by_ref(terrain.id).ok_or_else(|| {
-            rlua::Error::external("Cannot call CopyRegion() on a destroyed instance")
-        })?;
-
-        let mut builder = InstanceBuilder::new("TerrainRegion")
-            .with_name("TerrainRegion")
-            .with_property("ExtentsMax", Vector3int16::new(32000, 32000, 32000))
-            .with_property("ExtentsMin", Vector3int16::new(-32000, -32000, -32000));
-
-        if let Some(value) = terrain_instance.properties.get("SmoothGrid") {
-            builder = builder.with_property("SmoothGrid", value.clone());
-        }
-
-        let root_id = tree.root_ref();
-        let new_id = tree.insert(root_id, builder);
-
-        Ok(LuaInstance {
-            tree: Arc::clone(&terrain.tree),
-            id: new_id,
-        })
-    }
-}
-
 #[derive(Clone)]
 pub struct LuaInstance {
     pub tree: Arc<Mutex<WeakDom>>,
@@ -279,16 +229,6 @@ impl LuaInstance {
         instance.class.as_str().to_lua(context)
     }
 
-    fn get_raw_class_name(&self) -> rlua::Result<String> {
-        let tree = self.tree.lock().unwrap();
-
-        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
-            rlua::Error::external("Cannot access ClassName on a destroyed instance")
-        })?;
-
-        Ok(instance.class.to_owned())
-    }
-
     fn get_name<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
@@ -372,28 +312,6 @@ impl LuaInstance {
         })?;
 
         instance.name.as_str().to_lua(context)
-    }
-
-    fn check_for_method<'lua>(
-        &self,
-        context: Context<'lua>,
-        key: &str,
-    ) -> Option<rlua::Result<rlua::Value<'lua>>> {
-        let tree = self.tree.lock().unwrap();
-        let instance = tree.get_by_ref(self.id)?;
-
-        if instance.class == "Terrain" {
-            match key {
-                "CopyRegion" => Some(
-                    context
-                        .create_function(terrain::copy_region)
-                        .and_then(|function| function.to_lua(context)),
-                ),
-                _ => None,
-            }
-        } else {
-            None
-        }
     }
 
     fn meta_index<'lua>(
