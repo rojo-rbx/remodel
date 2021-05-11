@@ -1,6 +1,9 @@
 //! Defines how to turn Variant values into Lua values and back.
 
-use rbx_dom_weak::types::{Color3, Color3uint8, Variant, VariantType, Vector3, Vector3int16};
+use rbx_dom_weak::types::{
+    CFrame, Color3, Color3uint8, Matrix3, Region3, Region3int16, Variant, VariantType, Vector3,
+    Vector3int16,
+};
 use rlua::{
     Context, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
@@ -21,7 +24,7 @@ pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResu
         }
         Variant::BrickColor(_) => unimplemented_type("BrickColor"),
         Variant::Bool(value) => value.to_lua(context),
-        Variant::CFrame(_) => unimplemented_type("CFrame"),
+        Variant::CFrame(cframe) => CFrameValue::new(*cframe).to_lua(context),
         Variant::Color3(value) => Color3Value::new(*value).to_lua(context),
         Variant::Color3uint8(value) => Color3uint8Value::new(*value).to_lua(context),
         Variant::ColorSequence(_) => unimplemented_type("ColorSequence"),
@@ -37,6 +40,8 @@ pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResu
         Variant::Ray(_) => unimplemented_type("Ray"),
         Variant::Rect(_) => unimplemented_type("Rect"),
         Variant::Ref(_) => unimplemented_type("Ref"),
+        Variant::Region3(value) => Region3Value::new(*value).to_lua(context),
+        Variant::Region3int16(value) => Region3int16Value::new(*value).to_lua(context),
         Variant::SharedString(_) => unimplemented_type("SharedString"),
         Variant::String(value) => value.as_str().to_lua(context),
         Variant::UDim(_) => unimplemented_type("UDim"),
@@ -85,6 +90,15 @@ pub fn lua_to_rbxvalue(ty: VariantType, value: LuaValue<'_>) -> LuaResult<Varian
             Ok(color.into())
         }
 
+        (VariantType::Region3, LuaValue::UserData(ref user_data)) => {
+            let region3 = &*user_data.borrow::<Region3Value>()?;
+            Ok(region3.into())
+        }
+        (VariantType::Region3int16, LuaValue::UserData(ref user_data)) => {
+            let region3int16 = &*user_data.borrow::<Region3int16Value>()?;
+            Ok(region3int16.into())
+        }
+
         (VariantType::Vector3, LuaValue::UserData(ref user_data)) => {
             let vector3 = &*user_data.borrow::<Vector3Value>()?;
             Ok(vector3.into())
@@ -130,6 +144,8 @@ pub fn type_from_str(name: &str) -> Option<VariantType> {
         "Ray" => Some(Ray),
         "Rect" => Some(Rect),
         "Ref" => Some(Ref),
+        "Region3" => Some(Region3),
+        "Region3int16" => Some(Region3int16),
         "SharedString" => Some(SharedString),
         "String" => Some(String),
         "UDim" => Some(UDim),
@@ -234,6 +250,10 @@ impl Vector3Value {
         Self(value)
     }
 
+    pub fn inner(&self) -> Vector3 {
+        self.0
+    }
+
     fn meta_index<'lua>(
         &self,
         context: Context<'lua>,
@@ -314,6 +334,10 @@ impl Vector3int16Value {
         Self(value)
     }
 
+    pub fn inner(&self) -> Vector3int16 {
+        self.0
+    }
+
     fn meta_index<'lua>(
         &self,
         context: Context<'lua>,
@@ -374,6 +398,229 @@ impl UserData for Vector3int16Value {
         methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
             this.meta_index(context, &key)
         });
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.to_string().to_lua(context)
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct CFrameValue(CFrame);
+
+impl CFrameValue {
+    pub fn new(value: CFrame) -> Self {
+        Self(value)
+    }
+
+    fn meta_index<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+    ) -> rlua::Result<rlua::Value<'lua>> {
+        match key {
+            "X" => self.0.position.x.to_lua(context),
+            "Y" => self.0.position.y.to_lua(context),
+            "Z" => self.0.position.z.to_lua(context),
+            "RightVector" => Vector3Value::new(Vector3::new(
+                self.0.orientation.x.x,
+                self.0.orientation.y.x,
+                self.0.orientation.z.x,
+            ))
+            .to_lua(context),
+            "UpVector" => Vector3Value::new(Vector3::new(
+                self.0.orientation.x.y,
+                self.0.orientation.y.y,
+                self.0.orientation.z.y,
+            ))
+            .to_lua(context),
+            "LookVector" => Vector3Value::new(Vector3::new(
+                -self.0.orientation.x.z,
+                -self.0.orientation.y.z,
+                -self.0.orientation.z.z,
+            ))
+            .to_lua(context),
+            "XVector" => Vector3Value::new(self.0.orientation.x).to_lua(context),
+            "YVector" => Vector3Value::new(self.0.orientation.y).to_lua(context),
+            "ZVector" => Vector3Value::new(self.0.orientation.z).to_lua(context),
+            _ => Err(rlua::Error::external(format!(
+                "'{}' is not a valid member of CFrame",
+                key
+            ))),
+        }
+    }
+}
+
+impl From<&CFrameValue> for Variant {
+    fn from(cframe: &CFrameValue) -> Variant {
+        Variant::CFrame(cframe.0)
+    }
+}
+
+impl fmt::Display for CFrameValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
+            self.0.position.x,
+            self.0.position.y,
+            self.0.position.z,
+            self.0.orientation.x.x,
+            self.0.orientation.y.x,
+            self.0.orientation.z.x,
+            self.0.orientation.x.y,
+            self.0.orientation.y.y,
+            self.0.orientation.z.y,
+            self.0.orientation.x.z,
+            self.0.orientation.y.z,
+            self.0.orientation.z.z,
+        )
+    }
+}
+
+impl UserData for CFrameValue {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Self| {
+            (this.0 == rhs.0).to_lua(context)
+        });
+
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
+        });
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.to_string().to_lua(context)
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Region3Value(Region3);
+
+impl Region3Value {
+    pub fn new(value: Region3) -> Self {
+        Self(value)
+    }
+
+    fn meta_index<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+    ) -> rlua::Result<rlua::Value<'lua>> {
+        match key {
+            "CFrame" => self.get_cframe().to_lua(context),
+            "Size" => self.get_size().to_lua(context),
+            _ => Err(rlua::Error::external(format!(
+                "'{}' is not a valid member of Region3",
+                key
+            ))),
+        }
+    }
+
+    fn get_size(&self) -> Vector3Value {
+        let max = Vector3Value::new(self.0.max);
+        let min = Vector3Value::new(self.0.min);
+        Vector3Value::new((max - min).0)
+    }
+
+    fn get_cframe(&self) -> CFrameValue {
+        let position = Vector3::new(
+            (self.0.max.x + self.0.min.x) / 2.0,
+            (self.0.max.y + self.0.min.y) / 2.0,
+            (self.0.max.z + self.0.min.z) / 2.0,
+        );
+
+        CFrameValue::new(CFrame::new(
+            position,
+            // TODO: replace with `rbx_dom_weak::types::Matrix3::identity()` once
+            // a version higher than 0.3.0 of rbx_types ships
+            Matrix3::new(
+                Vector3::new(1.0, 0.0, 0.0),
+                Vector3::new(0.0, 1.0, 0.0),
+                Vector3::new(0.0, 0.0, 1.0),
+            ),
+        ))
+    }
+}
+
+impl From<&Region3Value> for Variant {
+    fn from(region: &Region3Value) -> Variant {
+        Variant::Region3(region.0)
+    }
+}
+
+impl fmt::Display for Region3Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let cframe = self.get_cframe();
+        let size = self.get_size();
+        write!(f, "{}; {}", cframe.to_string(), size.to_string())
+    }
+}
+
+impl UserData for Region3Value {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Self| {
+            (this.0 == rhs.0).to_lua(context)
+        });
+
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
+        });
+
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.to_string().to_lua(context)
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Region3int16Value(Region3int16);
+
+impl Region3int16Value {
+    pub fn new(value: Region3int16) -> Self {
+        Self(value)
+    }
+
+    fn meta_index<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+    ) -> rlua::Result<rlua::Value<'lua>> {
+        match key {
+            "Min" => Vector3int16Value::new(self.0.min).to_lua(context),
+            "Max" => Vector3int16Value::new(self.0.max).to_lua(context),
+            _ => Err(rlua::Error::external(format!(
+                "'{}' is not a valid member of Region3",
+                key
+            ))),
+        }
+    }
+}
+
+impl From<&Region3int16Value> for Variant {
+    fn from(region: &Region3int16Value) -> Variant {
+        Variant::Region3int16(region.0)
+    }
+}
+
+impl fmt::Display for Region3int16Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}, {}, {}; {}, {}, {}",
+            self.0.min.x, self.0.min.y, self.0.min.z, self.0.max.x, self.0.max.y, self.0.max.z
+        )
+    }
+}
+
+impl UserData for Region3int16Value {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Self| {
+            (this.0 == rhs.0).to_lua(context)
+        });
+
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
+        });
+
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
             this.to_string().to_lua(context)
         });

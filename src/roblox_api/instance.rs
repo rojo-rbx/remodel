@@ -4,9 +4,62 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use rbx_dom_weak::{types::Ref, InstanceBuilder, WeakDom};
+use rbx_dom_weak::{
+    types::{Ref, Vector3int16},
+    InstanceBuilder, WeakDom,
+};
 use rbx_reflection::ClassTag;
 use rlua::{Context, FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
+
+mod terrain {
+    use super::*;
+
+    pub fn copy_region<'lua>(
+        _context: Context<'lua>,
+        terrain: Option<LuaInstance>,
+    ) -> rlua::Result<LuaInstance> {
+        let terrain = terrain
+            .map(|instance| {
+                instance
+                    .get_raw_class_name()
+                    .map(|class_name| (class_name, instance))
+            })
+            .transpose()?
+            .and_then(|(class_name, instance)| {
+                if class_name == "Terrain" {
+                    Some(instance)
+                } else {
+                    None
+                }
+            })
+            .ok_or(rlua::Error::external(
+                "Expected ':' not '.' calling member function CopyRegion",
+            ))?;
+
+        let mut tree = terrain.tree.lock().unwrap();
+
+        let terrain_instance = tree.get_by_ref(terrain.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call CopyRegion() on a destroyed instance")
+        })?;
+
+        let mut builder = InstanceBuilder::new("TerrainRegion")
+            .with_name("TerrainRegion")
+            .with_property("ExtentsMax", Vector3int16::new(32000, 32000, 32000))
+            .with_property("ExtentsMin", Vector3int16::new(-32000, -32000, -32000));
+
+        if let Some(value) = terrain_instance.properties.get("SmoothGrid") {
+            builder = builder.with_property("SmoothGrid", value.clone());
+        }
+
+        let root_id = tree.root_ref();
+        let new_id = tree.insert(root_id, builder);
+
+        Ok(LuaInstance {
+            tree: Arc::clone(&terrain.tree),
+            id: new_id,
+        })
+    }
+}
 
 #[derive(Clone)]
 pub struct LuaInstance {
@@ -86,6 +139,29 @@ impl LuaInstance {
             .find(|id| {
                 if let Some(child_instance) = tree.get_by_ref(*id) {
                     return child_instance.name == name;
+                }
+
+                false
+            })
+            .map(|id| LuaInstance::new(Arc::clone(&self.tree), id));
+
+        Ok(child)
+    }
+
+    fn find_first_child_of_class(&self, class_name: &str) -> rlua::Result<Option<LuaInstance>> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot call FindFirstChildOfClass() on a destroyed instance")
+        })?;
+
+        let child = instance
+            .children()
+            .iter()
+            .copied()
+            .find(|id| {
+                if let Some(child_instance) = tree.get_by_ref(*id) {
+                    return child_instance.class == class_name;
                 }
 
                 false
@@ -203,6 +279,16 @@ impl LuaInstance {
         instance.class.as_str().to_lua(context)
     }
 
+    fn get_raw_class_name(&self) -> rlua::Result<String> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
+            rlua::Error::external("Cannot access ClassName on a destroyed instance")
+        })?;
+
+        Ok(instance.class.to_owned())
+    }
+
     fn get_name<'lua>(&self, context: Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
@@ -288,6 +374,28 @@ impl LuaInstance {
         instance.name.as_str().to_lua(context)
     }
 
+    fn check_for_method<'lua>(
+        &self,
+        context: Context<'lua>,
+        key: &str,
+    ) -> Option<rlua::Result<rlua::Value<'lua>>> {
+        let tree = self.tree.lock().unwrap();
+        let instance = tree.get_by_ref(self.id)?;
+
+        if instance.class == "Terrain" {
+            match key {
+                "CopyRegion" => Some(
+                    context
+                        .create_function(terrain::copy_region)
+                        .and_then(|function| function.to_lua(context)),
+                ),
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
+
     fn meta_index<'lua>(
         &self,
         context: Context<'lua>,
@@ -302,6 +410,11 @@ impl LuaInstance {
             _ => {
                 if let Some(value) = self.get_property(context, key)? {
                     return Ok(value);
+                }
+
+                if let Some(value) = self.check_for_method(context, key) {
+                    println!("found method value yay");
+                    return value;
                 }
 
                 if let Some(child) = self.find_first_child(key)? {
@@ -344,6 +457,10 @@ impl UserData for LuaInstance {
 
         methods.add_method("FindFirstChild", |_context, this, name: String| {
             this.find_first_child(&name)
+        });
+
+        methods.add_method("FindFirstChildOfClass", |_context, this, class: String| {
+            this.find_first_child_of_class(&class)
         });
 
         methods.add_method("GetChildren", |_context, this, _args: ()| {
