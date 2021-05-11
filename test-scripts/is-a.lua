@@ -1,8 +1,8 @@
 local folder = Instance.new("Folder")
 
--- assert(folder:IsA("Folder"))
--- assert(folder:IsA("Instance"))
--- assert(not folder:IsA("BasePart"))
+assert(folder:IsA("Folder"))
+assert(folder:IsA("Instance"))
+assert(not folder:IsA("BasePart"))
 
 local spawnLocation = Instance.new("SpawnLocation")
 
