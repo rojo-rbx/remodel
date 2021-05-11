@@ -235,6 +235,43 @@ impl LuaInstance {
         }
     }
 
+    fn is_a(&self, class_name: &str) -> rlua::Result<bool> {
+        let tree = self.tree.lock().unwrap();
+
+        let instance = tree
+            .get_by_ref(self.id)
+            .ok_or_else(|| rlua::Error::external("Cannot call IsA() on a destroyed instance"))?;
+
+        if class_name == "Instance" || instance.class == class_name {
+            return Ok(true);
+        }
+
+        let database = rbx_reflection_database::get();
+        let mut descriptor = database
+            .classes
+            .get(instance.class.as_str())
+            .ok_or_else(|| {
+                rlua::Error::external(format!(
+                    "Unable to obtain class {} from reflection database",
+                    &instance.class
+                ))
+            })?;
+
+        while let Some(super_class_name) = &descriptor.superclass {
+            if class_name == super_class_name {
+                return Ok(true);
+            }
+            descriptor = database.classes.get(super_class_name).ok_or_else(|| {
+                rlua::Error::external(format!(
+                    "Unable to obtain class {} from reflection database",
+                    &instance.class
+                ))
+            })?;
+        }
+
+        Ok(false)
+    }
+
     fn get_class_name<'lua>(
         &self,
         context: rlua::Context<'lua>,
@@ -395,6 +432,9 @@ impl UserData for LuaInstance {
             this.find_first_child_of_class(&class)
         });
 
+        methods.add_method("IsA", |_context, this, class_name: String| {
+            this.is_a(&class_name)
+        });
         methods.add_method("GetFullName", |_context, this, _args: ()| {
             this.get_full_name()
         });
