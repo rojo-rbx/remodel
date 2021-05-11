@@ -4,10 +4,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use rbx_dom_weak::{
-    types::{Ref, Vector3int16},
-    InstanceBuilder, WeakDom,
-};
+use rbx_dom_weak::{types::Ref, InstanceBuilder, WeakDom};
 use rbx_reflection::ClassTag;
 use rlua::{Context, FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
 
@@ -328,11 +325,6 @@ impl LuaInstance {
             _ => {
                 if let Some(value) = self.get_property(context, key)? {
                     return Ok(value);
-                }
-
-                if let Some(value) = self.check_for_method(context, key) {
-                    println!("found method value yay");
-                    return value;
                 }
 
                 if let Some(child) = self.find_first_child(key)? {
