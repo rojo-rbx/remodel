@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 
+* Added Instance:IsA() ([#52](https://github.com/rojo-rbx/remodel/pull/52))
 * Added Instance:GetFullName() ([#49](https://github.com/rojo-rbx/remodel/pull/49))
 * Added `Instance:FindFirstChildOfClass()` ([#50](https://github.com/rojo-rbx/remodel/pull/50))
 * Added support for CFrame ([#48](https://github.com/rojo-rbx/remodel/pull/48))
