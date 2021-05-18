@@ -4,6 +4,6 @@ local outputGame = remodel.readPlaceFile("output-place.rbxlx");
 
 -- This isn't possible inside Roblox, but works just fine in Remodel!
 outputGame.Workspace.Terrain:Destroy()
-inputGame.Workspace.Terrain.Parent = outputGame
+inputGame.Workspace.Terrain.Parent = outputGame.Workspace
 
 remodel.writePlaceFile(outputGame, "output-place-updated.rbxlx")
