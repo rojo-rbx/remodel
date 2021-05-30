@@ -7,6 +7,7 @@
 * Added support for CFrame ([#48](https://github.com/rojo-rbx/remodel/pull/48))
 * Added support for Vector3, and improved Vector3int16 ([#46](https://github.com/rojo-rbx/remodel/pull/46))
 * Added Color3.fromRGB(red, blue, green) ([#44](https://github.com/rojo-rbx/remodel/pull/44))
+* Added `toStringPretty` ([#55](https://github.com/rojo-rbx/remodel/pull/55))
 
 ## 0.8.1 (2021-04-09)
 * Updated to latest rbx_xml, which should fix `OptionalCoordinateFrame`-related issues.

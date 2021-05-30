@@ -9,6 +9,10 @@ impl UserData for Json {
             serde_json::to_string(&lua_value.0).map_err(rlua::Error::external)
         });
 
+        methods.add_function("toStringPretty", |_context, lua_value: Value| {
+            serde_json::to_string_pretty(&lua_value.0).map_err(rlua::Error::external)
+        });
+
         methods.add_function("fromString", |_context, source: String| {
             serde_json::from_str::<JsonValue>(&source)
                 .map(Value)
