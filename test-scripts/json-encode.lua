@@ -33,3 +33,18 @@ assert(encodedPretty == [[{
     3.0
   ]
 }]])
+
+local encodedPrettyWithIndent = json.toStringPretty(baseline, "\t")
+assert(encodedPrettyWithIndent == [[{
+	"w": {
+		"0": "cool",
+		"wack": "yo"
+	},
+	"x": 5.0,
+	"y": "Hello, world!",
+	"z": [
+		1.0,
+		2.0,
+		3.0
+	]
+}]])

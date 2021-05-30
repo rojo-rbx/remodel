@@ -280,6 +280,15 @@ Encodes a Lua object as a JSON string. Can only encode Lua primitives like table
 
 Throws on error, like if the input table cannot be encoded.
 
+### `json.toStringPretty` (Unreleased)
+```
+json.toStringPretty(value: any, indent?: string = "  "): string
+```
+
+Encodes a Lua object as a prettified JSON string. If an indent is passed, will use that for indentation, otherwise will default to two spaces.
+
+Throws on error, like if the input table cannot be encoded.
+
 ## Supported Roblox Types
 When interacting with Roblox instances, Remodel doesn't support all value types yet and may throw an error.
 
