@@ -23,7 +23,6 @@ impl UserData for Json {
                 };
 
                 let mut output = Vec::new();
-
                 let mut serializer = Serializer::with_formatter(&mut output, pretty_formatter);
                 lua_value
                     .0
