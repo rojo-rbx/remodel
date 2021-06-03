@@ -1,6 +1,9 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added APIs for uploading new models and places on Roblox.com:
+	* `remodel.writeNewModelAsset`
+	* `remodel.writeNewPlaceAsset`
 
 * Added Instance:GetFullName() ([#49](https://github.com/rojo-rbx/remodel/pull/49))
 * Added `Instance:FindFirstChildOfClass()` ([#50](https://github.com/rojo-rbx/remodel/pull/50))
