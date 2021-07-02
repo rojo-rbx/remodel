@@ -1,7 +1,7 @@
 # Remodel Changelog
 
 ## Unreleased Changes
-
+* Updated to rbx-dom 2.0 ecosystem.
 * Added Instance:GetFullName() ([#49](https://github.com/rojo-rbx/remodel/pull/49))
 * Added `Instance:FindFirstChildOfClass()` ([#50](https://github.com/rojo-rbx/remodel/pull/50))
 * Added support for CFrame ([#48](https://github.com/rojo-rbx/remodel/pull/48))
