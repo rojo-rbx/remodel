@@ -1,6 +1,8 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+
+## 0.9.0 (2021-07-19)
 * Updated to rbx-dom 2.0 ecosystem.
 * Added Instance:GetFullName() ([#49](https://github.com/rojo-rbx/remodel/pull/49))
 * Added `Instance:FindFirstChildOfClass()` ([#50](https://github.com/rojo-rbx/remodel/pull/50))
