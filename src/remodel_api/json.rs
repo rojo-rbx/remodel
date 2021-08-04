@@ -1,5 +1,9 @@
 use rlua::{Context, FromLua, Table, ToLua, UserData, UserDataMethods, Value as LuaValue};
-use serde_json::{Number, Value as JsonValue};
+use serde::Serialize;
+use serde_json::{
+    ser::{PrettyFormatter, Serializer},
+    Number, Value as JsonValue,
+};
 
 pub struct Json;
 
@@ -8,6 +12,26 @@ impl UserData for Json {
         methods.add_function("toString", |_context, lua_value: Value| {
             serde_json::to_string(&lua_value.0).map_err(rlua::Error::external)
         });
+
+        methods.add_function(
+            "toStringPretty",
+            |_context, (lua_value, indent): (Value, Option<String>)| {
+                let pretty_formatter = if let Some(ref indent) = indent {
+                    PrettyFormatter::with_indent(indent.as_bytes())
+                } else {
+                    PrettyFormatter::new()
+                };
+
+                let mut output = Vec::new();
+                let mut serializer = Serializer::with_formatter(&mut output, pretty_formatter);
+                lua_value
+                    .0
+                    .serialize(&mut serializer)
+                    .map_err(rlua::Error::external)?;
+
+                String::from_utf8(output).map_err(rlua::Error::external)
+            },
+        );
 
         methods.add_function("fromString", |_context, source: String| {
             serde_json::from_str::<JsonValue>(&source)
