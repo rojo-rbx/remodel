@@ -247,29 +247,26 @@ impl LuaInstance {
         }
 
         let database = rbx_reflection_database::get();
-        let mut descriptor = database
-            .classes
-            .get(instance.class.as_str())
-            .ok_or_else(|| {
-                rlua::Error::external(format!(
-                    "Unable to obtain class {} from reflection database",
-                    &instance.class
-                ))
-            })?;
+        let mut superclass_name = instance.class.as_str();
 
-        while let Some(super_class_name) = &descriptor.superclass {
-            if class_name == super_class_name {
-                return Ok(true);
+        loop {
+            if class_name == superclass_name {
+                break Ok(true);
             }
-            descriptor = database.classes.get(super_class_name).ok_or_else(|| {
+
+            let descriptor = database.classes.get(superclass_name).ok_or_else(|| {
                 rlua::Error::external(format!(
                     "Unable to obtain class {} from reflection database",
-                    &instance.class
+                    &superclass_name
                 ))
             })?;
-        }
 
-        Ok(false)
+            if let Some(super_class) = &descriptor.superclass {
+                superclass_name = super_class;
+            } else {
+                break Ok(false);
+            }
+        }
     }
 
     fn get_class_name<'lua>(
