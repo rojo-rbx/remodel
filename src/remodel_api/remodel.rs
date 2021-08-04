@@ -55,7 +55,7 @@ impl Remodel {
         path: &Path,
     ) -> rlua::Result<LuaInstance> {
         let file = BufReader::new(File::open(path).map_err(rlua::Error::external)?);
-        let source_tree = rbx_binary::from_reader_default(file).map_err(rlua::Error::external)?;
+        let source_tree = rbx_binary::from_reader(file).map_err(rlua::Error::external)?;
 
         Remodel::import_tree_root(context, source_tree)
     }
@@ -66,7 +66,7 @@ impl Remodel {
     ) -> rlua::Result<Vec<LuaInstance>> {
         let file = BufReader::new(File::open(path).map_err(rlua::Error::external)?);
 
-        let source_tree = rbx_binary::from_reader_default(file)
+        let source_tree = rbx_binary::from_reader(file)
             .map_err(|err| rlua::Error::external(format!("{:?}", err)))?;
 
         Remodel::import_tree_children(context, source_tree)
@@ -150,8 +150,7 @@ impl Remodel {
             ));
         }
 
-        rbx_binary::to_writer_default(file, &tree, instance.children())
-            .map_err(rlua::Error::external)?;
+        rbx_binary::to_writer(file, &tree, instance.children()).map_err(rlua::Error::external)?;
 
         Ok(())
     }
@@ -188,7 +187,7 @@ impl Remodel {
             ));
         }
 
-        rbx_binary::to_writer_default(file, &tree, &[lua_instance.id])
+        rbx_binary::to_writer(file, &tree, &[lua_instance.id])
             .map_err(|err| rlua::Error::external(format!("{:?}", err)))
     }
 
@@ -215,7 +214,7 @@ impl Remodel {
 
         let source_tree = match sniff_type(&body) {
             Some(DocumentType::Binary) => {
-                rbx_binary::from_reader_default(body.as_slice()).map_err(rlua::Error::external)?
+                rbx_binary::from_reader(body.as_slice()).map_err(rlua::Error::external)?
             }
 
             Some(DocumentType::Xml) => rbx_xml::from_reader(body.as_slice(), xml_decode_options())
@@ -260,7 +259,7 @@ impl Remodel {
 
         let source_tree = match sniff_type(&body) {
             Some(DocumentType::Binary) => {
-                rbx_binary::from_reader_default(body.as_slice()).map_err(rlua::Error::external)?
+                rbx_binary::from_reader(body.as_slice()).map_err(rlua::Error::external)?
             }
 
             Some(DocumentType::Xml) => rbx_xml::from_reader(body.as_slice(), xml_decode_options())
@@ -299,7 +298,7 @@ impl Remodel {
         }
 
         let mut buffer = Vec::new();
-        rbx_binary::to_writer_default(&mut buffer, &tree, &[lua_instance.id])
+        rbx_binary::to_writer(&mut buffer, &tree, &[lua_instance.id])
             .map_err(rlua::Error::external)?;
 
         Remodel::upload_asset(context, buffer, asset_id)
@@ -322,7 +321,7 @@ impl Remodel {
         }
 
         let mut buffer = Vec::new();
-        rbx_binary::to_writer_default(&mut buffer, &tree, instance.children())
+        rbx_binary::to_writer(&mut buffer, &tree, instance.children())
             .map_err(rlua::Error::external)?;
 
         Remodel::upload_asset(context, buffer, asset_id)
