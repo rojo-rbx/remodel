@@ -4,7 +4,7 @@ use std::{
     io::{BufReader, BufWriter, Read},
     path::Path,
     sync::Arc,
-    time::Duration
+    time::Duration,
 };
 
 use rbx_dom_weak::{types::VariantType, InstanceBuilder, WeakDom};
@@ -13,7 +13,6 @@ use reqwest::{
     StatusCode,
 };
 use rlua::{Context, UserData, UserDataMethods};
-
 
 use crate::{
     remodel_context::RemodelContext,
