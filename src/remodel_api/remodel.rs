@@ -4,6 +4,7 @@ use std::{
     io::{BufReader, BufWriter, Read},
     path::Path,
     sync::Arc,
+    time::Duration,
 };
 
 use rbx_dom_weak::{types::VariantType, InstanceBuilder, WeakDom};
@@ -196,7 +197,11 @@ impl Remodel {
         let auth_cookie = re_context.auth_cookie();
         let url = format!("https://assetdelivery.roblox.com/v1/asset/?id={}", asset_id);
 
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(60 * 3))
+            .build()
+            .map_err(rlua::Error::external)?;
+
         let mut request = client.get(&url);
 
         if let Some(auth_cookie) = auth_cookie {
@@ -241,7 +246,10 @@ impl Remodel {
         let auth_cookie = re_context.auth_cookie();
         let url = format!("https://assetdelivery.roblox.com/v1/asset/?id={}", asset_id);
 
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(60 * 3))
+            .build()
+            .map_err(rlua::Error::external)?;
         let mut request = client.get(&url);
 
         if let Some(auth_cookie) = auth_cookie {
@@ -340,7 +348,11 @@ impl Remodel {
             asset_id
         );
 
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(60 * 3))
+            .build()
+            .map_err(rlua::Error::external)?;
+
         let build_request = move || {
             client
                 .post(&url)
