@@ -1,9 +1,3 @@
-use rbx_dom_weak::{types::VariantType, InstanceBuilder, WeakDom};
-use reqwest::{
-    header::{ACCEPT, CONTENT_TYPE, COOKIE, USER_AGENT},
-    StatusCode,
-};
-use rlua::{Context, UserData, UserDataMethods};
 use std::time::Duration;
 use std::{
     ffi::OsStr,
@@ -12,6 +6,14 @@ use std::{
     path::Path,
     sync::Arc,
 };
+
+use rbx_dom_weak::{types::VariantType, InstanceBuilder, WeakDom};
+use reqwest::{
+    header::{ACCEPT, CONTENT_TYPE, COOKIE, USER_AGENT},
+    StatusCode,
+};
+use rlua::{Context, UserData, UserDataMethods};
+
 
 use crate::{
     remodel_context::RemodelContext,
