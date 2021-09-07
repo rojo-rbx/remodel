@@ -1,10 +1,10 @@
-use std::time::Duration;
 use std::{
     ffi::OsStr,
     fs::{self, File},
     io::{BufReader, BufWriter, Read},
     path::Path,
     sync::Arc,
+    time::Duration
 };
 
 use rbx_dom_weak::{types::VariantType, InstanceBuilder, WeakDom};
