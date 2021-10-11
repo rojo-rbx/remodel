@@ -22,7 +22,7 @@ Remodel can be installed with Foreman, a toolchain manager for Roblox projects:
 
 ```toml
 [tools]
-remodel = { source = "rojo-rbx/remodel", version = "0.8.0" }
+remodel = { source = "rojo-rbx/remodel", version = "0.9.1" }
 ```
 
 ### From GitHub Releases
