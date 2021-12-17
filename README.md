@@ -106,8 +106,6 @@ remodel.readPlaceAsset(assetId: string): Instance
 
 Reads a place asset from Roblox.com, equivalent to `remodel.readPlaceFile`.
 
-Most models and places uploaded to Roblox.com are in Roblox's binary model format, which tools like Remodel and Rojo have poor support for. Models and places uploaded by Remodel and Rojo are currently always in the XML format, which is less efficient but has better support.
-
 **This method requires web authentication for private assets! See [Authentication](#authentication) for more information.**
 
 Throws on error.
@@ -118,8 +116,6 @@ remodel.readModelAsset(assetId: string): List<Instance>
 ```
 
 Reads a model asset from Roblox.com, equivalent to `remodel.readModelFile`.
-
-Most models and places uploaded to Roblox.com are in Roblox's binary model format, which tools like Remodel and Rojo have poor support for. Models and places uploaded by Remodel and Rojo are currently always in the XML format, which is less efficient but has better support.
 
 **This method requires web authentication for private assets! See [Authentication](#authentication) for more information.**
 
