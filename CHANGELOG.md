@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 
+* Added Instance:IsA() ([#52](https://github.com/rojo-rbx/remodel/pull/52))
 ## 0.9.1 (2021-10-11)
 * Updated to latest rbx-dom libraries.
 * Increased Roblox API request timeout from 30 seconds to 3 minutes. ([#63])
