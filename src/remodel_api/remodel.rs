@@ -289,6 +289,29 @@ impl Remodel {
         Remodel::import_tree_root(context, source_tree)
     }
 
+    fn write_existing_animation_asset(
+        context: Context<'_>,
+        lua_instance: LuaInstance,
+        asset_id: u64,
+    ) -> rlua::Result<()> {
+        let tree = lua_instance.tree.lock().unwrap();
+        let instance = tree
+            .get_by_ref(lua_instance.id)
+            .ok_or_else(|| rlua::Error::external("Cannot save a destroyed instance."))?;
+
+        if instance.class != "KeyframeSequence" {
+            return Err(rlua::Error::external(
+                "Only KeyframeSequence instances can be saved as animation assets.",
+            ));
+        }
+
+        let mut buffer = Vec::new();
+        rbx_binary::to_writer_default(&mut buffer, &tree, &[lua_instance.id])
+            .map_err(rlua::Error::external)?;
+
+        Remodel::upload_animation_asset(context, buffer, asset_id)
+    }
+
     fn write_existing_model_asset(
         context: Context<'_>,
         lua_instance: LuaInstance,
@@ -333,6 +356,58 @@ impl Remodel {
             .map_err(rlua::Error::external)?;
 
         Remodel::upload_asset(context, buffer, asset_id)
+    }
+
+    fn upload_animation_asset(
+        context: Context<'_>,
+        buffer: Vec<u8>,
+        asset_id: u64,
+    ) -> rlua::Result<()> {
+        let re_context = RemodelContext::get(context)?;
+        let auth_cookie = re_context.auth_cookie().ok_or_else(|| {
+            rlua::Error::external(
+                "Uploading assets requires an auth cookie, please log into Roblox Studio.",
+            )
+        })?;
+
+        let url = format!(
+            "https://www.roblox.com/ide/publish/uploadexistinganimation?assetID={}",
+            asset_id
+        );
+
+        let client = reqwest::Client::new();
+        let build_request = move || {
+            client
+                .post(&url)
+                .header(COOKIE, format!(".ROBLOSECURITY={}", auth_cookie))
+                .header(USER_AGENT, "Roblox")
+                .body(buffer.clone())
+        };
+
+        log::debug!("Uploading to Roblox...");
+        let mut response = build_request().send().map_err(rlua::Error::external)?;
+
+        // Starting in Feburary, 2021, the upload endpoint performs CSRF challenges.
+        // If we receive an HTTP 403 with a X-CSRF-Token reply, we should retry the
+        // request, echoing the value of that header.
+        if response.status() == StatusCode::FORBIDDEN {
+            if let Some(csrf_token) = response.headers().get("X-CSRF-Token") {
+                log::debug!("Received CSRF challenge, retrying with token...");
+                response = build_request()
+                    .header("X-CSRF-Token", csrf_token)
+                    .send()
+                    .map_err(rlua::Error::external)?;
+            }
+        }
+
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(rlua::Error::external(format!(
+                "Roblox API returned an error, status {}.",
+                response.status()
+            )))
+        }
     }
 
     fn upload_asset(context: Context<'_>, buffer: Vec<u8>, asset_id: u64) -> rlua::Result<()> {
@@ -481,6 +556,15 @@ impl UserData for Remodel {
 
             Remodel::read_place_asset(context, asset_id)
         });
+
+        methods.add_function(
+            "writeExistingAnimationAsset",
+            |context, (instance, asset_id): (LuaInstance, String)| {
+                let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
+
+                Remodel::write_existing_animation_asset(context, instance, asset_id)
+            },
+        );
 
         methods.add_function(
             "writeExistingModelAsset",
