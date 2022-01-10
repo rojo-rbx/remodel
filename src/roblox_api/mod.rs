@@ -8,7 +8,7 @@ use rlua::{Context, UserData, UserDataMethods};
 
 use crate::{
     remodel_context::RemodelContext,
-    value::{Color3Value, Vector3Value, Vector3int16Value},
+    value::{Color3Value, Region3Value, Region3int16Value, Vector3Value, Vector3int16Value},
 };
 
 use cframe::CFrameUserData;
@@ -23,6 +23,8 @@ impl RobloxApi {
         context.globals().set("Vector3int16", Vector3int16)?;
         context.globals().set("Color3", Color3)?;
         context.globals().set("CFrame", CFrameUserData)?;
+        context.globals().set("Region3", Region3)?;
+        context.globals().set("Region3int16", Region3int16)?;
 
         Ok(())
     }
@@ -105,5 +107,36 @@ impl UserData for Color3 {
                 z / 255.0,
             )))
         });
+    }
+}
+
+struct Region3;
+
+impl UserData for Region3 {
+    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_function(
+            "new",
+            |_context, (min, max): (Vector3Value, Vector3Value)| {
+                Ok(Region3Value::new(rbx_dom_weak::types::Region3::new(
+                    min.inner(),
+                    max.inner(),
+                )))
+            },
+        );
+    }
+}
+
+struct Region3int16;
+
+impl UserData for Region3int16 {
+    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_function(
+            "new",
+            |_context, (min, max): (Vector3int16Value, Vector3int16Value)| {
+                Ok(Region3int16Value::new(
+                    rbx_dom_weak::types::Region3int16::new(min.inner(), max.inner()),
+                ))
+            },
+        );
     }
 }

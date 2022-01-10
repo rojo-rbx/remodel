@@ -33,3 +33,7 @@ assertVector(CFrame.new().UpVector, 0, 1, 0)
 assertVector(CFrame.new().LookVector, -0, -0, -1)
 
 assert(tostring(CFrame.new(7, 8, 9)) == "7, 8, 9, 1, 0, 0, 0, 1, 0, 0, 0, 1", "got " .. tostring(CFrame.new()))
+
+-- operators
+assert(CFrame.new() == CFrame.new())
+assert(CFrame.new(1, 1, 1) ~= CFrame.new(1, 2, 1))
