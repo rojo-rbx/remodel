@@ -561,7 +561,7 @@ impl UserData for Remodel {
         );
 
         methods.add_function(
-            "publishPlaceToCloud",
+            "publishPlaceToUniverse",
             |context, (instance, universe_id, place_id): (LuaInstance, u64, u64)| {
                 Remodel::write_existing_place_asset(
                     context,
