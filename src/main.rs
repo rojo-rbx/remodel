@@ -46,11 +46,6 @@ struct Options {
     #[structopt(long("auth"), env("REMODEL_AUTH"), hide_env_values(true), global(true))]
     auth_cookie: Option<String>,
 
-
-    /// The universe id to use when writing an asset using the roblox cloud API key
-    #[structopt(long , global(true))]
-    universe_id: Option<u32>,
-
     /// The Roblox Cloud API key to use
     #[structopt(long("api-key"), env("REMODEL_API_KEY"), hide_env_values(true), global(true))]
     api_key: Option<String>,
