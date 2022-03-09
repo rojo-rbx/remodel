@@ -85,6 +85,7 @@ fn main() {
 
 fn run(options: Options) -> Result<(), anyhow::Error> {
     let auth_cookie = options.auth_cookie.or_else(get_auth_cookie);
+    let api_key = options.api_key;
 
     match options.subcommand {
         Subcommand::Run { script, args } => {
@@ -97,7 +98,7 @@ fn run(options: Options) -> Result<(), anyhow::Error> {
                     .map(|value| value.to_lua(context))
                     .collect::<Result<Vec<_>, _>>()?;
 
-                RemodelContext::new(auth_cookie, options.api_key).inject(context)?;
+                RemodelContext::new(auth_cookie, api_key).inject(context)?;
 
                 RemodelApi::inject(context)?;
                 RobloxApi::inject(context)?;
