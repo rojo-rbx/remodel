@@ -10,10 +10,11 @@ use rlua::{Context, UserData};
 pub struct RemodelContext {
     pub master_tree: Arc<Mutex<WeakDom>>,
     auth_cookie: Option<String>,
+    api_key: Option<String>,
 }
 
 impl RemodelContext {
-    pub fn new(auth_cookie: Option<String>) -> Self {
+    pub fn new(auth_cookie: Option<String>, api_key: Option<String>) -> Self {
         let master_tree = Arc::new(Mutex::new(WeakDom::new(InstanceBuilder::new(
             "RemodelRoot",
         ))));
@@ -21,6 +22,7 @@ impl RemodelContext {
         Self {
             master_tree,
             auth_cookie,
+            api_key,
         }
     }
 
@@ -36,6 +38,10 @@ impl RemodelContext {
 
     pub fn auth_cookie(&self) -> Option<&str> {
         self.auth_cookie.as_ref().map(|v| v.as_str())
+    }
+
+    pub fn api_key(&self) -> Option<&str> {
+        self.api_key.as_ref().map(|v| v.as_str())
     }
 }
 

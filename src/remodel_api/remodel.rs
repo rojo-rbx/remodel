@@ -29,6 +29,14 @@ fn xml_decode_options() -> rbx_xml::DecodeOptions {
     rbx_xml::DecodeOptions::new().property_behavior(rbx_xml::DecodePropertyBehavior::ReadUnknown)
 }
 
+pub enum UploadPlaceAsset {
+    Legacy(u64),
+    CloudAPI {
+        place_id: u64,
+        universe_id: u64,
+    }
+}
+
 pub struct Remodel;
 
 impl Remodel {
@@ -315,7 +323,7 @@ impl Remodel {
     fn write_existing_place_asset(
         context: Context<'_>,
         lua_instance: LuaInstance,
-        asset_id: u64,
+        asset: UploadPlaceAsset,
     ) -> rlua::Result<()> {
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
@@ -332,7 +340,48 @@ impl Remodel {
         rbx_binary::to_writer(&mut buffer, &tree, instance.children())
             .map_err(rlua::Error::external)?;
 
-        Remodel::upload_asset(context, buffer, asset_id)
+        match asset {
+            UploadPlaceAsset::Legacy(asset_id) => Remodel::upload_asset(context, buffer, asset_id),
+            UploadPlaceAsset::CloudAPI {place_id, universe_id} => Remodel::cloud_upload_place_asset(context, buffer, universe_id, place_id),
+        }
+    }
+
+    fn cloud_upload_place_asset(context: Context<'_>, buffer: Vec<u8>, universe_id: u64, asset_id: u64) -> rlua::Result<()> {
+        let re_context = RemodelContext::get(context)?;
+        let url = format!("https://apis.roblox.com/universes/v1/{}/places/{}/versions?versionType=Published", universe_id, asset_id);
+
+        let api_key = re_context.api_key().ok_or_else(|| {
+            rlua::Error::external(
+                "Uploading a place asset using the Cloud API requires an auth key be set via --api-key or REMODEL_AUTH_KEY environment variable",
+            )
+        })?;
+
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(60 * 3))
+            .build()
+            .map_err(rlua::Error::external)?;
+
+        let build_request = move || {
+            client
+                .post(&url)
+                .header("x-api-key", api_key)
+                .header(USER_AGENT, "Roblox/WinInet")
+                .header(CONTENT_TYPE, "application/xml")
+                .header(ACCEPT, "application/json")
+                .body(buffer.clone())
+        };
+
+        log::debug!("Uploading to Roblox...");
+        let response = build_request().send().map_err(rlua::Error::external)?;
+
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(rlua::Error::external(format!(
+                "Roblox API returned an error, status {}.",
+                response.status()
+            )))
+        }
     }
 
     fn upload_asset(context: Context<'_>, buffer: Vec<u8>, asset_id: u64) -> rlua::Result<()> {
@@ -496,8 +545,15 @@ impl UserData for Remodel {
             |context, (instance, asset_id): (LuaInstance, String)| {
                 let asset_id = asset_id.parse().map_err(rlua::Error::external)?;
 
-                Remodel::write_existing_place_asset(context, instance, asset_id)
+                Remodel::write_existing_place_asset(context, instance, UploadPlaceAsset::Legacy(asset_id))
             },
+        );
+
+        methods.add_function(
+            "publishPlaceToCloud",
+            |context, (instance, universe_id, place_id): (LuaInstance, u64, u64)| {
+                Remodel::write_existing_place_asset(context, instance, UploadPlaceAsset::CloudAPI {universe_id, place_id})
+            }
         );
 
         methods.add_function(
