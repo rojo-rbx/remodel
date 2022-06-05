@@ -1,4 +1,4 @@
-use rlua::{Context, FromLua, Table, ToLua, UserData, UserDataMethods, Value as LuaValue};
+use mlua::{Lua, FromLua, Table, ToLua, UserData, UserDataMethods, Value as LuaValue};
 use serde::Serialize;
 use serde_json::{
     ser::{PrettyFormatter, Serializer},
@@ -10,7 +10,7 @@ pub struct Json;
 impl UserData for Json {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_function("toString", |_context, lua_value: Value| {
-            serde_json::to_string(&lua_value.0).map_err(rlua::Error::external)
+            serde_json::to_string(&lua_value.0).map_err(mlua::Error::external)
         });
 
         methods.add_function(
@@ -27,16 +27,16 @@ impl UserData for Json {
                 lua_value
                     .0
                     .serialize(&mut serializer)
-                    .map_err(rlua::Error::external)?;
+                    .map_err(mlua::Error::external)?;
 
-                String::from_utf8(output).map_err(rlua::Error::external)
+                String::from_utf8(output).map_err(mlua::Error::external)
             },
         );
 
         methods.add_function("fromString", |_context, source: String| {
             serde_json::from_str::<JsonValue>(&source)
                 .map(Value)
-                .map_err(rlua::Error::external)
+                .map_err(mlua::Error::external)
         });
     }
 }
@@ -44,7 +44,7 @@ impl UserData for Json {
 pub struct Value(pub JsonValue);
 
 impl<'lua> ToLua<'lua> for Value {
-    fn to_lua(self, context: Context<'lua>) -> rlua::Result<LuaValue<'lua>> {
+    fn to_lua(self, context: &'lua Lua) -> mlua::Result<LuaValue<'lua>> {
         match self.0 {
             JsonValue::Null => Ok(LuaValue::Nil),
             JsonValue::Bool(value) => Ok(LuaValue::Boolean(value)),
@@ -54,7 +54,7 @@ impl<'lua> ToLua<'lua> for Value {
                 } else if let Some(value) = num.as_f64() {
                     Ok(LuaValue::Number(value))
                 } else {
-                    Err(rlua::Error::external(
+                    Err(mlua::Error::external(
                         "Numbers should be representable by either i64 or f64",
                     ))
                 }
@@ -83,12 +83,12 @@ impl<'lua> ToLua<'lua> for Value {
 }
 
 impl<'lua> FromLua<'lua> for Value {
-    fn from_lua(lua_value: LuaValue<'lua>, _context: Context<'lua>) -> rlua::Result<Self> {
+    fn from_lua(lua_value: LuaValue<'lua>, _context: &'lua Lua) -> mlua::Result<Self> {
         lua_to_json(lua_value).map(Value)
     }
 }
 
-fn lua_to_json<'lua>(lua_value: LuaValue<'lua>) -> rlua::Result<JsonValue> {
+fn lua_to_json<'lua>(lua_value: LuaValue<'lua>) -> mlua::Result<JsonValue> {
     match lua_value {
         LuaValue::Nil => Ok(JsonValue::Null),
         LuaValue::Boolean(value) => Ok(JsonValue::Bool(value)),
@@ -126,7 +126,7 @@ fn lua_to_json<'lua>(lua_value: LuaValue<'lua>) -> rlua::Result<JsonValue> {
             }
         },
 
-        _ => Err(rlua::Error::external("Value cannot be turned into JSON")),
+        _ => Err(mlua::Error::external("Value cannot be turned into JSON")),
     }
 }
 
@@ -135,7 +135,7 @@ enum TableKind {
     ArrayLike(usize),
 }
 
-fn classify_table<'lua>(table: Table<'lua>) -> rlua::Result<TableKind> {
+fn classify_table<'lua>(table: Table<'lua>) -> mlua::Result<TableKind> {
     let mut highest_key = 0;
     let mut total_keys = 0;
     let mut has_non_whole_keys = false;

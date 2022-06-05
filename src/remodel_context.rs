@@ -4,7 +4,7 @@
 use std::sync::{Arc, Mutex};
 
 use rbx_dom_weak::{InstanceBuilder, WeakDom};
-use rlua::{Context, UserData};
+use mlua::{Lua, UserData};
 
 #[derive(Clone)]
 pub struct RemodelContext {
@@ -24,11 +24,11 @@ impl RemodelContext {
         }
     }
 
-    pub fn get(context: Context<'_>) -> rlua::Result<Self> {
+    pub fn get(context: &Lua) -> mlua::Result<Self> {
         context.named_registry_value("remodel_context")
     }
 
-    pub fn inject(self, context: Context<'_>) -> rlua::Result<()> {
+    pub fn inject(self, context: &Lua) -> mlua::Result<()> {
         context.set_named_registry_value("remodel_context", self)?;
 
         Ok(())
