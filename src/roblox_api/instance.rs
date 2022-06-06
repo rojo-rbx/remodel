@@ -4,9 +4,9 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use mlua::{FromLua, Lua, MetaMethod, ToLua, UserData, UserDataMethods};
 use rbx_dom_weak::{types::Ref, InstanceBuilder, WeakDom};
 use rbx_reflection::ClassTag;
-use mlua::{Lua, FromLua, MetaMethod, ToLua, UserData, UserDataMethods};
 
 #[derive(Clone)]
 pub struct LuaInstance {

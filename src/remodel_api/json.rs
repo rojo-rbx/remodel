@@ -1,4 +1,4 @@
-use mlua::{Lua, FromLua, Table, ToLua, UserData, UserDataMethods, Value as LuaValue};
+use mlua::{FromLua, Lua, Table, ToLua, UserData, UserDataMethods, Value as LuaValue};
 use serde::Serialize;
 use serde_json::{
     ser::{PrettyFormatter, Serializer},

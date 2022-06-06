@@ -3,8 +3,8 @@ mod instance;
 
 use std::sync::Arc;
 
-use rbx_dom_weak::InstanceBuilder;
 use mlua::{Lua, UserData, UserDataMethods};
+use rbx_dom_weak::InstanceBuilder;
 
 use crate::{
     remodel_context::RemodelContext,

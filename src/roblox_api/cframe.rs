@@ -1,5 +1,5 @@
-use rbx_dom_weak::types::{CFrame, Matrix3, Vector3};
 use mlua::{UserData, UserDataMethods, Value as LuaValue};
+use rbx_dom_weak::types::{CFrame, Matrix3, Vector3};
 
 use crate::value::{CFrameValue, Vector3Value};
 

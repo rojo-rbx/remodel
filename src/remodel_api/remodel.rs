@@ -7,12 +7,12 @@ use std::{
     time::Duration,
 };
 
+use mlua::{Lua, UserData, UserDataMethods};
 use rbx_dom_weak::{types::VariantType, InstanceBuilder, WeakDom};
 use reqwest::{
     header::{ACCEPT, CONTENT_TYPE, COOKIE, USER_AGENT},
     StatusCode,
 };
-use mlua::{Lua, UserData, UserDataMethods};
 
 use crate::{
     remodel_context::RemodelContext,

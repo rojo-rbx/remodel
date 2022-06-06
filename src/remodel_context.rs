@@ -3,8 +3,8 @@
 
 use std::sync::{Arc, Mutex};
 
-use rbx_dom_weak::{InstanceBuilder, WeakDom};
 use mlua::{Lua, UserData};
+use rbx_dom_weak::{InstanceBuilder, WeakDom};
 
 #[derive(Clone)]
 pub struct RemodelContext {

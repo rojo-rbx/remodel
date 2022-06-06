@@ -1,10 +1,10 @@
 //! Defines how to turn Variant values into Lua values and back.
 
-use rbx_dom_weak::types::{
-    CFrame, Color3, Color3uint8, Variant, VariantType, Vector3, Vector3int16,
-};
 use mlua::{
     Lua, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
+};
+use rbx_dom_weak::types::{
+    CFrame, Color3, Color3uint8, Variant, VariantType, Vector3, Vector3int16,
 };
 use std::fmt;
 use std::ops;
