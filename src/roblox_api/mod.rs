@@ -3,8 +3,8 @@ mod instance;
 
 use std::sync::Arc;
 
+use mlua::{Lua, UserData, UserDataMethods};
 use rbx_dom_weak::InstanceBuilder;
-use rlua::{Context, UserData, UserDataMethods};
 
 use crate::{
     remodel_context::RemodelContext,
@@ -17,7 +17,7 @@ pub use instance::LuaInstance;
 pub struct RobloxApi;
 
 impl RobloxApi {
-    pub fn inject(context: Context<'_>) -> rlua::Result<()> {
+    pub fn inject(context: &Lua) -> mlua::Result<()> {
         context.globals().set("Instance", Instance)?;
         context.globals().set("Vector3", Vector3)?;
         context.globals().set("Vector3int16", Vector3int16)?;
@@ -36,7 +36,7 @@ impl UserData for Instance {
             let database = rbx_reflection_database::get();
 
             if !database.classes.contains_key(class_name.as_str()) {
-                return Err(rlua::Error::external(format!(
+                return Err(mlua::Error::external(format!(
                     "'{}' is not a valid class of Instance.",
                     class_name,
                 )));

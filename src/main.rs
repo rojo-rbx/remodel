@@ -14,7 +14,7 @@ use std::{
 };
 
 use backtrace::Backtrace;
-use rlua::{Lua, MultiValue, ToLua};
+use mlua::{Lua, MultiValue, ToLua};
 use structopt::StructOpt;
 
 use crate::{
@@ -82,20 +82,18 @@ fn run(options: Options) -> Result<(), anyhow::Error> {
             let (contents, chunk_name) = load_script(&script)?;
             let lua = Lua::new();
 
-            lua.context(move |context| {
-                let lua_args = args
-                    .into_iter()
-                    .map(|value| value.to_lua(context))
-                    .collect::<Result<Vec<_>, _>>()?;
+            let lua_args = args
+                .into_iter()
+                .map(|value| value.to_lua(&lua))
+                .collect::<Result<Vec<_>, _>>()?;
 
-                RemodelContext::new(auth_cookie).inject(context)?;
+            RemodelContext::new(auth_cookie).inject(&lua)?;
 
-                RemodelApi::inject(context)?;
-                RobloxApi::inject(context)?;
+            RemodelApi::inject(&lua)?;
+            RobloxApi::inject(&lua)?;
 
-                let chunk = context.load(&contents).set_name(&chunk_name)?;
-                chunk.call(MultiValue::from_vec(lua_args))
-            })?;
+            let chunk = lua.load(&contents).set_name(&chunk_name)?;
+            chunk.call(MultiValue::from_vec(lua_args))?;
 
             Ok(())
         }
