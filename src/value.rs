@@ -158,11 +158,7 @@ impl Color3Value {
         Self(value)
     }
 
-    fn meta_index<'lua>(
-        &self,
-        context: &'lua Lua,
-        key: &str,
-    ) -> mlua::Result<mlua::Value<'lua>> {
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
         match key {
             "r" | "R" => self.0.r.to_lua(context),
             "g" | "G" => self.0.g.to_lua(context),
@@ -240,11 +236,7 @@ impl Vector3Value {
         self.0
     }
 
-    fn meta_index<'lua>(
-        &self,
-        context: &'lua Lua,
-        key: &str,
-    ) -> mlua::Result<mlua::Value<'lua>> {
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
         match key {
             "X" => self.0.x.to_lua(context),
             "Y" => self.0.y.to_lua(context),
@@ -320,11 +312,7 @@ impl Vector3int16Value {
         Self(value)
     }
 
-    fn meta_index<'lua>(
-        &self,
-        context: &'lua Lua,
-        key: &str,
-    ) -> mlua::Result<mlua::Value<'lua>> {
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
         match key {
             "X" => self.0.x.to_lua(context),
             "Y" => self.0.y.to_lua(context),
@@ -394,11 +382,7 @@ impl CFrameValue {
         Self(value)
     }
 
-    fn meta_index<'lua>(
-        &self,
-        context: &'lua Lua,
-        key: &str,
-    ) -> mlua::Result<mlua::Value<'lua>> {
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
         match key {
             "X" => self.0.position.x.to_lua(context),
             "Y" => self.0.position.y.to_lua(context),

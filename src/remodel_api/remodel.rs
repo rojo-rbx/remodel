@@ -51,10 +51,7 @@ impl Remodel {
         Remodel::import_tree_children(context, source_tree)
     }
 
-    fn read_binary_place_file<'lua>(
-        context: &'lua Lua,
-        path: &Path,
-    ) -> mlua::Result<LuaInstance> {
+    fn read_binary_place_file<'lua>(context: &'lua Lua, path: &Path) -> mlua::Result<LuaInstance> {
         let file = BufReader::new(File::open(path).map_err(mlua::Error::external)?);
         let source_tree = rbx_binary::from_reader(file).map_err(mlua::Error::external)?;
 
@@ -97,10 +94,7 @@ impl Remodel {
         Ok(instances)
     }
 
-    pub fn import_tree_root(
-        context: &Lua,
-        mut source_tree: WeakDom,
-    ) -> mlua::Result<LuaInstance> {
+    pub fn import_tree_root(context: &Lua, mut source_tree: WeakDom) -> mlua::Result<LuaInstance> {
         let master_tree = RemodelContext::get(context)?.master_tree;
         let mut master_handle = master_tree.lock().unwrap();
 

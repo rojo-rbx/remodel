@@ -235,10 +235,7 @@ impl LuaInstance {
         }
     }
 
-    fn get_class_name<'lua>(
-        &self,
-        context: &'lua Lua,
-    ) -> mlua::Result<mlua::Value<'lua>> {
+    fn get_class_name<'lua>(&self, context: &'lua Lua) -> mlua::Result<mlua::Value<'lua>> {
         let tree = self.tree.lock().unwrap();
 
         let instance = tree.get_by_ref(self.id).ok_or_else(|| {
@@ -294,11 +291,7 @@ impl LuaInstance {
         }
     }
 
-    fn set_parent<'lua>(
-        &self,
-        context: &'lua Lua,
-        value: mlua::Value<'lua>,
-    ) -> mlua::Result<()> {
+    fn set_parent<'lua>(&self, context: &'lua Lua, value: mlua::Value<'lua>) -> mlua::Result<()> {
         let mut tree = self.tree.lock().unwrap();
 
         match Option::<LuaInstance>::from_lua(value, context)? {
@@ -333,11 +326,7 @@ impl LuaInstance {
         instance.name.as_str().to_lua(context)
     }
 
-    fn meta_index<'lua>(
-        &self,
-        context: &'lua Lua,
-        key: &str,
-    ) -> mlua::Result<mlua::Value<'lua>> {
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
         match key {
             "Name" => self.get_name(context),
             "ClassName" => self.get_class_name(context),
