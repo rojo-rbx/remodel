@@ -1250,9 +1250,9 @@ dependencies = [
 
 [[package]]
 name = "rbx_reflection_database"
-version = "0.2.2+roblox-498"
+version = "0.2.4+roblox-504"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4e459dc87be8464122ad3bb722a562ddae8e811bb4a6b7809eaa1fac220cf30"
+checksum = "b41e8da85aa697cd04cef48e6dd7d96992786d2e322bafe1d3cc93045f4de1e1"
 dependencies = [
  "lazy_static",
  "rbx_reflection",
