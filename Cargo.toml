@@ -23,7 +23,7 @@ panic = "abort"
 rbx_binary = "0.6.4"
 rbx_dom_weak = "2.3.0"
 rbx_reflection = "4.2.0"
-rbx_reflection_database = "0.2.2"
+rbx_reflection_database = "0.2.4"
 rbx_xml = "0.12.3"
 
 anyhow = "1.0.44"
