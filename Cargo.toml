@@ -1,6 +1,6 @@
 [package]
 name = "remodel"
-version = "0.9.1"
+version = "0.10.0"
 description = "A tool to read, modify, and write Roblox objects."
 authors = ["Lucien Greathouse <me@lpghatguy.com>"]
 edition = "2018"

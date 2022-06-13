@@ -2,6 +2,12 @@
 
 ## Unreleased Changes
 
+## 0.10.0 (2022-06-13)
+* Switched from `rlua` to `mlua`, which should improve Lua performance slightly. ([#73])
+* Updated all dependencies to improve Roblox compatibility.
+
+[#73]: https://github.com/rojo-rbx/remodel/pull/73
+
 ## 0.9.1 (2021-10-11)
 * Updated to latest rbx-dom libraries.
 * Increased Roblox API request timeout from 30 seconds to 3 minutes. ([#63])
