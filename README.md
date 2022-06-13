@@ -22,14 +22,14 @@ Remodel can be installed with Foreman, a toolchain manager for Roblox projects:
 
 ```toml
 [tools]
-remodel = { source = "rojo-rbx/remodel", version = "0.9.1" }
+remodel = { source = "rojo-rbx/remodel", version = "0.10.0" }
 ```
 
 ### From GitHub Releases
 You can download pre-built binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
 
 ### From crates.io
-You'll need Rust 1.53.0 or newer.
+You'll need Rust 1.56.0 or newer.
 
 ```bash
 cargo install remodel
