@@ -143,6 +143,54 @@ If the instance is a `DataModel`, this method will throw. Places should be saved
 
 Throws on error.
 
+### `remodel.writeNewPlaceAsset`
+```
+remodel.writeNewPlaceAsset(instance: DataModel, options: Options): IDK
+
+where Options: {
+	name: string,
+	description: string?,
+	public: boolean?,
+	allowComments: boolean?,
+	groupId: string?,
+}
+```
+
+Uploads the given `DataModel` instance to Roblox.com as a new place and returns its id.
+
+`description` and `groupId` default to an empty string. `public` and `allowComments` default to `false`.
+
+`allowComments` does not have any function for places.
+
+If the instance is not a `DataModel`, this method will throw. Models should be uploaded with `writeNewModelAsset` instead.
+
+**This method always requires web authentication! See [Authentication](#authentication) for more information.**
+
+Throws on error.
+
+### `remodel.writeNewModelAsset`
+```
+remodel.writeNewModelAsset(instance: Instance, options: Options): IDK
+
+where Options: {
+	name: string,
+	description: string?,
+	public: boolean?,
+	allowComments: boolean?,
+	groupId: string?,
+}
+```
+
+Uploads the given instance to Roblox.com as a new model and returns its id.
+
+`description` and `groupId` default to an empty string. `public` and `allowComments` default to `false`.
+
+If the instance is a `DataModel`, this method will throw. Places should be uploaded with `writeNewPlaceAsset` instead.
+
+**This method always requires web authentication! See [Authentication](#authentication) for more information.**
+
+Throws on error.
+
 ### `remodel.writeExistingPlaceAsset` (0.5.0+)
 ```
 remodel.writeExistingPlaceAsset(instance: Instance, assetId: string)

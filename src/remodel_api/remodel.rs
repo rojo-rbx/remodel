@@ -592,14 +592,20 @@ impl UserData for Remodel {
         methods.add_function(
             "writeNewModelAsset",
             |context, (lua_instance, upload_options): (LuaInstance, UploadOptions)| {
-                Remodel::write_new_model_asset(context, lua_instance, upload_options)
+                Ok(
+                    Remodel::write_new_model_asset(context, lua_instance, upload_options)?
+                        .to_string(),
+                )
             },
         );
 
         methods.add_function(
             "writeNewPlaceAsset",
             |context, (lua_instance, upload_options): (LuaInstance, UploadOptions)| {
-                Remodel::write_new_place_asset(context, lua_instance, upload_options)
+                Ok(
+                    Remodel::write_new_place_asset(context, lua_instance, upload_options)?
+                        .to_string(),
+                )
             },
         );
 
