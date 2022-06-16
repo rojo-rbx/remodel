@@ -145,7 +145,7 @@ Throws on error.
 
 ### `remodel.writeNewPlaceAsset`
 ```
-remodel.writeNewPlaceAsset(instance: DataModel, options: Options): IDK
+remodel.writeNewPlaceAsset(instance: DataModel, options: Options): string
 
 where Options: {
 	name: string,
@@ -170,7 +170,7 @@ Throws on error.
 
 ### `remodel.writeNewModelAsset`
 ```
-remodel.writeNewModelAsset(instance: Instance, options: Options): IDK
+remodel.writeNewModelAsset(instance: Instance, options: Options): string
 
 where Options: {
 	name: string,
