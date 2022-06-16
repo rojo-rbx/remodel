@@ -1,6 +1,9 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added APIs for uploading new models and places:
+	* `remodel.writeNewPlaceAsset`
+	* `remodel.writeNewModelAsset`
 
 ## 0.10.0 (2022-06-13)
 * Switched from `rlua` to `mlua`, which should improve Lua performance slightly. ([#73])
