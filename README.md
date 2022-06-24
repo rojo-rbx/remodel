@@ -52,7 +52,7 @@ local Models = game.ReplicatedStorage.Models
 
 for _, model in ipairs(Models:GetChildren()) do
 	-- Save out each child as an rbxmx model
-	remodel.writeModelFile(model, "models/" .. model.Name .. ".rbxmx")
+	remodel.writeModelFile("models/" .. model.Name .. ".rbxmx", model)
 end
 ```
 
@@ -123,7 +123,7 @@ Throws on error.
 
 ### `remodel.writePlaceFile`
 ```
-remodel.writePlaceFile(instance: DataModel, path: string)
+remodel.writePlaceFile(path: string, instance: DataModel)
 ```
 
 Saves an `rbxlx` file out of the given `DataModel` instance.
@@ -134,7 +134,7 @@ Throws on error.
 
 ### `remodel.writeModelFile`
 ```
-remodel.writeModelFile(instance: Instance, path: string)
+remodel.writeModelFile(path: string, instance: Instance)
 ```
 
 Saves an `rbxmx` or `rbxm` (0.4.0+) file out of the given `Instance`.
