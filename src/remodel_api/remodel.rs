@@ -573,7 +573,7 @@ impl UserData for Remodel {
             let meta = fs::metadata(path).map_err(mlua::Error::external)?;
             Ok(meta.is_dir())
         });
-        
+
         methods.add_function("removeFile", |_context, path: String| {
             fs::remove_file(path).map_err(mlua::Error::external)
         });
@@ -581,6 +581,5 @@ impl UserData for Remodel {
         methods.add_function("removeDir", |_context, path: String| {
             fs::remove_dir_all(path).map_err(mlua::Error::external)
         });
-
     }
 }
