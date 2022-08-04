@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 * **Breaking:** Reordered parameters of `remodel.writeModelFile` and `remodel.writePlaceFile` to accept path first, then content ([#81](https://github.com/rojo-rbx/remodel/pull/81)).
+* Added `remodel.removeFile(path)` and `remodel.removeDir(path)` ([#80](https://github.com/rojo-rbx/remodel/pull/80)).
 
 ## 0.10.0 (2022-06-13)
 * Switched from `rlua` to `mlua`, which should improve Lua performance slightly. ([#73])

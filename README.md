@@ -223,6 +223,17 @@ Writes the file at the given path.
 
 Throws on error.
 
+### `remodel.removeFile`
+```
+remodel.removeFile(path: string)
+```
+
+Removes the file at the given path.
+
+This is a thin wrapper around Rust's [`fs::remove_file`](https://doc.rust-lang.org/std/fs/fn.remove_file.html) function.
+
+Throws on error.
+
 ### `remodel.createDirAll`
 ```
 remodel.createDirAll(path: string)
@@ -231,6 +242,17 @@ remodel.createDirAll(path: string)
 Makes a directory at the given path, as well as all parent directories that do not yet exist.
 
 This is a thin wrapper around Rust's [`fs::create_dir_all`](https://doc.rust-lang.org/std/fs/fn.create_dir_all.html) function. Similar to `mkdir -p` from Unix.
+
+Throws on error.
+
+### `remodel.removeDir`
+```
+remodel.removeDir(path: string)
+```
+
+Removes a directory at the given path.
+
+This is a thin wrapper around Rust's [`fs::remove_dir_all`](https://doc.rust-lang.org/std/fs/fn.remove_dir_all.html) function.
 
 Throws on error.
 
