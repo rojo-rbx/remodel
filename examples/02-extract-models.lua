@@ -13,7 +13,7 @@ local Models = game.ReplicatedStorage.Models
 remodel.createDirAll("temp/models")
 
 for _, model in ipairs(Models:GetChildren()) do
-	remodel.writeModelFile(model, "temp/models/" .. model.Name .. ".rbxmx")
+	remodel.writeModelFile("temp/models/" .. model.Name .. ".rbxmx", model)
 end
 
 -- And that's it!

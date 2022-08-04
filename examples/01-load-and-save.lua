@@ -9,4 +9,4 @@ local stringValue = root:FindFirstChild("String")
 print("Found string value: ", stringValue.Name)
 
 -- We can save models back to disk with remodel.writeModelFile
-remodel.writeModelFile(stringValue, "temp/just-a-stringvalue.rbxmx")
+remodel.writeModelFile("temp/just-a-stringvalue.rbxmx", stringValue)

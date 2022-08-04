@@ -496,7 +496,7 @@ impl UserData for Remodel {
 
         methods.add_function(
             "writePlaceFile",
-            |_context, (instance, lua_path): (LuaInstance, String)| {
+            |_context, (lua_path, instance): (String, LuaInstance)| {
                 let path = Path::new(&lua_path);
 
                 match path.extension().and_then(OsStr::to_str) {
@@ -512,7 +512,7 @@ impl UserData for Remodel {
 
         methods.add_function(
             "writeModelFile",
-            |_context, (instance, lua_path): (LuaInstance, String)| {
+            |_context, (lua_path, instance): (String, LuaInstance)| {
                 let path = Path::new(&lua_path);
 
                 match path.extension().and_then(OsStr::to_str) {
