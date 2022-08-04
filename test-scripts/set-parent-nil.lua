@@ -10,7 +10,7 @@ stringValue.Parent = nil
 assert(stringValue.Parent == nil)
 assert(root:FindFirstChild("String") == nil)
 
-remodel.writeModelFile(stringValue, "temp/written-from-nil.rbxmx")
+remodel.writeModelFile("temp/written-from-nil.rbxmx", stringValue)
 
 local reloaded = remodel.readModelFile("temp/written-from-nil.rbxmx")[1]
 

@@ -6,4 +6,4 @@ local outputGame = remodel.readPlaceFile("output-place.rbxlx");
 outputGame.Workspace.Terrain:Destroy()
 inputGame.Workspace.Terrain.Parent = outputGame.Workspace
 
-remodel.writePlaceFile(outputGame, "output-place-updated.rbxlx")
+remodel.writePlaceFile("output-place-updated.rbxlx", outputGame)

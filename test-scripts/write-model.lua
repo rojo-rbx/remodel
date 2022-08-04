@@ -3,7 +3,7 @@ assert(root.Name == "Root")
 
 local stringValue = root:FindFirstChild("String")
 
-remodel.writeModelFile(stringValue, "temp/just-stringvalue.rbxmx")
+remodel.writeModelFile("temp/just-stringvalue.rbxmx", stringValue)
 
 local stringValue2 = remodel.readModelFile("temp/just-stringvalue.rbxmx")[1]
 assert(stringValue2.Name == "String")

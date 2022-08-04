@@ -4,7 +4,7 @@ assert(root.Name == "Example Model")
 local module = root:FindFirstChild("SomeModule")
 assert(module.ClassName == "ModuleScript")
 
-remodel.writeModelFile(module, "temp/just-module.rbxm")
+remodel.writeModelFile("temp/just-module.rbxm", module)
 
 local module2 = remodel.readModelFile("temp/just-module.rbxm")[1]
 assert(module2.ClassName == "ModuleScript")
