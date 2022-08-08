@@ -115,11 +115,20 @@ fn load_script(script: &str) -> io::Result<(String, String)> {
 
     log::trace!("Reading script from {}", script);
 
-    match fs::read_to_string(script) {
+    let file_path = Path::new(script);
+    let file_contents = match file_path {
+        path if path.is_file() => fs::read_to_string(path),
+        _ => io::Result::Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("'{}' is a directory, not a file", script),
+        )),
+    };
+
+    match file_contents {
         // If the input is an exact file name that exists, we'll run that
         // script.
         Ok(contents) => {
-            let file_name = Path::new(script)
+            let file_name = file_path
                 .file_name()
                 .unwrap()
                 .to_string_lossy()
