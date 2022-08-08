@@ -268,11 +268,10 @@ impl Remodel {
                 .map_err(mlua::Error::external)?,
 
             None => {
-                let first_few_bytes: Vec<_> = body.iter().copied().take(20).collect();
-                let snippet = std::str::from_utf8(first_few_bytes.as_slice());
+                let snippet = std::str::from_utf8(body.as_slice());
 
                 let message = format!(
-                    "Unknown response trying to read model asset ID {}. First few bytes:\n{:?}",
+                    "Unknown response trying to read model asset ID {}. Response is:\n{:?}",
                     asset_id, snippet
                 );
 
