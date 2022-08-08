@@ -19,6 +19,24 @@ impl LuaInstance {
         LuaInstance { tree, id }
     }
 
+    fn clear_all_children(&self) -> mlua::Result<()> {
+        let mut tree = self.tree.lock().unwrap();
+
+        let instance = tree.get_by_ref(self.id).ok_or_else(|| {
+            mlua::Error::external("Cannot call ClearAllChildren() on a destroyed instance")
+        })?;
+
+        let children: Vec<Ref> = instance
+            .children()
+            .to_vec();
+
+        for child_id in children {
+            tree.destroy(child_id);
+        }
+
+        Ok(())
+    }
+
     fn clone_instance(&self) -> mlua::Result<LuaInstance> {
         let mut tree = self.tree.lock().unwrap();
 
@@ -372,6 +390,8 @@ impl LuaInstance {
 
 impl UserData for LuaInstance {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_method("ClearAllChildren", |_context, this, _args: ()| this.clear_all_children());
+
         methods.add_method("Clone", |_context, this, _args: ()| this.clone_instance());
 
         methods.add_method("Destroy", |_context, this, _args: ()| this.destroy());
