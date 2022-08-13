@@ -116,15 +116,8 @@ fn load_script(script: &str) -> io::Result<(String, String)> {
     log::trace!("Reading script from {}", script);
 
     let file_path = Path::new(script);
-    let file_contents = match file_path {
-        path if path.is_file() => fs::read_to_string(path),
-        _ => io::Result::Err(io::Error::new(
-            io::ErrorKind::NotFound,
-            format!("'{}' is a directory, not a file", script),
-        )),
-    };
 
-    match file_contents {
+    match fs::read_to_string(file_path) {
         // If the input is an exact file name that exists, we'll run that
         // script.
         Ok(contents) => {
@@ -138,9 +131,9 @@ fn load_script(script: &str) -> io::Result<(String, String)> {
         }
 
         Err(full_path_err) => {
-            // If the given script was not a file that exists, we'll also try to
-            // search for it in `.remodel/<script>.lua`.
-            if full_path_err.kind() == io::ErrorKind::NotFound {
+            // If the given script was not a file that exists, or if it was a directory,
+            // we'll also try to search for it in `.remodel/<script>.lua`.
+            if full_path_err.kind() == io::ErrorKind::NotFound || file_path.is_dir() {
                 // If the script contains path-like components, the user
                 // definitely meant it as a path. To avoid path traversal
                 // issues, we won't try to check `.remodel/`.
