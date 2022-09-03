@@ -1,4 +1,3 @@
-mod auth_cookie;
 mod remodel_api;
 mod remodel_context;
 mod roblox_api;
@@ -17,10 +16,7 @@ use backtrace::Backtrace;
 use mlua::{Lua, MultiValue, ToLua};
 use structopt::StructOpt;
 
-use crate::{
-    auth_cookie::get_auth_cookie, remodel_api::RemodelApi, remodel_context::RemodelContext,
-    roblox_api::RobloxApi,
-};
+use crate::{remodel_api::RemodelApi, remodel_context::RemodelContext, roblox_api::RobloxApi};
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -75,7 +71,7 @@ fn main() {
 }
 
 fn run(options: Options) -> Result<(), anyhow::Error> {
-    let auth_cookie = options.auth_cookie.or_else(get_auth_cookie);
+    let auth_cookie = options.auth_cookie.or_else(rbx_cookie::get_value);
 
     match options.subcommand {
         Subcommand::Run { script, args } => {
