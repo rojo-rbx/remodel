@@ -1,6 +1,9 @@
 # Remodel Changelog
 
 ## Unreleased Changes
+* Added APIs for uploading new models and places:
+	* `remodel.writeNewPlaceAsset`
+	* `remodel.writeNewModelAsset`
 
 ## 0.11.0 (2022-09-16)
 * **Breaking:** Reordered parameters of `remodel.writeModelFile` and `remodel.writePlaceFile` to accept path first, then content ([#81]).
