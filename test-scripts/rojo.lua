@@ -13,4 +13,4 @@ local project = {
 
 local tree = rojo.buildProject(project)
 
-remodel.writeModelFile(tree, "temp/rojo-output.rbxmx")
+remodel.writeModelFile("temp/rojo-output.rbxmx", tree)

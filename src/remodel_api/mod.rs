@@ -1,7 +1,7 @@
 mod json;
 mod remodel;
 
-use rlua::Context;
+use mlua::Lua;
 
 pub use json::Json;
 pub use remodel::Remodel;
@@ -9,7 +9,7 @@ pub use remodel::Remodel;
 pub struct RemodelApi;
 
 impl RemodelApi {
-    pub fn inject(context: Context<'_>) -> rlua::Result<()> {
+    pub fn inject(context: &Lua) -> mlua::Result<()> {
         context.globals().set("remodel", Remodel)?;
         context.globals().set("json", Json)?;
 

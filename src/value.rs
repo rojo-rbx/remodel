@@ -1,17 +1,17 @@
 //! Defines how to turn Variant values into Lua values and back.
 
+use mlua::{
+    Lua, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
+};
 use rbx_dom_weak::types::{
     CFrame, Color3, Color3uint8, Variant, VariantType, Vector3, Vector3int16,
-};
-use rlua::{
-    Context, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
 use std::fmt;
 use std::ops;
 
-pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResult<LuaValue<'lua>> {
+pub fn rbxvalue_to_lua<'lua>(context: &'lua Lua, value: &Variant) -> LuaResult<LuaValue<'lua>> {
     fn unimplemented_type(name: &str) -> LuaResult<LuaValue<'_>> {
-        Err(rlua::Error::external(format!(
+        Err(mlua::Error::external(format!(
             "Values of type {} are not yet implemented.",
             name
         )))
@@ -48,7 +48,7 @@ pub fn rbxvalue_to_lua<'lua>(context: Context<'lua>, value: &Variant) -> LuaResu
         Variant::Vector3(_) => unimplemented_type("Vector3"),
         Variant::Vector3int16(value) => Vector3int16Value::new(*value).to_lua(context),
 
-        _ => Err(rlua::Error::external(format!(
+        _ => Err(mlua::Error::external(format!(
             "The type '{:?}' is unknown to Remodel, please file a bug!",
             value.ty()
         ))),
@@ -98,11 +98,11 @@ pub fn lua_to_rbxvalue(ty: VariantType, value: LuaValue<'_>) -> LuaResult<Varian
 
         (VariantType::BinaryString, LuaValue::String(lua_string)) => Ok(Variant::BinaryString(
             base64::decode(lua_string)
-                .map_err(rlua::Error::external)?
+                .map_err(mlua::Error::external)?
                 .into(),
         )),
 
-        (_, unknown_value) => Err(rlua::Error::external(format!(
+        (_, unknown_value) => Err(mlua::Error::external(format!(
             "The Lua value {:?} could not be converted to the Roblox type {:?}",
             unknown_value, ty
         ))),
@@ -158,16 +158,12 @@ impl Color3Value {
         Self(value)
     }
 
-    fn meta_index<'lua>(
-        &self,
-        context: Context<'lua>,
-        key: &str,
-    ) -> rlua::Result<rlua::Value<'lua>> {
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
         match key {
             "r" | "R" => self.0.r.to_lua(context),
             "g" | "G" => self.0.g.to_lua(context),
             "b" | "B" => self.0.b.to_lua(context),
-            _ => Err(rlua::Error::external(format!(
+            _ => Err(mlua::Error::external(format!(
                 "'{}' is not a valid member of Color3",
                 key
             ))),
@@ -240,16 +236,12 @@ impl Vector3Value {
         self.0
     }
 
-    fn meta_index<'lua>(
-        &self,
-        context: Context<'lua>,
-        key: &str,
-    ) -> rlua::Result<rlua::Value<'lua>> {
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
         match key {
             "X" => self.0.x.to_lua(context),
             "Y" => self.0.y.to_lua(context),
             "Z" => self.0.z.to_lua(context),
-            _ => Err(rlua::Error::external(format!(
+            _ => Err(mlua::Error::external(format!(
                 "'{}' is not a valid member of Vector3",
                 key
             ))),
@@ -320,16 +312,12 @@ impl Vector3int16Value {
         Self(value)
     }
 
-    fn meta_index<'lua>(
-        &self,
-        context: Context<'lua>,
-        key: &str,
-    ) -> rlua::Result<rlua::Value<'lua>> {
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
         match key {
             "X" => self.0.x.to_lua(context),
             "Y" => self.0.y.to_lua(context),
             "Z" => self.0.z.to_lua(context),
-            _ => Err(rlua::Error::external(format!(
+            _ => Err(mlua::Error::external(format!(
                 "'{}' is not a valid member of Vector3",
                 key
             ))),
@@ -394,11 +382,7 @@ impl CFrameValue {
         Self(value)
     }
 
-    fn meta_index<'lua>(
-        &self,
-        context: Context<'lua>,
-        key: &str,
-    ) -> rlua::Result<rlua::Value<'lua>> {
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
         match key {
             "X" => self.0.position.x.to_lua(context),
             "Y" => self.0.position.y.to_lua(context),
@@ -424,7 +408,7 @@ impl CFrameValue {
             "XVector" => Vector3Value::new(self.0.orientation.x).to_lua(context),
             "YVector" => Vector3Value::new(self.0.orientation.y).to_lua(context),
             "ZVector" => Vector3Value::new(self.0.orientation.z).to_lua(context),
-            _ => Err(rlua::Error::external(format!(
+            _ => Err(mlua::Error::external(format!(
                 "'{}' is not a valid member of CFrame",
                 key
             ))),

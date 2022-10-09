@@ -1,5 +1,5 @@
+use mlua::{UserData, UserDataMethods, Value as LuaValue};
 use rbx_dom_weak::types::{CFrame, Matrix3, Vector3};
-use rlua::{UserData, UserDataMethods, Value as LuaValue};
 
 use crate::value::{CFrameValue, Vector3Value};
 
@@ -62,7 +62,7 @@ impl UserData for CFrameUserData {
 
                 match (x, y, z) {
                     (Some(x), Some(y), Some(z)) => Ok(Self::from_position(x, y, z)),
-                    _ => Err(rlua::Error::external(
+                    _ => Err(mlua::Error::external(
                         "invalid argument #1 to 'new' (Vector3 expected)",
                     )),
                 }

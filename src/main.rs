@@ -1,4 +1,3 @@
-mod auth_cookie;
 mod remodel_api;
 mod remodel_context;
 mod roblox_api;
@@ -14,13 +13,10 @@ use std::{
 };
 
 use backtrace::Backtrace;
-use rlua::{Lua, MultiValue, ToLua};
+use mlua::{Lua, MultiValue, ToLua};
 use structopt::StructOpt;
 
-use crate::{
-    auth_cookie::get_auth_cookie, remodel_api::RemodelApi, remodel_context::RemodelContext,
-    roblox_api::RobloxApi,
-};
+use crate::{remodel_api::RemodelApi, remodel_context::RemodelContext, roblox_api::RobloxApi};
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -79,28 +75,26 @@ fn main() {
 }
 
 fn run(options: Options) -> Result<(), anyhow::Error> {
-    let auth_cookie = options.auth_cookie.or_else(get_auth_cookie);
     let api_key = options.api_key;
+    let auth_cookie = options.auth_cookie.or_else(rbx_cookie::get_value);
 
     match options.subcommand {
         Subcommand::Run { script, args } => {
             let (contents, chunk_name) = load_script(&script)?;
             let lua = Lua::new();
 
-            lua.context(move |context| {
-                let lua_args = args
-                    .into_iter()
-                    .map(|value| value.to_lua(context))
-                    .collect::<Result<Vec<_>, _>>()?;
+            let lua_args = args
+                .into_iter()
+                .map(|value| value.to_lua(&lua))
+                .collect::<Result<Vec<_>, _>>()?;
 
-                RemodelContext::new(auth_cookie, api_key).inject(context)?;
+            RemodelContext::new(auth_cookie, api_key).inject(&lua)?;
 
-                RemodelApi::inject(context)?;
-                RobloxApi::inject(context)?;
+            RemodelApi::inject(&lua)?;
+            RobloxApi::inject(&lua)?;
 
-                let chunk = context.load(&contents).set_name(&chunk_name)?;
-                chunk.call(MultiValue::from_vec(lua_args))
-            })?;
+            let chunk = lua.load(&contents).set_name(&chunk_name)?;
+            chunk.call(MultiValue::from_vec(lua_args))?;
 
             Ok(())
         }
@@ -122,11 +116,13 @@ fn load_script(script: &str) -> io::Result<(String, String)> {
 
     log::trace!("Reading script from {}", script);
 
-    match fs::read_to_string(script) {
+    let file_path = Path::new(script);
+
+    match fs::read_to_string(file_path) {
         // If the input is an exact file name that exists, we'll run that
         // script.
         Ok(contents) => {
-            let file_name = Path::new(script)
+            let file_name = file_path
                 .file_name()
                 .unwrap()
                 .to_string_lossy()
@@ -136,9 +132,9 @@ fn load_script(script: &str) -> io::Result<(String, String)> {
         }
 
         Err(full_path_err) => {
-            // If the given script was not a file that exists, we'll also try to
-            // search for it in `.remodel/<script>.lua`.
-            if full_path_err.kind() == io::ErrorKind::NotFound {
+            // If the given script was not a file that exists, or if it was a directory,
+            // we'll also try to search for it in `.remodel/<script>.lua`.
+            if full_path_err.kind() == io::ErrorKind::NotFound || file_path.is_dir() {
                 // If the script contains path-like components, the user
                 // definitely meant it as a path. To avoid path traversal
                 // issues, we won't try to check `.remodel/`.

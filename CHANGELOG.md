@@ -2,6 +2,25 @@
 
 ## Unreleased Changes
 
+## 0.11.0 (2022-09-16)
+* **Breaking:** Reordered parameters of `remodel.writeModelFile` and `remodel.writePlaceFile` to accept path first, then content ([#81]).
+* Added `Instance:ClearAllChildren()`. ([#84])
+* Added `remodel.removeFile(path)` and `remodel.removeDir(path)`. ([#80])
+* Fixed behavior of reading files in `.remodel` directory. ([#83])
+* Changed to `rbx_cookie` for authentication. ([#87])
+
+[#80]: https://github.com/rojo-rbx/remodel/pull/80
+[#81]: https://github.com/rojo-rbx/remodel/pull/81
+[#83]: https://github.com/rojo-rbx/remodel/pull/83
+[#84]: https://github.com/rojo-rbx/remodel/pull/84
+[#87]: https://github.com/rojo-rbx/remodel/pull/87
+
+## 0.10.0 (2022-06-13)
+* Switched from `rlua` to `mlua`, which should improve Lua performance slightly. ([#73])
+* Updated all dependencies to improve Roblox compatibility.
+
+[#73]: https://github.com/rojo-rbx/remodel/pull/73
+
 ## 0.9.1 (2021-10-11)
 * Updated to latest rbx-dom libraries.
 * Increased Roblox API request timeout from 30 seconds to 3 minutes. ([#63])

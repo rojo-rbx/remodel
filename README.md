@@ -22,14 +22,14 @@ Remodel can be installed with Foreman, a toolchain manager for Roblox projects:
 
 ```toml
 [tools]
-remodel = { source = "rojo-rbx/remodel", version = "0.9.1" }
+remodel = { source = "rojo-rbx/remodel", version = "0.10.0" }
 ```
 
 ### From GitHub Releases
 You can download pre-built binaries from [Remodel's GitHub Releases page](https://github.com/rojo-rbx/remodel/releases).
 
 ### From crates.io
-You'll need Rust 1.46.0 or newer.
+You'll need Rust 1.56.0 or newer.
 
 ```bash
 cargo install remodel
@@ -52,7 +52,7 @@ local Models = game.ReplicatedStorage.Models
 
 for _, model in ipairs(Models:GetChildren()) do
 	-- Save out each child as an rbxmx model
-	remodel.writeModelFile(model, "models/" .. model.Name .. ".rbxmx")
+	remodel.writeModelFile("models/" .. model.Name .. ".rbxmx", model)
 end
 ```
 
@@ -123,7 +123,7 @@ Throws on error.
 
 ### `remodel.writePlaceFile`
 ```
-remodel.writePlaceFile(instance: DataModel, path: string)
+remodel.writePlaceFile(path: string, instance: DataModel)
 ```
 
 Saves an `rbxlx` file out of the given `DataModel` instance.
@@ -134,7 +134,7 @@ Throws on error.
 
 ### `remodel.writeModelFile`
 ```
-remodel.writeModelFile(instance: Instance, path: string)
+remodel.writeModelFile(path: string, instance: Instance)
 ```
 
 Saves an `rbxmx` or `rbxm` (0.4.0+) file out of the given `Instance`.
@@ -223,6 +223,17 @@ Writes the file at the given path.
 
 Throws on error.
 
+### `remodel.removeFile`
+```
+remodel.removeFile(path: string)
+```
+
+Removes the file at the given path.
+
+This is a thin wrapper around Rust's [`fs::remove_file`](https://doc.rust-lang.org/std/fs/fn.remove_file.html) function.
+
+Throws on error.
+
 ### `remodel.createDirAll`
 ```
 remodel.createDirAll(path: string)
@@ -231,6 +242,17 @@ remodel.createDirAll(path: string)
 Makes a directory at the given path, as well as all parent directories that do not yet exist.
 
 This is a thin wrapper around Rust's [`fs::create_dir_all`](https://doc.rust-lang.org/std/fs/fn.create_dir_all.html) function. Similar to `mkdir -p` from Unix.
+
+Throws on error.
+
+### `remodel.removeDir`
+```
+remodel.removeDir(path: string)
+```
+
+Removes a directory at the given path.
+
+This is a thin wrapper around Rust's [`fs::remove_dir_all`](https://doc.rust-lang.org/std/fs/fn.remove_dir_all.html) function.
 
 Throws on error.
 
