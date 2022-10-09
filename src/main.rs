@@ -41,6 +41,15 @@ struct Options {
     /// Can also be passed via the REMODEL_AUTH environment variable.
     #[structopt(long("auth"), env("REMODEL_AUTH"), hide_env_values(true), global(true))]
     auth_cookie: Option<String>,
+
+    /// The Roblox Cloud API key to use
+    #[structopt(
+        long("api-key"),
+        env("REMODEL_API_KEY"),
+        hide_env_values(true),
+        global(true)
+    )]
+    api_key: Option<String>,
 }
 
 #[derive(Debug, StructOpt)]
@@ -71,6 +80,7 @@ fn main() {
 }
 
 fn run(options: Options) -> Result<(), anyhow::Error> {
+    let api_key = options.api_key;
     let auth_cookie = options.auth_cookie.or_else(rbx_cookie::get_value);
 
     match options.subcommand {
@@ -83,7 +93,7 @@ fn run(options: Options) -> Result<(), anyhow::Error> {
                 .map(|value| value.to_lua(&lua))
                 .collect::<Result<Vec<_>, _>>()?;
 
-            RemodelContext::new(auth_cookie).inject(&lua)?;
+            RemodelContext::new(auth_cookie, api_key).inject(&lua)?;
 
             RemodelApi::inject(&lua)?;
             RobloxApi::inject(&lua)?;
