@@ -43,7 +43,12 @@ struct Options {
     auth_cookie: Option<String>,
 
     /// The Roblox Cloud API key to use
-    #[structopt(long("api-key"), env("REMODEL_API_KEY"), hide_env_values(true), global(true))]
+    #[structopt(
+        long("api-key"),
+        env("REMODEL_API_KEY"),
+        hide_env_values(true),
+        global(true)
+    )]
     api_key: Option<String>,
 }
 
