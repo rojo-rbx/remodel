@@ -21,6 +21,8 @@ use crate::{
     value::{lua_to_rbxvalue, rbxvalue_to_lua, type_from_str},
 };
 
+use super::StringLuaInstanceBackCompat;
+
 fn xml_encode_options() -> rbx_xml::EncodeOptions {
     rbx_xml::EncodeOptions::new().property_behavior(rbx_xml::EncodePropertyBehavior::WriteUnknown)
 }
@@ -569,7 +571,7 @@ impl UserData for Remodel {
 
         methods.add_function(
             "writePlaceFile",
-            |_context, (lua_path, instance): (String, LuaInstance)| {
+            |_context, StringLuaInstanceBackCompat((lua_path, instance)): StringLuaInstanceBackCompat| {
                 let path = Path::new(&lua_path);
 
                 match path.extension().and_then(OsStr::to_str) {
@@ -585,7 +587,7 @@ impl UserData for Remodel {
 
         methods.add_function(
             "writeModelFile",
-            |_context, (lua_path, instance): (String, LuaInstance)| {
+            |_context, StringLuaInstanceBackCompat((lua_path, instance)): StringLuaInstanceBackCompat| {
                 let path = Path::new(&lua_path);
 
                 match path.extension().and_then(OsStr::to_str) {
