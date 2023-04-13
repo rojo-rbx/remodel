@@ -13,24 +13,29 @@ use std::{
 };
 
 use backtrace::Backtrace;
+use clap::{ArgAction, Parser};
 use mlua::{Lua, MultiValue, ToLua};
-use structopt::StructOpt;
 
 use crate::{remodel_api::RemodelApi, remodel_context::RemodelContext, roblox_api::RobloxApi};
 
-#[derive(Debug, StructOpt)]
-#[structopt(
-    about = env!("CARGO_PKG_DESCRIPTION"),
-    author = env!("CARGO_PKG_AUTHORS"),
-)]
+const HELP_TEMPLATE: &str = "\
+{before-help}{name} {version}
+{author-with-newline}{about-with-newline}
+{usage-heading} {usage}
+
+{all-args}{after-help}
+";
+
+#[derive(Parser, Debug)]
+#[command(about, author, version, help_template(HELP_TEMPLATE))]
 struct Options {
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     subcommand: Subcommand,
 
     /// Enables more verbose logging.
     ///
     /// Can be specified up to 3 times to increase verbosity.
-    #[structopt(long("verbose"), short, global(true), parse(from_occurrences))]
+    #[arg(long("verbose"), short, global(true), action(ArgAction::Count))]
     verbosity: u8,
 
     /// The .ROBLOSECURITY cookie to use for authenticating to the Roblox API.
@@ -39,11 +44,13 @@ struct Options {
     /// Windows if it is installed and you are logged in.
     ///
     /// Can also be passed via the REMODEL_AUTH environment variable.
-    #[structopt(long("auth"), env("REMODEL_AUTH"), hide_env_values(true), global(true))]
+    #[arg(long("auth"), env("REMODEL_AUTH"), hide_env_values(true), global(true))]
     auth_cookie: Option<String>,
 
-    /// The Roblox Cloud API key to use
-    #[structopt(
+    /// The Roblox Cloud API key to use.
+    ///
+    /// Can also be passed via the REMODEL_API_KEY environment variable.
+    #[arg(
         long("api-key"),
         env("REMODEL_API_KEY"),
         hide_env_values(true),
@@ -52,7 +59,7 @@ struct Options {
     api_key: Option<String>,
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Parser, Debug)]
 enum Subcommand {
     /// Run a Lua 5.3 script by path or defined in a .remodel directory.
     ///
@@ -69,7 +76,7 @@ enum Subcommand {
 }
 
 fn main() {
-    let options = Options::from_args();
+    let options = Options::parse();
     initialize_logger(options.verbosity);
     install_panic_hook();
 
