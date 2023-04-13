@@ -4,7 +4,7 @@ use mlua::{
     Lua, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
 use rbx_dom_weak::types::{
-    CFrame, Color3, Color3uint8, Variant, VariantType, Vector3, Vector3int16,
+    CFrame, Color3, Color3uint8, Variant, VariantType, Vector2, Vector2int16, Vector3, Vector3int16,
 };
 use std::fmt;
 use std::ops;
@@ -43,8 +43,8 @@ pub fn rbxvalue_to_lua<'lua>(context: &'lua Lua, value: &Variant) -> LuaResult<L
         Variant::String(value) => value.as_str().to_lua(context),
         Variant::UDim(_) => unimplemented_type("UDim"),
         Variant::UDim2(_) => unimplemented_type("UDim2"),
-        Variant::Vector2(_) => unimplemented_type("Vector2"),
-        Variant::Vector2int16(_) => unimplemented_type("Vector2int16"),
+        Variant::Vector2(value) => Vector2Value::new(*value).to_lua(context),
+        Variant::Vector2int16(value) => Vector2int16Value::new(*value).to_lua(context),
         Variant::Vector3(value) => Vector3Value::new(*value).to_lua(context),
         Variant::Vector3int16(value) => Vector3int16Value::new(*value).to_lua(context),
 
@@ -85,6 +85,15 @@ pub fn lua_to_rbxvalue(ty: VariantType, value: LuaValue<'_>) -> LuaResult<Varian
         (VariantType::Color3uint8, LuaValue::UserData(ref user_data)) => {
             let color = &*user_data.borrow::<Color3uint8Value>()?;
             Ok(color.into())
+        }
+
+        (VariantType::Vector2, LuaValue::UserData(ref user_data)) => {
+            let vector2 = &*user_data.borrow::<Vector2Value>()?;
+            Ok(vector2.into())
+        }
+        (VariantType::Vector2int16, LuaValue::UserData(ref user_data)) => {
+            let vector2int16 = &*user_data.borrow::<Vector2int16Value>()?;
+            Ok(vector2int16.into())
         }
 
         (VariantType::Vector3, LuaValue::UserData(ref user_data)) => {
@@ -212,6 +221,146 @@ impl From<&Color3uint8Value> for Variant {
 
 impl UserData for Color3uint8Value {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.to_string().to_lua(context)
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Vector2Value(Vector2);
+
+impl fmt::Display for Vector2Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}, {}", self.0.x, self.0.y)
+    }
+}
+
+impl Vector2Value {
+    pub fn new(value: Vector2) -> Self {
+        Self(value)
+    }
+
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
+        match key {
+            "X" => self.0.x.to_lua(context),
+            "Y" => self.0.y.to_lua(context),
+            _ => Err(mlua::Error::external(format!(
+                "'{}' is not a valid member of Vector2",
+                key
+            ))),
+        }
+    }
+}
+
+impl ops::Add for Vector2Value {
+    type Output = Vector2Value;
+    fn add(self, other: Self) -> Self::Output {
+        Vector2Value::new(Vector2::new(self.0.x + other.0.x, self.0.y + other.0.y))
+    }
+}
+
+impl ops::Sub for Vector2Value {
+    type Output = Vector2Value;
+    fn sub(self, other: Self) -> Self::Output {
+        Vector2Value::new(Vector2::new(self.0.x - other.0.x, self.0.y - other.0.y))
+    }
+}
+
+impl From<&Vector2Value> for Variant {
+    fn from(vector: &Vector2Value) -> Variant {
+        Variant::Vector2(vector.0)
+    }
+}
+
+impl UserData for Vector2Value {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Self| {
+            (this.0 == rhs.0).to_lua(context)
+        });
+        methods.add_meta_method(MetaMethod::Add, |context, this, rhs: Self| {
+            (*this + rhs).to_lua(context)
+        });
+        methods.add_meta_method(MetaMethod::Sub, |context, this, rhs: Self| {
+            (*this - rhs).to_lua(context)
+        });
+
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
+        });
+        methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
+            this.to_string().to_lua(context)
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Vector2int16Value(Vector2int16);
+
+impl fmt::Display for Vector2int16Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}, {}", self.0.x, self.0.y)
+    }
+}
+
+impl Vector2int16Value {
+    pub fn new(value: Vector2int16) -> Self {
+        Self(value)
+    }
+
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
+        match key {
+            "X" => self.0.x.to_lua(context),
+            "Y" => self.0.y.to_lua(context),
+            _ => Err(mlua::Error::external(format!(
+                "'{}' is not a valid member of Vector2int16",
+                key
+            ))),
+        }
+    }
+}
+
+impl ops::Add for Vector2int16Value {
+    type Output = Vector2int16Value;
+    fn add(self, other: Self) -> Self::Output {
+        Vector2int16Value::new(Vector2int16::new(
+            self.0.x + other.0.x,
+            self.0.y + other.0.y,
+        ))
+    }
+}
+
+impl ops::Sub for Vector2int16Value {
+    type Output = Vector2int16Value;
+    fn sub(self, other: Self) -> Self::Output {
+        Vector2int16Value::new(Vector2int16::new(
+            self.0.x - other.0.x,
+            self.0.y - other.0.y,
+        ))
+    }
+}
+
+impl From<&Vector2int16Value> for Variant {
+    fn from(vector: &Vector2int16Value) -> Variant {
+        Variant::Vector2int16(vector.0)
+    }
+}
+
+impl UserData for Vector2int16Value {
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::Eq, |context, this, rhs: Self| {
+            (this.0 == rhs.0).to_lua(context)
+        });
+        methods.add_meta_method(MetaMethod::Add, |context, this, rhs: Self| {
+            (*this + rhs).to_lua(context)
+        });
+        methods.add_meta_method(MetaMethod::Sub, |context, this, rhs: Self| {
+            (*this - rhs).to_lua(context)
+        });
+
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
+        });
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
             this.to_string().to_lua(context)
         });

@@ -8,7 +8,7 @@ use rbx_dom_weak::InstanceBuilder;
 
 use crate::{
     remodel_context::RemodelContext,
-    value::{Color3Value, Vector3Value, Vector3int16Value},
+    value::{Color3Value, Vector2Value, Vector2int16Value, Vector3Value, Vector3int16Value},
 };
 
 use cframe::CFrameUserData;
@@ -19,6 +19,8 @@ pub struct RobloxApi;
 impl RobloxApi {
     pub fn inject(context: &Lua) -> mlua::Result<()> {
         context.globals().set("Instance", Instance)?;
+        context.globals().set("Vector2", Vector2)?;
+        context.globals().set("Vector2int16", Vector2int16)?;
         context.globals().set("Vector3", Vector3)?;
         context.globals().set("Vector3int16", Vector3int16)?;
         context.globals().set("Color3", Color3)?;
@@ -52,6 +54,31 @@ impl UserData for Instance {
 
             Ok(LuaInstance::new(Arc::clone(&master_tree), id))
         });
+    }
+}
+
+struct Vector2;
+
+impl UserData for Vector2 {
+    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_function("new", |_context, (x, y): (Option<f32>, Option<f32>)| {
+            Ok(Vector2Value::new(rbx_dom_weak::types::Vector2::new(
+                x.unwrap_or(0.0),
+                y.unwrap_or(0.0),
+            )))
+        });
+    }
+}
+
+struct Vector2int16;
+
+impl UserData for Vector2int16 {
+    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_function("new", |_context, (x, y): (Option<i16>, Option<i16>)| {
+            Ok(Vector2int16Value::new(
+                rbx_dom_weak::types::Vector2int16::new(x.unwrap_or(0), y.unwrap_or(0)),
+            ))
+        })
     }
 }
 
