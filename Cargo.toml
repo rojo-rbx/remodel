@@ -3,7 +3,7 @@ name = "remodel"
 version = "0.11.0"
 description = "A tool to read, modify, and write Roblox objects."
 authors = ["Lucien Greathouse <me@lpghatguy.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 homepage = "https://github.com/rojo-rbx/remodel"
 documentation = "https://github.com/rojo-rbx/remodel"
@@ -20,27 +20,30 @@ panic = "abort"
 panic = "abort"
 
 [dependencies]
-rbx_binary = "0.6.4"
-rbx_dom_weak = "2.3.0"
-rbx_reflection = "4.2.0"
-rbx_reflection_database = "0.2.4"
-rbx_xml = "0.12.3"
-
-anyhow = "1.0.44"
-backtrace = "0.3.61"
-base64 = "0.13.0"
-log = "0.4.14"
+rbx_binary = "0.6.6"
 rbx_cookie = "0.1.2"
-reqwest = "0.9.24"
-serde = "1.0.130"
-serde_json = "1.0.68"
-structopt = "0.3.23"
+rbx_dom_weak = "2.4.0"
+rbx_reflection = "4.2.0"
+rbx_reflection_database = "0.2.5"
+rbx_xml = "0.12.4"
 
-[dependencies.mlua]
-version = "0.7.4"
-features = ["lua53", "vendored"]
+anyhow = "1.0.70"
+backtrace = "0.3.67"
+base64 = "0.21.0"
+log = "0.4.17"
+serde = "1.0.160"
+serde_json = "1.0.95"
+structopt = "0.3.26"
 
 [dependencies.env_logger]
-version = "0.7.1"
+version = "0.10.0"
 default-features = false
-features = ["termcolor", "atty"]
+features = ["auto-color"]
+
+[dependencies.mlua]
+version = "0.8.8"
+features = ["lua53", "vendored"]
+
+[dependencies.reqwest]
+version = "0.11.16"
+features = ["blocking"]

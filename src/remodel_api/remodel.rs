@@ -10,6 +10,7 @@ use std::{
 use mlua::{Lua, UserData, UserDataMethods};
 use rbx_dom_weak::{types::VariantType, InstanceBuilder, WeakDom};
 use reqwest::{
+    blocking::Client,
     header::{ACCEPT, CONTENT_TYPE, COOKIE, USER_AGENT},
     StatusCode,
 };
@@ -196,7 +197,7 @@ impl Remodel {
         let auth_cookie = re_context.auth_cookie();
         let url = format!("https://assetdelivery.roblox.com/v1/asset/?id={}", asset_id);
 
-        let client = reqwest::Client::builder()
+        let client = Client::builder()
             .timeout(Duration::from_secs(60 * 3))
             .build()
             .map_err(mlua::Error::external)?;
@@ -245,7 +246,7 @@ impl Remodel {
         let auth_cookie = re_context.auth_cookie();
         let url = format!("https://assetdelivery.roblox.com/v1/asset/?id={}", asset_id);
 
-        let client = reqwest::Client::builder()
+        let client = Client::builder()
             .timeout(Duration::from_secs(60 * 3))
             .build()
             .map_err(mlua::Error::external)?;
@@ -357,7 +358,7 @@ impl Remodel {
             )
         })?;
 
-        let client = reqwest::Client::builder()
+        let client = Client::builder()
             .timeout(Duration::from_secs(60 * 3))
             .build()
             .map_err(mlua::Error::external)?;
@@ -397,7 +398,7 @@ impl Remodel {
             asset_id
         );
 
-        let client = reqwest::Client::builder()
+        let client = Client::builder()
             .timeout(Duration::from_secs(60 * 3))
             .build()
             .map_err(mlua::Error::external)?;

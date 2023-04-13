@@ -1,13 +1,14 @@
 //! Defines how to turn Variant values into Lua values and back.
 
+use std::{fmt, ops};
+
+use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine as _};
 use mlua::{
     Lua, MetaMethod, Result as LuaResult, ToLua, UserData, UserDataMethods, Value as LuaValue,
 };
 use rbx_dom_weak::types::{
     CFrame, Color3, Color3uint8, Variant, VariantType, Vector3, Vector3int16,
 };
-use std::fmt;
-use std::ops;
 
 pub fn rbxvalue_to_lua<'lua>(context: &'lua Lua, value: &Variant) -> LuaResult<LuaValue<'lua>> {
     fn unimplemented_type(name: &str) -> LuaResult<LuaValue<'_>> {
@@ -18,9 +19,9 @@ pub fn rbxvalue_to_lua<'lua>(context: &'lua Lua, value: &Variant) -> LuaResult<L
     }
 
     match value {
-        Variant::BinaryString(value) => {
-            base64::encode(AsRef::<[u8]>::as_ref(value)).to_lua(context)
-        }
+        Variant::BinaryString(value) => BASE64_STANDARD
+            .encode(AsRef::<[u8]>::as_ref(value))
+            .to_lua(context),
         Variant::BrickColor(_) => unimplemented_type("BrickColor"),
         Variant::Bool(value) => value.to_lua(context),
         Variant::CFrame(cframe) => CFrameValue::new(*cframe).to_lua(context),
@@ -97,7 +98,8 @@ pub fn lua_to_rbxvalue(ty: VariantType, value: LuaValue<'_>) -> LuaResult<Varian
         }
 
         (VariantType::BinaryString, LuaValue::String(lua_string)) => Ok(Variant::BinaryString(
-            base64::decode(lua_string)
+            BASE64_STANDARD
+                .decode(lua_string)
                 .map_err(mlua::Error::external)?
                 .into(),
         )),
