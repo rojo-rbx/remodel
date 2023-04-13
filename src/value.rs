@@ -45,7 +45,7 @@ pub fn rbxvalue_to_lua<'lua>(context: &'lua Lua, value: &Variant) -> LuaResult<L
         Variant::UDim2(_) => unimplemented_type("UDim2"),
         Variant::Vector2(_) => unimplemented_type("Vector2"),
         Variant::Vector2int16(_) => unimplemented_type("Vector2int16"),
-        Variant::Vector3(_) => unimplemented_type("Vector3"),
+        Variant::Vector3(value) => Vector3Value::new(*value).to_lua(context),
         Variant::Vector3int16(value) => Vector3int16Value::new(*value).to_lua(context),
 
         _ => Err(mlua::Error::external(format!(
