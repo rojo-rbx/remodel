@@ -18,7 +18,7 @@ fn test_scripts() -> anyhow::Result<()> {
         let mut child = Command::new(env!("CARGO_BIN_EXE_remodel"))
             .arg("run")
             .arg(&path)
-            .args(&["arg1", "arg2", "arg3"])
+            .args(["arg1", "arg2", "arg3"])
             .stdout(Stdio::piped())
             .spawn()?;
 

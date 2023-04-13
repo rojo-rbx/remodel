@@ -23,7 +23,7 @@ pub fn rbxvalue_to_lua<'lua>(context: &'lua Lua, value: &Variant) -> LuaResult<L
         }
         Variant::BrickColor(_) => unimplemented_type("BrickColor"),
         Variant::Bool(value) => value.to_lua(context),
-        Variant::CFrame(cframe) => CFrameValue::new(*cframe).to_lua(context),
+        Variant::CFrame(value) => CFrameValue::new(*value).to_lua(context),
         Variant::Color3(value) => Color3Value::new(*value).to_lua(context),
         Variant::Color3uint8(value) => Color3uint8Value::new(*value).to_lua(context),
         Variant::ColorSequence(_) => unimplemented_type("ColorSequence"),
@@ -69,22 +69,22 @@ pub fn lua_to_rbxvalue(ty: VariantType, value: LuaValue<'_>) -> LuaResult<Varian
         (VariantType::Float32, LuaValue::Number(value)) => Ok(Variant::Float32(value as f32)),
         (VariantType::Float32, LuaValue::Integer(value)) => Ok(Variant::Float32(value as f32)),
 
-        (VariantType::Float64, LuaValue::Number(value)) => Ok(Variant::Float64(value as f64)),
+        (VariantType::Float64, LuaValue::Number(value)) => Ok(Variant::Float64(value)),
         (VariantType::Float64, LuaValue::Integer(value)) => Ok(Variant::Float64(value as f64)),
 
         (VariantType::Int32, LuaValue::Number(value)) => Ok(Variant::Int32(value as i32)),
         (VariantType::Int32, LuaValue::Integer(value)) => Ok(Variant::Int32(value as i32)),
 
         (VariantType::Int64, LuaValue::Number(value)) => Ok(Variant::Int64(value as i64)),
-        (VariantType::Int64, LuaValue::Integer(value)) => Ok(Variant::Int64(value as i64)),
+        (VariantType::Int64, LuaValue::Integer(value)) => Ok(Variant::Int64(value)),
 
         (VariantType::Color3, LuaValue::UserData(ref user_data)) => {
             let color = &*user_data.borrow::<Color3Value>()?;
             Ok(color.into())
         }
         (VariantType::Color3uint8, LuaValue::UserData(ref user_data)) => {
-            let color = &*user_data.borrow::<Color3uint8Value>()?;
-            Ok(color.into())
+            let color3uint8 = &*user_data.borrow::<Color3uint8Value>()?;
+            Ok(color3uint8.into())
         }
 
         (VariantType::Vector2, LuaValue::UserData(ref user_data)) => {
@@ -497,8 +497,8 @@ impl ops::Sub for Vector3int16Value {
 }
 
 impl From<&Vector3int16Value> for Variant {
-    fn from(color: &Vector3int16Value) -> Variant {
-        Variant::Vector3int16(color.0)
+    fn from(vector: &Vector3int16Value) -> Variant {
+        Variant::Vector3int16(vector.0)
     }
 }
 

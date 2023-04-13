@@ -37,11 +37,11 @@ impl RemodelContext {
     }
 
     pub fn auth_cookie(&self) -> Option<&str> {
-        self.auth_cookie.as_ref().map(|v| v.as_str())
+        self.auth_cookie.as_deref()
     }
 
     pub fn api_key(&self) -> Option<&str> {
-        self.api_key.as_ref().map(|v| v.as_str())
+        self.api_key.as_deref()
     }
 }
 
