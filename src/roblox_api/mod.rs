@@ -65,14 +65,14 @@ struct Color3;
 
 impl UserData for Color3 {
     fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_function("new", |_context, (x, y, z): (f32, f32, f32)| {
-            Ok(Color3Value::new(rbx_dom_weak::types::Color3::new(x, y, z)))
+        methods.add_function("new", |_context, (r, g, b): (f32, f32, f32)| {
+            Ok(Color3Value::new(rbx_dom_weak::types::Color3::new(r, g, b)))
         });
-        methods.add_function("fromRGB", |_context, (x, y, z): (f32, f32, f32)| {
+        methods.add_function("fromRGB", |_context, (r, g, b): (f32, f32, f32)| {
             Ok(Color3Value::new(rbx_dom_weak::types::Color3::new(
-                x / 255.0,
-                y / 255.0,
-                z / 255.0,
+                r / 255.0,
+                g / 255.0,
+                b / 255.0,
             )))
         });
     }
@@ -82,9 +82,9 @@ struct Color3uint8;
 
 impl UserData for Color3uint8 {
     fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_function("new", |_context, (x, y, z): (u8, u8, u8)| {
+        methods.add_function("new", |_context, (r, g, b): (u8, u8, u8)| {
             Ok(Color3uint8Value::new(
-                rbx_dom_weak::types::Color3uint8::new(x, y, z),
+                rbx_dom_weak::types::Color3uint8::new(r, g, b),
             ))
         });
     }
