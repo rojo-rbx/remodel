@@ -199,7 +199,7 @@ impl UserData for Color3Value {
 }
 
 #[derive(Debug, Clone, Copy)]
-struct Color3uint8Value(Color3uint8);
+pub struct Color3uint8Value(Color3uint8);
 
 impl fmt::Display for Color3uint8Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -210,6 +210,18 @@ impl fmt::Display for Color3uint8Value {
 impl Color3uint8Value {
     pub fn new(value: Color3uint8) -> Self {
         Self(value)
+    }
+
+    fn meta_index<'lua>(&self, context: &'lua Lua, key: &str) -> mlua::Result<mlua::Value<'lua>> {
+        match key {
+            "r" | "R" => self.0.r.to_lua(context),
+            "g" | "G" => self.0.g.to_lua(context),
+            "b" | "B" => self.0.b.to_lua(context),
+            _ => Err(mlua::Error::external(format!(
+                "'{}' is not a valid member of Color3uint8",
+                key
+            ))),
+        }
     }
 }
 
@@ -223,6 +235,10 @@ impl UserData for Color3uint8Value {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::ToString, |context, this, _arg: ()| {
             this.to_string().to_lua(context)
+        });
+
+        methods.add_meta_method(MetaMethod::Index, |context, this, key: String| {
+            this.meta_index(context, &key)
         });
     }
 }

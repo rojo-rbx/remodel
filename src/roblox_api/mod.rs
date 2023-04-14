@@ -8,7 +8,10 @@ use rbx_dom_weak::InstanceBuilder;
 
 use crate::{
     remodel_context::RemodelContext,
-    value::{Color3Value, Vector2Value, Vector2int16Value, Vector3Value, Vector3int16Value},
+    value::{
+        Color3Value, Color3uint8Value, Vector2Value, Vector2int16Value, Vector3Value,
+        Vector3int16Value,
+    },
 };
 
 use cframe::CFrameUserData;
@@ -19,11 +22,12 @@ pub struct RobloxApi;
 impl RobloxApi {
     pub fn inject(context: &Lua) -> mlua::Result<()> {
         context.globals().set("Instance", Instance)?;
+        context.globals().set("Color3", Color3)?;
+        context.globals().set("Color3uint8", Color3uint8)?;
         context.globals().set("Vector2", Vector2)?;
         context.globals().set("Vector2int16", Vector2int16)?;
         context.globals().set("Vector3", Vector3)?;
         context.globals().set("Vector3int16", Vector3int16)?;
-        context.globals().set("Color3", Color3)?;
         context.globals().set("CFrame", CFrameUserData)?;
 
         Ok(())
@@ -53,6 +57,35 @@ impl UserData for Instance {
             let id = master_handle.insert(root_id, builder);
 
             Ok(LuaInstance::new(Arc::clone(&master_tree), id))
+        });
+    }
+}
+
+struct Color3;
+
+impl UserData for Color3 {
+    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_function("new", |_context, (x, y, z): (f32, f32, f32)| {
+            Ok(Color3Value::new(rbx_dom_weak::types::Color3::new(x, y, z)))
+        });
+        methods.add_function("fromRGB", |_context, (x, y, z): (f32, f32, f32)| {
+            Ok(Color3Value::new(rbx_dom_weak::types::Color3::new(
+                x / 255.0,
+                y / 255.0,
+                z / 255.0,
+            )))
+        });
+    }
+}
+
+struct Color3uint8;
+
+impl UserData for Color3uint8 {
+    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_function("new", |_context, (x, y, z): (u8, u8, u8)| {
+            Ok(Color3uint8Value::new(
+                rbx_dom_weak::types::Color3uint8::new(x, y, z),
+            ))
         });
     }
 }
@@ -115,22 +148,5 @@ impl UserData for Vector3int16 {
                 ))
             },
         )
-    }
-}
-
-struct Color3;
-
-impl UserData for Color3 {
-    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_function("new", |_context, (x, y, z): (f32, f32, f32)| {
-            Ok(Color3Value::new(rbx_dom_weak::types::Color3::new(x, y, z)))
-        });
-        methods.add_function("fromRGB", |_context, (x, y, z): (f32, f32, f32)| {
-            Ok(Color3Value::new(rbx_dom_weak::types::Color3::new(
-                x / 255.0,
-                y / 255.0,
-                z / 255.0,
-            )))
-        });
     }
 }
