@@ -1,3 +1,6 @@
+<h1 align="center">Remodel is deprecated in favor of <a href="https://lune-org.github.io/docs">Lune</a>!<br /><a href="https://lune-org.github.io/docs/roblox/3-remodel-migration">Learn about how to migrate your Remodel scripts to Lune</a></h1>
+<hr /><hr /><hr />
+
 <img src="builderman.png" alt="Remodel Logo" width="327" height="277" align="right" />
 <h1 align="left">Remodel</h1>
 
