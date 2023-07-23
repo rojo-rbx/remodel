@@ -126,7 +126,7 @@ Throws on error.
 
 ### `remodel.writePlaceFile`
 ```
-remodel.writePlaceFile(path: string, instance: DataModel)
+remodel.writePlaceFile(instance: DataModel, path: string)
 ```
 
 Saves an `rbxlx` file out of the given `DataModel` instance.
