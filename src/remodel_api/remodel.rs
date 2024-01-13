@@ -117,7 +117,7 @@ impl Remodel {
     }
 
     fn write_xml_place_file(lua_instance: LuaInstance, path: &Path) -> mlua::Result<()> {
-        let file = BufWriter::new(File::create(&path).map_err(mlua::Error::external)?);
+        let file = BufWriter::new(File::create(path).map_err(mlua::Error::external)?);
 
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
@@ -137,7 +137,7 @@ impl Remodel {
     }
 
     fn write_binary_place_file(lua_instance: LuaInstance, path: &Path) -> mlua::Result<()> {
-        let file = BufWriter::new(File::create(&path).map_err(mlua::Error::external)?);
+        let file = BufWriter::new(File::create(path).map_err(mlua::Error::external)?);
 
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
@@ -156,7 +156,7 @@ impl Remodel {
     }
 
     fn write_xml_model_file(lua_instance: LuaInstance, path: &Path) -> mlua::Result<()> {
-        let file = BufWriter::new(File::create(&path).map_err(mlua::Error::external)?);
+        let file = BufWriter::new(File::create(path).map_err(mlua::Error::external)?);
 
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree
@@ -174,7 +174,7 @@ impl Remodel {
     }
 
     fn write_binary_model_file(lua_instance: LuaInstance, path: &Path) -> mlua::Result<()> {
-        let file = BufWriter::new(File::create(&path).map_err(mlua::Error::external)?);
+        let file = BufWriter::new(File::create(path).map_err(mlua::Error::external)?);
 
         let tree = lua_instance.tree.lock().unwrap();
         let instance = tree

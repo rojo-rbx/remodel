@@ -164,7 +164,7 @@ impl LuaInstance {
         })?;
 
         let mut descendants = Vec::new();
-        let mut stack = VecDeque::from_iter(instance.children().into_iter());
+        let mut stack = VecDeque::from_iter(instance.children().iter());
 
         while let Some(current) = stack.pop_front() {
             descendants.push(LuaInstance::new(Arc::clone(&self.tree), *current));

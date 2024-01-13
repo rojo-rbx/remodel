@@ -7,16 +7,7 @@ pub struct CFrameUserData;
 
 impl CFrameUserData {
     fn from_position(x: f32, y: f32, z: f32) -> CFrameValue {
-        CFrameValue::new(CFrame::new(
-            Vector3::new(x as f32, y as f32, z as f32),
-            // TODO: replace with `Matrix3::identity()` once
-            // a version higher than 0.3.0 of rbx_types ships
-            Matrix3::new(
-                Vector3::new(1.0, 0.0, 0.0),
-                Vector3::new(0.0, 1.0, 0.0),
-                Vector3::new(0.0, 0.0, 1.0),
-            ),
-        ))
+        CFrameValue::new(CFrame::new(Vector3::new(x, y, z), Matrix3::identity()))
     }
 }
 
@@ -44,13 +35,7 @@ impl UserData for CFrameUserData {
                         let position = &*user_data.borrow::<Vector3Value>()?;
                         return Ok(CFrameValue::new(CFrame::new(
                             position.inner(),
-                            // TODO: replace with `rbx_dom_weak::types::Matrix3::identity()` once
-                            // a version higher than 0.3.0 of rbx_types ships
-                            Matrix3::new(
-                                Vector3::new(1.0, 0.0, 0.0),
-                                Vector3::new(0.0, 1.0, 0.0),
-                                Vector3::new(0.0, 0.0, 1.0),
-                            ),
+                            Matrix3::identity(),
                         )));
                     }
                     _ => {}
